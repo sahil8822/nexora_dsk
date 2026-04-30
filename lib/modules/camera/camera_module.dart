@@ -1,22 +1,20 @@
 import 'dart:async';
 import 'package:flutter/services.dart';
 import '../../core/hardware_core.dart';
+import '../../nexora_sdk_platform_interface.dart';
 
 /// Performance-optimized Camera module with Binary Channel Support.
 class CameraModule {
-  static const methodChannel = MethodChannel('my_hardware_plugin/camera/methods');
-  static const binaryChannel = BasicMessageChannel<ByteData?>('my_hardware_plugin/camera/frames', BinaryCodec());
+  static const binaryChannel = BasicMessageChannel<ByteData?>('nexora_sdk/camera/frames', BinaryCodec());
   
   final _eventStream = StreamController<HardwareEvent>.broadcast();
 
-  Future<bool> start() async {
-    final success = await methodChannel.invokeMethod<bool>('start');
-    return success ?? false;
+  Future<bool> start({int width = 640, int height = 480}) async {
+    return await NexoraSdkPlatform.instance.startCamera(width: width, height: height);
   }
 
   Future<bool> stop() async {
-    final success = await methodChannel.invokeMethod<bool>('stop');
-    return success ?? false;
+    return await NexoraSdkPlatform.instance.stopCamera();
   }
 
   /// High-performance raw frame stream using BasicMessageChannel.

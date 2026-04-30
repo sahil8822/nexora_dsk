@@ -16,7 +16,7 @@ The SDK uses a **Modular Hybrid Architecture** to ensure near-native performance
 ### 1. Camera Frame Streaming
 Streams raw frames with 32BGRA (iOS) or YUV_420 (Android) formatting.
 ```dart
-final plugin = MyHardwarePlugin.instance;
+final plugin = NexoraSdk.instance;
 await plugin.startCamera();
 plugin.cameraStream.listen((frame) {
   // Use frame.bytes (Uint8List), width, height
@@ -62,13 +62,27 @@ plugin.locationStream.listen((loc) {
 
 ---
 
-## ⚡ Performance Optimization & Advanced (C++/FFI)
-To achieve zero-copy camera streaming or high-speed data parsing for enterprise applications:
-1. **NDK Integration**: Move `processPixelBuffer` to `native-lib.cpp` (included in `/android/src/main/cpp`).
-2. **Dart FFI**: Access shared memory buffers directly from Dart to avoid serialization overhead.
-3. **Throttling**: The SDK includes internal rate limiting for high-frequency GPS/Sensor data (default 60Hz).
+## ⚡ Performance & Production Grade Features
+1.  **Sensor Throttling**: Automatic 60Hz throttling on the native side to prevent UI jank.
+2.  **Battery Optimization**: Hardware modules only activate when explicitly called via `start()`.
+3.  **Background Reliability**: Integrated **Android Foreground Service** ensures the app isn't killed during long-running GPS or Bluetooth tasks.
+4.  **Robust Error Handling**: Unified error reporting via `EventChannel` for hardware unavailability.
+
+## 🛠️ Usage (Updated)
+```dart
+final sdk = NexoraSdk.instance;
+
+// 1. Start explicit module
+await sdk.location.start(); 
+
+// 2. Listen to stream
+sdk.location.stream.listen((data) { ... });
+
+// 3. Stop to save battery
+await sdk.location.stop();
+```
 
 ---
 
 ## 🧪 Example App
-Run the provided `example/` project to see the live dashboard with all toggles and real-time data streams.
+Run the `example/` project to see the live dashboard with real-time FPS monitoring, background-safe GPS, and throttled sensor streams.

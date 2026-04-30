@@ -1,4 +1,4 @@
-package com.example.my_hardware_plugin
+package com.example.nexora_sdk
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -69,10 +69,22 @@ class HardwareCameraManager(private val context: Context) {
     }
 
     private fun processImage(image: android.media.Image) {
-        // Optimized: Convert to Byte Array or pass to C++ NDK
-        val buffer = image.planes[0].buffer
-        val bytes = ByteArray(buffer.capacity())
-        buffer.get(bytes)
+        // High-Performance: Combine Y, U, V planes for full color support
+        // YUV_420_888 to contiguous byte array
+        val yBuffer = image.planes[0].buffer
+        val uBuffer = image.planes[1].buffer
+        val vBuffer = image.planes[2].buffer
+
+        val ySize = yBuffer.remaining()
+        val uSize = uBuffer.remaining()
+        val vSize = vBuffer.remaining()
+
+        val bytes = ByteArray(ySize + uSize + vSize)
+
+        // Bulk copies are faster than per-pixel access
+        yBuffer.get(bytes, 0, ySize)
+        vBuffer.get(bytes, ySize, vSize)
+        uBuffer.get(bytes, ySize + vSize, uSize)
 
         val frameData = mapOf(
             "type" to "camera",
@@ -81,12 +93,16 @@ class HardwareCameraManager(private val context: Context) {
                 "bytes" to bytes,
                 "width" to image.width,
                 "height" to image.height,
-                "format" to "yuv"
+                "format" to "yuv420"
             )
         )
         
         Handler(context.mainLooper).post {
-            eventSink?.success(frameData)
+            try {
+                eventSink?.success(frameData)
+            } catch (e: Exception) {
+                // Sink might be closed
+            }
         }
     }
 }

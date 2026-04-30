@@ -1,4 +1,4 @@
-package com.example.my_hardware_plugin
+package com.example.nexora_sdk
 
 import android.content.Context
 import android.graphics.ImageFormat
@@ -16,7 +16,7 @@ import java.nio.ByteBuffer
  * Streams raw binary frame data via BasicMessageChannel to minimize bridge latency.
  */
 class HardwareCameraModule(private val context: Context, messenger: BinaryMessenger) {
-    private val binaryChannel = BasicMessageChannel(messenger, "my_hardware_plugin/camera/frames", BinaryCodec.INSTANCE)
+    private val binaryChannel = BasicMessageChannel(messenger, "nexora_sdk/camera/frames", BinaryCodec.INSTANCE)
     
     private var cameraDevice: CameraDevice? = null
     private var imageReader: ImageReader? = null

@@ -1,16 +1,16 @@
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 import 'models/hardware_models.dart';
 import 'core/hardware_core.dart';
-import 'my_hardware_plugin_method_channel.dart';
+import 'nexora_sdk_method_channel.dart';
 
-abstract class MyHardwarePluginPlatform extends PlatformInterface {
-  MyHardwarePluginPlatform() : super(token: _token);
+abstract class NexoraSdkPlatform extends PlatformInterface {
+  NexoraSdkPlatform() : super(token: _token);
 
   static final Object _token = Object();
-  static MyHardwarePluginPlatform _instance = MethodChannelMyHardwarePlugin();
+  static NexoraSdkPlatform _instance = MethodChannelNexoraSdk();
 
-  static MyHardwarePluginPlatform get instance => _instance;
-  static set instance(MyHardwarePluginPlatform instance) {
+  static NexoraSdkPlatform get instance => _instance;
+  static set instance(NexoraSdkPlatform instance) {
     PlatformInterface.verifyToken(instance, _token);
     _instance = instance;
   }
@@ -21,7 +21,7 @@ abstract class MyHardwarePluginPlatform extends PlatformInterface {
   }
 
   // --- Subsystem Commands ---
-  Future<bool> startCamera();
+  Future<bool> startCamera({int width = 640, int height = 480});
   Future<bool> stopCamera();
   Future<bool> startBluetoothScan();
   Future<bool> stopBluetoothScan();
@@ -29,6 +29,9 @@ abstract class MyHardwarePluginPlatform extends PlatformInterface {
   Future<WifiInfo?> getWifiInfo();
   Future<bool> startLocation();
   Future<bool> stopLocation();
+  Future<bool> startSensor({int frequencyHz = 60});
+  Future<bool> stopSensor();
+  Future<bool> requestPermissions();
 
   // --- Stream Access ---
   Stream<HardwareEvent> get unifiedStream;

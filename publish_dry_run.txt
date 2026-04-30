@@ -1,0 +1,212 @@
+Resolving dependencies...
+Downloading packages...
+  matcher 0.12.19 (0.12.20 available)
+  meta 1.17.0 (1.18.2 available)
+  test_api 0.7.10 (0.7.12 available)
+  vector_math 2.2.0 (2.3.0 available)
+Got dependencies!
+4 packages have newer versions incompatible with dependency constraints.
+Try `dart pub outdated` for more information.
+Publishing my_hardware_plugin 1.0.0 to https://pub.dev:
+├── CHANGELOG.md (<1 KB)
+├── LICENSE (1 KB)
+├── README.md (2 KB)
+├── analysis_options.yaml (<1 KB)
+├── android
+│   ├── build.gradle.kts (1 KB)
+│   ├── settings.gradle (<1 KB)
+│   ├── settings.gradle.kts (<1 KB)
+│   └── src
+│       ├── main
+│       │   ├── AndroidManifest.xml (<1 KB)
+│       │   ├── cpp
+│       │   │   └── native-lib.cpp (<1 KB)
+│       │   └── kotlin
+│       │       └── com
+│       │           └── example
+│       │               └── my_hardware_plugin
+│       │                   ├── CameraManager.kt (3 KB)
+│       │                   ├── HardwareBluetoothManager.kt (3 KB)
+│       │                   ├── HardwareCameraModule.kt (3 KB)
+│       │                   ├── HardwareForegroundService.kt (2 KB)
+│       │                   ├── HardwareLocationManager.kt (2 KB)
+│       │                   ├── HardwareSensorManager.kt (2 KB)
+│       │                   ├── HardwareStreamHandler.kt (1 KB)
+│       │                   └── MyHardwarePlugin.kt (5 KB)
+│       └── test
+│           └── kotlin
+│               └── com
+│                   └── example
+│                       └── my_hardware_plugin
+│                           └── MyHardwarePluginTest.kt (<1 KB)
+├── design_architecture.md (2 KB)
+├── example
+│   ├── README.md (<1 KB)
+│   ├── analysis_options.yaml (1 KB)
+│   ├── android
+│   │   ├── app
+│   │   │   ├── build.gradle.kts (1 KB)
+│   │   │   └── src
+│   │   │       ├── debug
+│   │   │       │   └── AndroidManifest.xml (<1 KB)
+│   │   │       ├── main
+│   │   │       │   ├── AndroidManifest.xml (2 KB)
+│   │   │       │   ├── kotlin
+│   │   │       │   │   └── com
+│   │   │       │   │       └── example
+│   │   │       │   │           └── my_hardware_plugin_example
+│   │   │       │   │               └── MainActivity.kt (<1 KB)
+│   │   │       │   └── res
+│   │   │       │       ├── drawable
+│   │   │       │       │   └── launch_background.xml (<1 KB)
+│   │   │       │       ├── drawable-v21
+│   │   │       │       │   └── launch_background.xml (<1 KB)
+│   │   │       │       ├── mipmap-hdpi
+│   │   │       │       │   └── ic_launcher.png (<1 KB)
+│   │   │       │       ├── mipmap-mdpi
+│   │   │       │       │   └── ic_launcher.png (<1 KB)
+│   │   │       │       ├── mipmap-xhdpi
+│   │   │       │       │   └── ic_launcher.png (<1 KB)
+│   │   │       │       ├── mipmap-xxhdpi
+│   │   │       │       │   └── ic_launcher.png (1 KB)
+│   │   │       │       ├── mipmap-xxxhdpi
+│   │   │       │       │   └── ic_launcher.png (1 KB)
+│   │   │       │       ├── values
+│   │   │       │       │   └── styles.xml (<1 KB)
+│   │   │       │       └── values-night
+│   │   │       │           └── styles.xml (<1 KB)
+│   │   │       └── profile
+│   │   │           └── AndroidManifest.xml (<1 KB)
+│   │   ├── build.gradle.kts (<1 KB)
+│   │   ├── gradle
+│   │   │   └── wrapper
+│   │   │       └── gradle-wrapper.properties (<1 KB)
+│   │   ├── gradle.properties (<1 KB)
+│   │   └── settings.gradle.kts (<1 KB)
+│   ├── integration_test
+│   │   └── plugin_integration_test.dart (<1 KB)
+│   ├── ios
+│   │   ├── Flutter
+│   │   │   ├── AppFrameworkInfo.plist (<1 KB)
+│   │   │   ├── Debug.xcconfig (<1 KB)
+│   │   │   └── Release.xcconfig (<1 KB)
+│   │   ├── Podfile (1 KB)
+│   │   ├── Runner
+│   │   │   ├── AppDelegate.swift (<1 KB)
+│   │   │   ├── Assets.xcassets
+│   │   │   │   ├── AppIcon.appiconset
+│   │   │   │   │   ├── Contents.json (2 KB)
+│   │   │   │   │   ├── Icon-App-1024x1024@1x.png (10 KB)
+│   │   │   │   │   ├── Icon-App-20x20@1x.png (<1 KB)
+│   │   │   │   │   ├── Icon-App-20x20@2x.png (<1 KB)
+│   │   │   │   │   ├── Icon-App-20x20@3x.png (<1 KB)
+│   │   │   │   │   ├── Icon-App-29x29@1x.png (<1 KB)
+│   │   │   │   │   ├── Icon-App-29x29@2x.png (<1 KB)
+│   │   │   │   │   ├── Icon-App-29x29@3x.png (<1 KB)
+│   │   │   │   │   ├── Icon-App-40x40@1x.png (<1 KB)
+│   │   │   │   │   ├── Icon-App-40x40@2x.png (<1 KB)
+│   │   │   │   │   ├── Icon-App-40x40@3x.png (<1 KB)
+│   │   │   │   │   ├── Icon-App-60x60@2x.png (<1 KB)
+│   │   │   │   │   ├── Icon-App-60x60@3x.png (1 KB)
+│   │   │   │   │   ├── Icon-App-76x76@1x.png (<1 KB)
+│   │   │   │   │   ├── Icon-App-76x76@2x.png (1 KB)
+│   │   │   │   │   └── Icon-App-83.5x83.5@2x.png (1 KB)
+│   │   │   │   └── LaunchImage.imageset
+│   │   │   │       ├── Contents.json (<1 KB)
+│   │   │   │       ├── LaunchImage.png (<1 KB)
+│   │   │   │       ├── LaunchImage@2x.png (<1 KB)
+│   │   │   │       ├── LaunchImage@3x.png (<1 KB)
+│   │   │   │       └── README.md (<1 KB)
+│   │   │   ├── Base.lproj
+│   │   │   │   ├── LaunchScreen.storyboard (2 KB)
+│   │   │   │   └── Main.storyboard (1 KB)
+│   │   │   ├── Info.plist (2 KB)
+│   │   │   ├── Runner-Bridging-Header.h (<1 KB)
+│   │   │   └── SceneDelegate.swift (<1 KB)
+│   │   ├── Runner.xcodeproj
+│   │   │   ├── project.pbxproj (23 KB)
+│   │   │   ├── project.xcworkspace
+│   │   │   │   ├── contents.xcworkspacedata (<1 KB)
+│   │   │   │   └── xcshareddata
+│   │   │   │       ├── IDEWorkspaceChecks.plist (<1 KB)
+│   │   │   │       └── WorkspaceSettings.xcsettings (<1 KB)
+│   │   │   └── xcshareddata
+│   │   │       └── xcschemes
+│   │   │           └── Runner.xcscheme (3 KB)
+│   │   ├── Runner.xcworkspace
+│   │   │   ├── contents.xcworkspacedata (<1 KB)
+│   │   │   └── xcshareddata
+│   │   │       ├── IDEWorkspaceChecks.plist (<1 KB)
+│   │   │       └── WorkspaceSettings.xcsettings (<1 KB)
+│   │   └── RunnerTests
+│   │       └── RunnerTests.swift (<1 KB)
+│   ├── lib
+│   │   └── main.dart (5 KB)
+│   ├── pubspec.yaml (3 KB)
+│   └── test
+│       └── widget_test.dart (<1 KB)
+├── ios
+│   ├── Assets
+│   ├── Classes
+│   │   ├── HardwareBluetoothManager.swift (3 KB)
+│   │   ├── HardwareCameraManager.swift (2 KB)
+│   │   ├── HardwareCameraModule.swift (2 KB)
+│   │   ├── HardwareLocationManager.swift (1 KB)
+│   │   ├── HardwareSensorManager.swift (1 KB)
+│   │   ├── HardwareStreamHandler.swift (1 KB)
+│   │   └── MyHardwarePlugin.swift (3 KB)
+│   ├── Resources
+│   │   └── PrivacyInfo.xcprivacy (<1 KB)
+│   └── my_hardware_plugin.podspec (1 KB)
+├── lib
+│   ├── core
+│   │   └── hardware_core.dart (<1 KB)
+│   ├── models
+│   │   ├── hardware_models.dart (2 KB)
+│   │   └── sensor_data.dart (<1 KB)
+│   ├── modules
+│   │   ├── bluetooth
+│   │   │   └── bluetooth_module.dart (<1 KB)
+│   │   ├── camera
+│   │   │   └── camera_module.dart (1 KB)
+│   │   ├── location
+│   │   │   └── location_module.dart (<1 KB)
+│   │   └── sensor
+│   │       └── sensor_module.dart (<1 KB)
+│   ├── my_hardware_plugin.dart (2 KB)
+│   ├── my_hardware_plugin_method_channel.dart (2 KB)
+│   └── my_hardware_plugin_platform_interface.dart (1 KB)
+├── publish_dry_run.txt (<1 KB)
+├── pubspec.yaml (2 KB)
+└── test
+    ├── my_hardware_plugin_method_channel_test.dart (<1 KB)
+    └── my_hardware_plugin_test.dart (2 KB)
+
+Total compressed archive size: 58 KB.
+Validating package...
+Package validation found the following potential issue:
+* 22 checked-in files are modified in git.
+  
+  Usually you want to publish from a clean git state.
+  
+  Consider committing these files or reverting the changes.
+  
+  Modified files:
+  
+  CHANGELOG.md
+  LICENSE
+  README.md
+  android/build.gradle.kts
+  android/src/main/kotlin/com/example/my_hardware_plugin/CameraManager.kt
+  android/src/main/kotlin/com/example/my_hardware_plugin/HardwareBluetoothManager.kt
+  android/src/main/kotlin/com/example/my_hardware_plugin/HardwareSensorManager.kt
+  android/src/main/kotlin/com/example/my_hardware_plugin/MyHardwarePlugin.kt
+  example/ios/Flutter/Debug.xcconfig
+  example/ios/Flutter/Release.xcconfig
+  ...
+  
+  Run `git status` for more information.
+  
+The server may enforce additional checks.
+
+Package has 1 warning.

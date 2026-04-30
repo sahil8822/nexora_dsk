@@ -1,11 +1,11 @@
 import 'package:flutter/services.dart';
 import 'models/hardware_models.dart';
 import 'core/hardware_core.dart';
-import 'my_hardware_plugin_platform_interface.dart';
+import 'nexora_sdk_platform_interface.dart';
 
-class MethodChannelMyHardwarePlugin extends MyHardwarePluginPlatform {
-  final methodChannel = const MethodChannel('my_hardware_plugin/methods');
-  final eventChannel = const EventChannel('my_hardware_plugin/events');
+class MethodChannelNexoraSdk extends NexoraSdkPlatform {
+  final methodChannel = const MethodChannel('nexora_sdk/methods');
+  final eventChannel = const EventChannel('nexora_sdk/events');
 
   @override
   Future<String?> getPlatformVersion() async {
@@ -13,7 +13,8 @@ class MethodChannelMyHardwarePlugin extends MyHardwarePluginPlatform {
   }
 
   @override
-  Future<bool> startCamera() async => await methodChannel.invokeMethod<bool>('startCamera') ?? false;
+  Future<bool> startCamera({int width = 640, int height = 480}) async => 
+      await methodChannel.invokeMethod<bool>('startCamera', {'width': width, 'height': height}) ?? false;
 
   @override
   Future<bool> stopCamera() async => await methodChannel.invokeMethod<bool>('stopCamera') ?? false;
@@ -38,6 +39,16 @@ class MethodChannelMyHardwarePlugin extends MyHardwarePluginPlatform {
 
   @override
   Future<bool> stopLocation() async => await methodChannel.invokeMethod<bool>('stopLocation') ?? false;
+
+  @override
+  Future<bool> startSensor({int frequencyHz = 60}) async => 
+      await methodChannel.invokeMethod<bool>('startSensor', {'frequency': frequencyHz}) ?? false;
+
+  @override
+  Future<bool> stopSensor() async => await methodChannel.invokeMethod<bool>('stopSensor') ?? false;
+
+  @override
+  Future<bool> requestPermissions() async => await methodChannel.invokeMethod<bool>('requestPermissions') ?? false;
 
   @override
   Stream<HardwareEvent> get unifiedStream {

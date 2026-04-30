@@ -1,4 +1,4 @@
-group = "com.example.my_hardware_plugin"
+group = "com.example.nexora_sdk"
 version = "1.0-SNAPSHOT"
 
 buildscript {
@@ -27,7 +27,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.my_hardware_plugin"
+    namespace = "com.example.nexora_sdk"
 
     compileSdk = 36
 
@@ -71,6 +71,7 @@ android {
 }
 
 dependencies {
+    implementation("com.google.android.gms:play-services-location:21.0.1")
     testImplementation("org.jetbrains.kotlin:kotlin-test")
     testImplementation("org.mockito:mockito-core:5.0.0")
 }

@@ -1,6 +1,6 @@
-# my_hardware_plugin_example
+# nexora_sdk_example
 
-Demonstrates how to use the my_hardware_plugin plugin.
+Demonstrates how to use the nexora_sdk plugin.
 
 ## Getting Started
 

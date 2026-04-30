@@ -1,4 +1,4 @@
-package com.example.my_hardware_plugin_example
+package com.example.nexora_sdk_example
 
 import io.flutter.embedding.android.FlutterActivity
 

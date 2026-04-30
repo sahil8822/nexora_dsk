@@ -1,4 +1,4 @@
-package com.example.my_hardware_plugin
+package com.example.nexora_sdk
 
 import android.content.Context
 import io.flutter.plugin.common.EventChannel

@@ -1,7 +1,8 @@
-name: my_hardware_plugin
-description: "A new Flutter plugin project."
-version: 0.0.1
-homepage:
+name: nexora_sdk
+description: "A high-performance, production-ready Flutter hardware SDK for Camera, Bluetooth LE, Location, and Sensors with unified permission management."
+version: 2.1.0
+homepage: https://github.com/sahil8822/nexora_sdk
+repository: https://github.com/sahil8822/nexora_sdk
 
 environment:
   sdk: ^3.11.4
@@ -35,10 +36,10 @@ flutter:
   plugin:
     platforms:
       android:
-        package: com.example.my_hardware_plugin
-        pluginClass: MyHardwarePlugin
+        package: com.example.nexora_sdk
+        pluginClass: NexoraSdk
       ios:
-        pluginClass: MyHardwarePlugin
+        pluginClass: NexoraSdk
 
   # To add assets to your plugin package, add an assets section, like this:
   # assets:

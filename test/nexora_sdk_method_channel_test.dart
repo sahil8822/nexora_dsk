@@ -1,12 +1,12 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:my_hardware_plugin/my_hardware_plugin_method_channel.dart';
+import 'package:nexora_sdk/nexora_sdk_method_channel.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  MethodChannelMyHardwarePlugin platform = MethodChannelMyHardwarePlugin();
-  const MethodChannel channel = MethodChannel('my_hardware_plugin');
+  MethodChannelNexoraSdk platform = MethodChannelNexoraSdk();
+  const MethodChannel channel = MethodChannel('nexora_sdk/methods');
 
   setUp(() {
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger

@@ -1,4 +1,4 @@
-package com.example.my_hardware_plugin
+package com.example.nexora_sdk
 
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothAdapter
@@ -22,6 +22,8 @@ class HardwareBluetoothManager(private val context: Context) {
         bluetoothAdapter = manager.adapter
     }
 
+    private var bluetoothGatt: android.bluetooth.BluetoothGatt? = null
+
     fun setEventSink(sink: EventChannel.EventSink?) {
         this.eventSink = sink
     }
@@ -36,6 +38,46 @@ class HardwareBluetoothManager(private val context: Context) {
     fun stopScan() {
         val scanner = bluetoothAdapter?.bluetoothLeScanner
         scanner?.stopScan(scanCallback)
+    }
+
+    @SuppressLint("MissingPermission")
+    fun connect(deviceId: String) {
+        val device = bluetoothAdapter?.getRemoteDevice(deviceId) ?: return
+        bluetoothGatt = device.connectGatt(context, false, gattCallback)
+    }
+
+    @SuppressLint("MissingPermission")
+    fun disconnect() {
+        bluetoothGatt?.disconnect()
+        bluetoothGatt?.close()
+        bluetoothGatt = null
+    }
+
+    private val gattCallback = object : android.bluetooth.BluetoothGattCallback() {
+        @SuppressLint("MissingPermission")
+        override fun onConnectionStateChange(gatt: android.bluetooth.BluetoothGatt, status: Int, newState: Int) {
+            val state = when (newState) {
+                android.bluetooth.BluetoothProfile.STATE_CONNECTED -> "connected"
+                android.bluetooth.BluetoothProfile.STATE_CONNECTING -> "connecting"
+                android.bluetooth.BluetoothProfile.STATE_DISCONNECTED -> "disconnected"
+                else -> "unknown"
+            }
+            
+            val statusData = mapOf(
+                "type" to "bluetooth_status",
+                "timestamp" to System.currentTimeMillis(),
+                "data" to mapOf(
+                    "id" to gatt.device.address,
+                    "state" to state
+                )
+            )
+            
+            Handler(context.mainLooper).post { eventSink?.success(statusData) }
+            
+            if (newState == android.bluetooth.BluetoothProfile.STATE_CONNECTED) {
+                gatt.discoverServices()
+            }
+        }
     }
 
     private val scanCallback = object : ScanCallback() {

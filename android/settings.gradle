@@ -1,1 +1,1 @@
-rootProject.name = 'my_hardware_plugin'
+rootProject.name = 'nexora_sdk'

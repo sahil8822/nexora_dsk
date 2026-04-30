@@ -12,7 +12,7 @@ public class HardwareCameraModule: NSObject, AVCaptureVideoDataOutputSampleBuffe
     private let videoOutputQueue = DispatchQueue(label: "camera.modular.queue")
 
     public init(messenger: FlutterBinaryMessenger) {
-        self.binaryChannel = FlutterBasicMessageChannel(name: "my_hardware_plugin/camera/frames", binaryMessenger: messenger, codec: FlutterBinaryCodec())
+        self.binaryChannel = FlutterBasicMessageChannel(name: "nexora_sdk/camera/frames", binaryMessenger: messenger, codec: FlutterBinaryCodec())
     }
 
     public func start() {
