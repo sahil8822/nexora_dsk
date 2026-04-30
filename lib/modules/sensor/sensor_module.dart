@@ -1,19 +1,23 @@
+import 'dart:async';
 import '../../nexora_sdk_platform_interface.dart';
+import '../../core/hardware_core.dart';
 
-/// Modular Sensor Module (Accelerometer, etc.).
+/// Module for accessing hardware motion sensors like the Accelerometer.
 class SensorModule {
-  Future<bool> start({int frequencyHz = 60}) async {
-    return await NexoraSdkPlatform.instance.startSensor(frequencyHz: frequencyHz);
-  }
+  /// Internal constructor.
+  SensorModule();
 
-  Future<bool> stop() async {
-    return await NexoraSdkPlatform.instance.stopSensor();
-  }
+  /// Throttled stream of accelerometer data events.
+  Stream<HardwareEvent> get stream => NexoraSdkPlatform.instance.unifiedStream
+      .where((e) => e.module == 'sensor');
 
-  /// Real-time Accelerometer and other sensor data.
-  Stream<Map<String, dynamic>> get accelerometerStream {
-    return NexoraSdkPlatform.instance.unifiedStream
-        .where((e) => e.module == 'sensor')
-        .map((e) => Map<String, dynamic>.from(e.data));
-  }
+  /// Alias for [stream] specific to accelerometer data.
+  Stream<HardwareEvent> get accelerometerStream => stream;
+
+  /// Starts the sensor with a specific [frequencyHz] (default 60Hz).
+  Future<bool> start({int frequencyHz = 60}) =>
+      NexoraSdkPlatform.instance.startSensor(frequencyHz: frequencyHz);
+
+  /// Stops the sensor stream.
+  Future<bool> stop() => NexoraSdkPlatform.instance.stopSensor();
 }

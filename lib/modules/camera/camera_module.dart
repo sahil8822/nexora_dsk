@@ -1,35 +1,22 @@
 import 'dart:async';
-import 'package:flutter/services.dart';
-import '../../core/hardware_core.dart';
+import 'package:nexora_sdk/models/hardware_models.dart';
 import '../../nexora_sdk_platform_interface.dart';
 
-/// Performance-optimized Camera module with Binary Channel Support.
+/// Module for high-performance raw camera frame streaming.
 class CameraModule {
-  static const binaryChannel = BasicMessageChannel<ByteData?>('nexora_sdk/camera/frames', BinaryCodec());
-  
-  final _eventStream = StreamController<HardwareEvent>.broadcast();
+  /// Internal constructor.
+  CameraModule();
 
-  Future<bool> start({int width = 640, int height = 480}) async {
-    return await NexoraSdkPlatform.instance.startCamera(width: width, height: height);
-  }
+  /// Stream of raw [CameraFrame] objects for real-time processing.
+  Stream<CameraFrame> get stream => NexoraSdkPlatform.instance.cameraStream;
 
-  Future<bool> stop() async {
-    return await NexoraSdkPlatform.instance.stopCamera();
-  }
+  /// Alias for [stream] specific to camera frames.
+  Stream<CameraFrame> get frameStream => stream;
 
-  /// High-performance raw frame stream using BasicMessageChannel.
-  Stream<Uint8List> get frameStream {
-    final controller = StreamController<Uint8List>();
-    binaryChannel.setMessageHandler((ByteData? msg) async {
-      if (msg != null) {
-        controller.add(msg.buffer.asUint8List());
-      }
-      return null;
-    });
-    return controller.stream;
-  }
+  /// Starts the camera with requested [width] and [height].
+  Future<bool> start({int width = 640, int height = 480}) =>
+      NexoraSdkPlatform.instance.startCamera(width: width, height: height);
 
-  void dispose() {
-    _eventStream.close();
-  }
+  /// Stops the camera and releases the hardware lock.
+  Future<bool> stop() => NexoraSdkPlatform.instance.stopCamera();
 }

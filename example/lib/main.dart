@@ -19,7 +19,7 @@ class _MyAppState extends State<MyApp> {
   bool _isCameraRunning = false;
   bool _isLocationRunning = false;
   bool _isSensorRunning = false;
-  Uint8List? _lastFrame;
+  Uint8List? _lastFrameBytes;
   String _locationInfo = 'Location: Stopped';
   String _sensorInfo = 'Sensors: Stopped';
   int _frameCount = 0;
@@ -29,8 +29,9 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
     // Listen to unified stream for sensor data
-    _sdk.sensor.accelerometerStream.listen((data) {
-      if (mounted && _isSensorRunning) {
+    _sdk.sensor.stream.listen((event) {
+      if (mounted && _isSensorRunning && event.module == 'sensor') {
+        final data = event.data as Map;
         setState(() {
           _sensorInfo = 'Accel: x:${data['x']?.toStringAsFixed(2)}, y:${data['y']?.toStringAsFixed(2)}';
         });
@@ -52,15 +53,15 @@ class _MyAppState extends State<MyApp> {
       await _sdk.camera.stop();
       setState(() {
         _isCameraRunning = false;
-        _lastFrame = null;
+        _lastFrameBytes = null;
       });
     } else {
       await _sdk.camera.start();
       _start = DateTime.now();
-      _sdk.camera.frameStream.listen((frame) {
+      _sdk.camera.stream.listen((frame) {
         if (mounted) {
           setState(() {
-            _lastFrame = frame;
+            _lastFrameBytes = frame.bytes;
             _frameCount++;
           });
         }
@@ -98,7 +99,7 @@ class _MyAppState extends State<MyApp> {
       debugShowCheckedModeBanner: false,
       theme: ThemeData.dark(),
       home: Scaffold(
-        appBar: AppBar(title: const Text('Hardware SDK Dashboard')),
+        appBar: AppBar(title: const Text('Nexora SDK Pro Dashboard')),
         body: SingleChildScrollView(
           child: Center(
             child: Column(
@@ -108,13 +109,13 @@ class _MyAppState extends State<MyApp> {
                 _buildStatusCard('Camera', _isCameraRunning ? 'RUNNING' : 'STOPPED', _isCameraRunning ? Colors.green : Colors.red),
                 Text('FPS: ${(_frameCount / (DateTime.now().difference(_start ?? DateTime.now()).inSeconds + 1)).toStringAsFixed(1)}'),
                 const SizedBox(height: 10),
-                _lastFrame == null 
+                _lastFrameBytes == null 
                     ? const Icon(Icons.videocam_off, size: 100, color: Colors.grey)
                     : Container(
                         height: 150,
                         width: 150,
                         decoration: BoxDecoration(border: Border.all(color: Colors.cyan)),
-                        child: Center(child: Text('${_lastFrame!.lengthInBytes} bytes')),
+                        child: Center(child: Text('${_lastFrameBytes!.length} bytes')),
                       ),
                 const SizedBox(height: 20),
                 _buildStatusCard('Location', _locationInfo, _isLocationRunning ? Colors.blue : Colors.grey),

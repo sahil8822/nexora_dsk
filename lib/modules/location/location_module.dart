@@ -1,16 +1,20 @@
+import 'dart:async';
+import 'package:nexora_sdk/models/hardware_models.dart';
 import '../../nexora_sdk_platform_interface.dart';
-import '../../models/hardware_models.dart';
 
-/// Modular Location (GPS) Module.
+/// Module for high-accuracy GPS and location tracking.
+/// Uses fused location providers for better battery efficiency.
 class LocationModule {
-  Future<bool> start() async {
-    return await NexoraSdkPlatform.instance.startLocation();
-  }
+  /// Internal constructor.
+  LocationModule();
 
-  Future<bool> stop() async {
-    return await NexoraSdkPlatform.instance.stopLocation();
-  }
-
-  /// Real-time GPS stream.
+  /// Stream of real-time [LocationData] (latitude, longitude, etc.).
   Stream<LocationData> get stream => NexoraSdkPlatform.instance.locationStream;
+
+  /// Starts the location tracking service.
+  /// May request background execution if configured.
+  Future<bool> start() => NexoraSdkPlatform.instance.startLocation();
+
+  /// Stops location updates and releases hardware resources.
+  Future<bool> stop() => NexoraSdkPlatform.instance.stopLocation();
 }

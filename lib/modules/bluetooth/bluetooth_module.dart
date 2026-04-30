@@ -1,22 +1,24 @@
+import 'dart:async';
 import 'package:nexora_sdk/models/hardware_models.dart';
 import '../../nexora_sdk_platform_interface.dart';
 
-/// Modular Bluetooth LE Module.
-/// Features scanning, connecting, and characteristic streaming.
+/// Module for managing Bluetooth Low Energy (BLE) operations.
+/// Supports scanning for devices and connecting to GATT peripherals.
 class BluetoothModule {
-  Future<bool> startScan() async {
-    return await NexoraSdkPlatform.instance.startBluetoothScan();
-  }
+  /// Internal constructor for singleton-like access via NexoraSdk.
+  BluetoothModule();
 
-  Future<bool> stopScan() async {
-    return await NexoraSdkPlatform.instance.stopBluetoothScan();
-  }
+  /// Returns a stream of [BleDevice] discovered during scanning.
+  Stream<BleDevice> get scanStream => NexoraSdkPlatform.instance.bluetoothStream;
 
-  Future<bool> connect(String deviceId) async {
-    return await NexoraSdkPlatform.instance.connectDevice(deviceId);
-  }
+  /// Starts scanning for nearby BLE devices.
+  /// Ensure Bluetooth permissions are granted before calling this.
+  Future<bool> startScan() => NexoraSdkPlatform.instance.startBluetoothScan();
 
-  /// Real-time BLE device and data stream.
-  Stream<BleDevice> get deviceStream =>
-      NexoraSdkPlatform.instance.bluetoothStream;
+  /// Stops the active BLE scan to conserve battery.
+  Future<bool> stopScan() => NexoraSdkPlatform.instance.stopBluetoothScan();
+
+  /// Attempts to connect to a specific BLE device by its unique [id].
+  /// Returns true if the connection request was successfully initiated.
+  Future<bool> connect(String id) => NexoraSdkPlatform.instance.connectDevice(id);
 }
