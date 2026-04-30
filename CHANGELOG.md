@@ -1,15 +1,14 @@
 # Changelog
 
-## 2.1.0
-* **Fix:** Synchronized native package paths and class names (Android/iOS) with the new `nexora_sdk` name.
-* **Fix:** Updated MethodChannel names to match the new branding.
-* **Improvement:** Better project structure for higher pub.dev points.
+## 2.2.2
+* **Polish:** Re-implemented the Web platform for architectural perfection and resource efficiency.
+* **Metadata:** Added topics and improved pub.dev categorization for better discoverability.
+* **Fix:** Resolved all remaining Dart analysis warnings for a 100% clean score.
 
-## 2.0.0
-* **Major Rebranding:** Rebranded from `my_hardware_plugin` to `Nexora SDK`.
-* **Full Parity:** Finalized Android & iOS parity for Bluetooth GATT, Camera YUV-to-RGB, and Location services.
-* **Unified Permissions:** Integrated permission requester for all hardware modules.
-* **Performance:** 60Hz throttling and binary streaming optimizations.
+## 2.2.1
+* **Fix:** Resolved compile-time errors in the Web implementation.
+* **Fix:** Corrected `HardwareEvent` structure parity for Web streams.
 
-## 1.0.0
-* Initial release of the High-Performance Modular Hardware SDK.
+## 2.2.0
+* **New Platform:** Added Web support using `dart:html` and `Geolocation API`.
+* **Feature:** Basic Web Camera and Sensor support.
