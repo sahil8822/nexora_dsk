@@ -1,24 +1,26 @@
-import 'dart:async';
-import 'package:nexora_sdk/models/hardware_models.dart';
 import '../../nexora_sdk_platform_interface.dart';
+import '../../models/hardware_models.dart';
 
-/// Module for managing Bluetooth Low Energy (BLE) operations.
-/// Supports scanning for devices and connecting to GATT peripherals.
+/// Module for high-performance Bluetooth Low Energy (BLE) management.
 class BluetoothModule {
-  /// Internal constructor for singleton-like access via NexoraSdk.
-  BluetoothModule();
-
-  /// Returns a stream of [BleDevice] discovered during scanning.
-  Stream<BleDevice> get scanStream => NexoraSdkPlatform.instance.bluetoothStream;
-
-  /// Starts scanning for nearby BLE devices.
-  /// Ensure Bluetooth permissions are granted before calling this.
+  /// Starts scanning for nearby BLE devices. Discovered devices are 
+  /// delivered via the [scanStream].
   Future<bool> startScan() => NexoraSdkPlatform.instance.startBluetoothScan();
 
-  /// Stops the active BLE scan to conserve battery.
+  /// Stops the active BLE scan.
   Future<bool> stopScan() => NexoraSdkPlatform.instance.stopBluetoothScan();
 
-  /// Attempts to connect to a specific BLE device by its unique [id].
-  /// Returns true if the connection request was successfully initiated.
+  /// Attempts to connect to a specific BLE device by its [id].
   Future<bool> connect(String id) => NexoraSdkPlatform.instance.connectDevice(id);
+
+  /// Discovers GATT services for a connected device.
+  Future<List<String>> discoverServices(String deviceId) =>
+      NexoraSdkPlatform.instance.discoverServices(deviceId);
+
+  /// Sends raw byte data to a specific GATT characteristic.
+  Future<bool> sendData(String deviceId, String serviceId, String charId, List<int> data) =>
+      NexoraSdkPlatform.instance.sendData(deviceId, serviceId, charId, data);
+
+  /// A stream of [BleDevice] objects discovered during a scan.
+  Stream<BleDevice> get scanStream => NexoraSdkPlatform.instance.bluetoothStream;
 }

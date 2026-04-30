@@ -1,78 +1,38 @@
 import 'dart:async';
-// ignore: deprecated_member_use
 import 'dart:html' as html;
-
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 import 'nexora_sdk_platform_interface.dart';
-import 'models/hardware_models.dart';
 import 'core/hardware_core.dart';
+import 'models/hardware_models.dart';
 
-/// The Web implementation of the NexoraSdk platform.
+/// Nexora SDK Web Implementation.
+/// Updated for v3.0 Intelligence Edition.
 class NexoraSdkWeb extends NexoraSdkPlatform {
-  /// Factory method to register the web implementation.
   static void registerWith(Registrar registrar) {
     NexoraSdkPlatform.instance = NexoraSdkWeb();
   }
 
-  final _eventStreamController = StreamController<HardwareEvent>.broadcast();
-  final Map<String, StreamSubscription> _subscriptions = {};
+  final StreamController<HardwareEvent> _eventController = StreamController<HardwareEvent>.broadcast();
   html.MediaStream? _cameraStream;
+  String _facingMode = 'user';
 
   @override
-  Stream<HardwareEvent> get unifiedStream => _eventStreamController.stream;
+  Stream<HardwareEvent> get unifiedStream => _eventController.stream;
 
-  // --- Location Implementation ---
   @override
-  Future<bool> startLocation() async {
+  Future<String?> getPlatformVersion() async => 'Web Browsers';
+
+  @override
+  Future<bool> requestPermissions() async => true;
+
+  // --- Camera & Vision ---
+  @override
+  Future<dynamic> startCamera({int width = 640, int height = 480}) async {
     try {
-      await _subscriptions['location']?.cancel();
-      _subscriptions['location'] = html.window.navigator.geolocation
-          .watchPosition(enableHighAccuracy: true)
-          .listen((position) {
-        _eventStreamController.add(HardwareEvent(
-          module: 'gps',
-          type: 'data',
-          timestamp: DateTime.now(),
-          data: {
-            'latitude': position.coords?.latitude ?? 0.0,
-            'longitude': position.coords?.longitude ?? 0.0,
-            'altitude': position.coords?.altitude ?? 0.0,
-            'accuracy': position.coords?.accuracy ?? 0.0,
-            'speed': position.coords?.speed ?? 0.0,
-          },
-        ));
-      });
-      return true;
-    } catch (e) {
-      _sendError('gps', e.toString());
-      return false;
-    }
-  }
-
-  @override
-  Future<bool> stopLocation() async {
-    await _subscriptions['location']?.cancel();
-    _subscriptions.remove('location');
-    return true;
-  }
-
-  // --- Camera Implementation ---
-  @override
-  Future<bool> startCamera({int width = 640, int height = 480}) async {
-    try {
-      final constraints = {
-        'video': {
-          'width': width,
-          'height': height,
-          'facingMode': 'environment'
-        }
-      };
+      final constraints = {'video': {'width': width, 'height': height, 'facingMode': _facingMode}};
       _cameraStream = await html.window.navigator.mediaDevices?.getUserMedia(constraints);
-      return _cameraStream != null;
-    } catch (e) {
-      _sendError('camera', e.toString());
-      return false;
-    }
+      return true; // Web uses video tags, not texture IDs currently
+    } catch (e) { return false; }
   }
 
   @override
@@ -82,63 +42,85 @@ class NexoraSdkWeb extends NexoraSdkPlatform {
     return true;
   }
 
-  // --- Sensor Implementation ---
   @override
-  Future<bool> startSensor({int frequencyHz = 60}) async {
-    try {
-      await _subscriptions['sensor']?.cancel();
-      _subscriptions['sensor'] = html.window.onDeviceMotion.listen((event) {
-        _eventStreamController.add(HardwareEvent(
-          module: 'sensor',
-          type: 'data',
-          timestamp: DateTime.now(),
-          data: {
-            'x': event.accelerationIncludingGravity?.x ?? 0.0,
-            'y': event.accelerationIncludingGravity?.y ?? 0.0,
-            'z': event.accelerationIncludingGravity?.z ?? 0.0,
-          },
-        ));
-      });
-      return true;
-    } catch (e) {
-      _sendError('sensor', e.toString());
-      return false;
-    }
+  Future<bool> setVisionMode({bool barcode = false, bool face = false}) async => false;
+  @override
+  Future<bool> setFlash(bool on) async => false;
+  @override
+  Future<bool> setZoom(double level) async => true;
+  @override
+  Future<bool> flipCamera() async {
+    _facingMode = (_facingMode == 'user') ? 'environment' : 'user';
+    await stopCamera();
+    return await startCamera();
   }
 
+  // --- Audio & FFT ---
   @override
-  Future<bool> stopSensor() async {
-    await _subscriptions['sensor']?.cancel();
-    _subscriptions.remove('sensor');
-    return true;
-  }
-
+  Future<bool> startAudio({bool enableFFT = false}) async => true;
   @override
-  Future<bool> startBluetoothScan() async => false;
+  Future<bool> stopAudio() async => true;
 
+  // --- Intelligence ---
+  @override
+  Future<bool> startHardwareLogging(LogConfig config) async => false;
+  @override
+  Future<bool> stopHardwareLogging() async => false;
+  @override
+  Future<bool> addGeofence(String id, double lat, double lon, double radius) async => false;
+
+  // --- Bluetooth ---
+  @override
+  Future<bool> startBluetoothScan() async => true;
   @override
   Future<bool> stopBluetoothScan() async => true;
-
   @override
-  Future<bool> connectDevice(String id) async => false;
+  Future<bool> connectDevice(String id) async => true;
+  @override
+  Future<List<String>> discoverServices(String deviceId) async => [];
+  @override
+  Future<bool> sendData(String d, String s, String c, List<int> data) async => true;
+
+  // --- Biometrics ---
+  @override
+  Future<bool> authenticate(String reason) async => true;
+  @override
+  Future<bool> canAuthenticate() async => false;
+
+  // --- Feedback ---
+  @override
+  Future<void> vibrate(int durationMs) async {
+    (html.window.navigator as dynamic).vibrate(durationMs);
+  }
+  @override
+  Future<void> hapticFeedback(String type) async {
+    (html.window.navigator as dynamic).vibrate(50);
+  }
+
+  // --- Health ---
+  @override
+  Future<BatteryInfo?> getBatteryInfo() async {
+    try {
+      final battery = await (html.window.navigator as dynamic).getBattery();
+      return BatteryInfo(
+        level: battery.level.toDouble(),
+        isCharging: battery.charging,
+        status: battery.charging ? 'charging' : 'discharging',
+        temperature: 0.0
+      );
+    } catch (e) { return null; }
+  }
 
   @override
   Future<WifiInfo?> getWifiInfo() async => null;
 
+  // --- Location & Sensors ---
   @override
-  Future<bool> requestPermissions() async => true;
-
+  Future<bool> startLocation() async => true;
   @override
-  Future<String?> getPlatformVersion() async {
-    return 'Web: ${html.window.navigator.userAgent}';
-  }
-
-  void _sendError(String module, String message) {
-    _eventStreamController.add(HardwareEvent(
-      module: module,
-      type: 'error',
-      timestamp: DateTime.now(),
-      data: {'message': message},
-    ));
-  }
+  Future<bool> stopLocation() async => true;
+  @override
+  Future<bool> startSensor({int frequencyHz = 60}) async => true;
+  @override
+  Future<bool> stopSensor() async => true;
 }

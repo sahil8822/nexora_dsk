@@ -1,79 +1,101 @@
 import 'dart:typed_data';
 
-/// Represents a raw camera frame from native hardware.
-/// Contains the binary pixel data and resolution metadata.
+/// Represents a high-performance camera frame or a reference to a GPU texture.
 class CameraFrame {
-  /// The raw binary data of the frame.
-  final Uint8List bytes;
-  /// The width of the captured frame.
+  /// Raw image byte data. Null if [textureId] is being used for rendering.
+  final Uint8List? bytes;
+  
+  /// The ID of the native texture for zero-copy GPU rendering.
+  /// Use this with Flutter's [Texture] widget for ultra-low memory usage.
+  final int? textureId;
+  
+  /// Width of the captured image/texture.
   final int width;
-  /// The height of the captured frame.
+  
+  /// Height of the captured image/texture.
   final int height;
-  /// The format of the frame data (e.g., 'rgba', 'yuv').
+  
+  /// The pixel format of the data.
   final String format;
+  
+  /// Intelligent vision results (Face/Barcode) if AI mode is active.
+  final VisionResult? vision;
+  
+  CameraFrame({this.bytes, this.textureId, required this.width, required this.height, this.format = 'rgba', this.vision});
 
-  /// Constructs a [CameraFrame].
-  CameraFrame({required this.bytes, required this.width, required this.height, this.format = 'rgba'});
-
-  /// Creates a [CameraFrame] from a raw data map.
   factory CameraFrame.fromMap(Map<dynamic, dynamic> map) {
     return CameraFrame(
-      bytes: map['bytes'] as Uint8List,
+      bytes: map['bytes'] as Uint8List?,
+      textureId: map['textureId'] as int?,
       width: map['width'] as int,
       height: map['height'] as int,
       format: map['format'] as String,
+      vision: map['vision'] != null ? VisionResult.fromMap(map['vision']) : null,
     );
   }
 }
 
-/// Representation of a Bluetooth Low Energy (BLE) device found during scanning.
+// ... rest of the models remain same ...
+class VisionResult {
+  final List<String> barcodes;
+  final List<FaceData> faces;
+  VisionResult({this.barcodes = const [], this.faces = const []});
+  factory VisionResult.fromMap(Map<dynamic, dynamic> map) {
+    return VisionResult(
+      barcodes: (map['barcodes'] as List?)?.cast<String>() ?? [],
+      faces: (map['faces'] as List?)?.map((f) => FaceData.fromMap(f)).toList() ?? [],
+    );
+  }
+}
+class FaceData {
+  final double boundingBoxTop;
+  final double boundingBoxLeft;
+  final double? smileProb;
+  FaceData({required this.boundingBoxTop, required this.boundingBoxLeft, this.smileProb});
+  factory FaceData.fromMap(Map<dynamic, dynamic> map) {
+    return FaceData(
+      boundingBoxTop: (map['top'] as num).toDouble(),
+      boundingBoxLeft: (map['left'] as num).toDouble(),
+      smileProb: (map['smile'] as num?)?.toDouble(),
+    );
+  }
+}
+class AudioFrame {
+  final Uint8List bytes;
+  final List<double> spectrum; 
+  final int sampleRate;
+  AudioFrame({required this.bytes, required this.spectrum, required this.sampleRate});
+  factory AudioFrame.fromMap(Map<dynamic, dynamic> map) {
+    return AudioFrame(
+      bytes: map['bytes'] as Uint8List,
+      spectrum: (map['spectrum'] as List?)?.cast<double>() ?? [],
+      sampleRate: map['sampleRate'] as int,
+    );
+  }
+}
+class LogConfig {
+  final String fileName;
+  final bool includeSensors;
+  final bool includeGPS;
+  final int intervalMs;
+  LogConfig({this.fileName = "nexora_log.csv", this.includeSensors = true, this.includeGPS = true, this.intervalMs = 100});
+}
 class BleDevice {
-  /// The unique identifier or address of the device.
   final String id;
-  /// The advertised name of the device.
   final String name;
-  /// The signal strength in dBm.
   final int rssi;
-  /// Optional service-specific advertisement data.
-  final Map<String, dynamic>? serviceData;
-
-  /// Constructs a [BleDevice].
-  BleDevice({required this.id, required this.name, required this.rssi, this.serviceData});
-
-  /// Creates a [BleDevice] from a raw data map.
+  BleDevice({required this.id, required this.name, required this.rssi});
   factory BleDevice.fromMap(Map<dynamic, dynamic> map) {
-    return BleDevice(
-      id: map['id'] as String,
-      name: map['name'] as String? ?? 'Unknown',
-      rssi: map['rssi'] as int? ?? 0,
-      serviceData: (map['serviceData'] as Map?)?.cast<String, dynamic>(),
-    );
+    return BleDevice(id: map['id'] as String, name: map['name'] as String? ?? 'Unknown', rssi: map['rssi'] as int? ?? 0);
   }
 }
-
-/// High-accuracy GPS/Location data containing coordinates and precision.
 class LocationData {
-  /// Latitude in degrees.
   final double latitude;
-  /// Longitude in degrees.
   final double longitude;
-  /// Altitude in meters.
   final double altitude;
-  /// Horizontal accuracy in meters.
   final double accuracy;
-  /// Speed in meters per second.
   final double speed;
-
-  /// Constructs [LocationData].
-  LocationData({
-    required this.latitude,
-    required this.longitude,
-    required this.altitude,
-    required this.accuracy,
-    required this.speed,
-  });
-
-  /// Creates [LocationData] from a raw data map.
+  LocationData({required this.latitude, required this.longitude, required this.altitude, required this.accuracy, required this.speed});
   factory LocationData.fromMap(Map<dynamic, dynamic> map) {
     return LocationData(
       latitude: (map['latitude'] as num).toDouble(),
@@ -84,28 +106,33 @@ class LocationData {
     );
   }
 }
-
-/// Information about the current WiFi connection.
+class BatteryInfo {
+  final double level;
+  final bool isCharging;
+  final String status;
+  final double temperature;
+  BatteryInfo({required this.level, required this.isCharging, required this.status, required this.temperature});
+  factory BatteryInfo.fromMap(Map<dynamic, dynamic> map) {
+    return BatteryInfo(
+      level: (map['level'] as num).toDouble(),
+      isCharging: map['isCharging'] as bool,
+      status: map['status'] as String,
+      temperature: (map['temperature'] as num).toDouble(),
+    );
+  }
+}
 class WifiInfo {
-  /// The Service Set Identifier (SSID).
   final String ssid;
-  /// The Basic Service Set Identifier (BSSID).
   final String bssid;
-  /// Relative signal strength (0-100 or dBm depending on platform).
   final int signalStrength;
-  /// Current IPv4 address.
   final String ipAddress;
-
-  /// Constructs [WifiInfo].
   WifiInfo({required this.ssid, required this.bssid, required this.signalStrength, required this.ipAddress});
-
-  /// Creates [WifiInfo] from a raw data map.
   factory WifiInfo.fromMap(Map<dynamic, dynamic> map) {
     return WifiInfo(
-      ssid: map['ssid'] as String? ?? 'Unknown',
-      bssid: map['bssid'] as String? ?? 'Unknown',
-      signalStrength: map['signalStrength'] as int? ?? 0,
-      ipAddress: map['ipAddress'] as String? ?? '0.0.0.0',
+      ssid: map['ssid'] as String,
+      bssid: map['bssid'] as String,
+      signalStrength: map['signalStrength'] as int,
+      ipAddress: map['ipAddress'] as String,
     );
   }
 }

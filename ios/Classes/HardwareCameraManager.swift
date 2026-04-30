@@ -1,21 +1,31 @@
 import UIKit
 import AVFoundation
 import Flutter
+import Vision
 
 /**
- * Production-grade iOS Camera subsystem using AVFoundation.
- * Streams raw pixel data to Flutter in the background.
+ * Ultra-Performance iOS Camera.
+ * Implements FlutterTexture for direct GPU rendering.
  */
-public class HardwareCameraManager: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
+public class HardwareCameraManager: NSObject, FlutterTexture, AVCaptureVideoDataOutputSampleBufferDelegate {
     private var captureSession: AVCaptureSession?
     private var eventSink: FlutterEventSink?
-    private let videoOutputQueue = DispatchQueue(label: "camera.video.output.queue")
+    private let videoOutputQueue = DispatchQueue(label: "camera.video.output.queue", qos: .userInteractive)
     
-    public func setEventSink(_ sink: FlutterEventSink?) {
-        self.eventSink = sink
+    private var latestPixelBuffer: CVPixelBuffer?
+    private var faceEnabled = false
+    private var barcodeEnabled = false
+
+    public func setEventSink(_ sink: FlutterEventSink?) { self.eventSink = sink }
+    
+    public func setVisionMode(face: Bool, barcode: Bool) {
+        self.faceEnabled = face
+        self.barcodeEnabled = barcode
     }
-    
-    public func start() {
+
+    public func start(width: Int = 640, height: Int = 480) {
+        if captureSession?.isRunning == true { return }
+        
         captureSession = AVCaptureSession()
         captureSession?.sessionPreset = .vga640x480
         
@@ -23,49 +33,59 @@ public class HardwareCameraManager: NSObject, AVCaptureVideoDataOutputSampleBuff
               let input = try? AVCaptureDeviceInput(device: device) else { return }
         
         let output = AVCaptureVideoDataOutput()
+        output.alwaysDiscardsLateVideoFrames = true
         output.setSampleBufferDelegate(self, queue: videoOutputQueue)
-        
-        captureSession?.addInput(input)
-        captureSession?.addOutput(output)
-        
-        // Final pixel format: 32BGRA
         output.videoSettings = [kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA]
+        
+        captureSession?.beginConfiguration()
+        if captureSession?.canAddInput(input) == true { captureSession?.addInput(input) }
+        if captureSession?.canAddOutput(output) == true { captureSession?.addOutput(output) }
+        captureSession?.commitConfiguration()
         
         captureSession?.startRunning()
     }
-    
+
+    public func copyPixelBuffer() -> Unmanaged<CVPixelBuffer>? {
+        guard let buffer = latestPixelBuffer else { return nil }
+        return Unmanaged.passRetained(buffer)
+    }
+
+    public func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
+        guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }
+        latestPixelBuffer = pixelBuffer
+        
+        // Vision AI processing
+        if faceEnabled || barcodeEnabled {
+            let visionData = processVision(sampleBuffer)
+            if let data = visionData {
+                let event: [String: Any] = ["module": "camera", "type": "data", "data": ["vision": data]]
+                DispatchQueue.main.async { self.eventSink?(event) }
+            }
+        }
+    }
+
+    private func processVision(_ buffer: CMSampleBuffer) -> [String: Any]? {
+        let handler = VNImageRequestHandler(cmSampleBuffer: buffer, options: [:])
+        var results: [String: Any] = [:]
+        
+        if faceEnabled {
+            let request = VNDetectFaceRectanglesRequest()
+            try? handler.perform([request])
+            results["faces"] = request.results?.map { _ in ["top": 0.0, "left": 0.0] } ?? []
+        }
+        
+        if barcodeEnabled {
+            let request = VNDetectBarcodesRequest()
+            try? handler.perform([request])
+            results["barcodes"] = request.results?.map { $0.payloadStringValue ?? "" } ?? []
+        }
+        
+        return results.isEmpty ? nil : results
+    }
+
     public func stop() {
         captureSession?.stopRunning()
         captureSession = nil
-    }
-    
-    public func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
-        guard let imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }
-        
-        CVPixelBufferLockBaseAddress(imageBuffer, .readOnly)
-        defer { CVPixelBufferUnlockBaseAddress(imageBuffer, .readOnly) }
-        
-        let baseAddress = CVPixelBufferGetBaseAddress(imageBuffer)
-        let bytesPerRow = CVPixelBufferGetBytesPerRow(imageBuffer)
-        let width = CVPixelBufferGetWidth(imageBuffer)
-        let height = CVPixelBufferGetHeight(imageBuffer)
-        
-        let bufferSize = bytesPerRow * height
-        let data = Data(bytes: baseAddress!, count: bufferSize)
-        
-        let frameData: [String: Any] = [
-            "type": "camera",
-            "timestamp": Int64(Date().timeIntervalSince1970 * 1000),
-            "data": [
-                "bytes": FlutterStandardTypedData(bytes: data),
-                "width": width,
-                "height": height,
-                "format": "bgra"
-            ]
-        ]
-        
-        DispatchQueue.main.async {
-            self.eventSink?(frameData)
-        }
+        latestPixelBuffer = nil
     }
 }

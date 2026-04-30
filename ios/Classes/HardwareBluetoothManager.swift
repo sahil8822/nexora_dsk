@@ -3,19 +3,19 @@ import Flutter
 
 /**
  * CoreBluetooth implementation for iOS.
- * Background scanning and device discovery.
+ * Supports Nexora Pro: GATT Service Discovery and Characteristic Write operations.
  */
 public class HardwareBluetoothManager: NSObject, CBCentralManagerDelegate {
     private var centralManager: CBCentralManager?
     private var eventSink: FlutterEventSink?
+    private var connectedPeripheral: CBPeripheral?
+    private var serviceDiscoveryCallback: (([String]) -> Void)?
     
     public override init() {
         super.init()
         centralManager = CBCentralManager(delegate: self, queue: nil)
     }
     
-    private var connectedPeripheral: CBPeripheral?
-
     public func setEventSink(_ sink: FlutterEventSink?) {
         self.eventSink = sink
     }
@@ -38,6 +38,24 @@ public class HardwareBluetoothManager: NSObject, CBCentralManagerDelegate {
         centralManager?.connect(peripheral, options: nil)
     }
 
+    public func discoverServices(deviceId: String, callback: @escaping ([String]) -> Void) {
+        guard let peripheral = connectedPeripheral, peripheral.identifier.uuidString == deviceId else {
+            callback([])
+            return
+        }
+        self.serviceDiscoveryCallback = callback
+        peripheral.discoverServices(nil)
+    }
+
+    public func sendData(deviceId: String, serviceId: String, charId: String, data: Data) {
+        guard let peripheral = connectedPeripheral, peripheral.identifier.uuidString == deviceId else { return }
+        
+        guard let service = peripheral.services?.first(where: { $0.uuid.uuidString == serviceId }),
+              let char = service.characteristics?.first(where: { $0.uuid.uuidString == charId }) else { return }
+        
+        peripheral.writeValue(data, for: char, type: .withResponse)
+    }
+
     public func disconnect() {
         if let peripheral = connectedPeripheral {
             centralManager?.cancelPeripheralConnection(peripheral)
@@ -45,28 +63,24 @@ public class HardwareBluetoothManager: NSObject, CBCentralManagerDelegate {
     }
     
     public func centralManagerDidUpdateState(_ central: CBCentralManager) {
-        // Handle power states
+        // Handle state
     }
     
     public func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {
         let deviceData: [String: Any] = [
-            "type": "bluetooth",
-            "timestamp": Int64(Date().timeIntervalSince1970 * 1000),
+            "module": "bluetooth",
+            "type": "data",
             "data": [
                 "id": peripheral.identifier.uuidString,
                 "name": peripheral.name ?? "Unknown",
                 "rssi": RSSI.intValue
             ]
         ]
-        
-        DispatchQueue.main.async {
-            self.eventSink?(deviceData)
-        }
+        DispatchQueue.main.async { self.eventSink?(deviceData) }
     }
 
     public func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
         sendBluetoothStatus(id: peripheral.identifier.uuidString, state: "connected")
-        peripheral.discoverServices(nil)
     }
 
     public func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
@@ -76,19 +90,27 @@ public class HardwareBluetoothManager: NSObject, CBCentralManagerDelegate {
 
     private func sendBluetoothStatus(id: String, state: String) {
         let statusData: [String: Any] = [
-            "type": "bluetooth_status",
-            "timestamp": Int64(Date().timeIntervalSince1970 * 1000),
+            "module": "bluetooth",
+            "type": "status",
             "data": [
                 "id": id,
                 "state": state
             ]
         ]
-        DispatchQueue.main.async {
-            self.eventSink?(statusData)
-        }
+        DispatchQueue.main.async { self.eventSink?(statusData) }
     }
 }
 
 extension HardwareBluetoothManager: CBPeripheralDelegate {
-    // Add peripheral delegate methods if needed for characteristics
+    public func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
+        let uuids = peripheral.services?.map { $0.uuid.uuidString } ?? []
+        DispatchQueue.main.async {
+            self.serviceDiscoveryCallback?(uuids)
+            self.serviceDiscoveryCallback = nil
+        }
+    }
+
+    public func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
+        // Handle characteristics discovery if needed
+    }
 }

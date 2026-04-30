@@ -1,20 +1,20 @@
-import 'dart:async';
-import 'package:nexora_sdk/models/hardware_models.dart';
 import '../../nexora_sdk_platform_interface.dart';
+import '../../models/hardware_models.dart';
 
-/// Module for high-accuracy GPS and location tracking.
-/// Uses fused location providers for better battery efficiency.
+/// Module for high-accuracy GPS tracking and Geofencing.
 class LocationModule {
-  /// Internal constructor.
-  LocationModule();
-
-  /// Stream of real-time [LocationData] (latitude, longitude, etc.).
-  Stream<LocationData> get stream => NexoraSdkPlatform.instance.locationStream;
-
-  /// Starts the location tracking service.
-  /// May request background execution if configured.
+  /// Starts real-time location updates. Coordinates are delivered via the [stream].
   Future<bool> start() => NexoraSdkPlatform.instance.startLocation();
 
-  /// Stops location updates and releases hardware resources.
+  /// Stops all location updates and releases the GPS hardware.
   Future<bool> stop() => NexoraSdkPlatform.instance.stopLocation();
+
+  /// Adds a virtual circular boundary trigger at the specified coordinates.
+  /// 
+  /// Triggers will be handled by the background intelligence system.
+  Future<bool> addGeofence(String id, double lat, double lon, double radius) =>
+      NexoraSdkPlatform.instance.addGeofence(id, lat, lon, radius);
+
+  /// A stream of real-time [LocationData] telemetry.
+  Stream<LocationData> get stream => NexoraSdkPlatform.instance.locationStream;
 }

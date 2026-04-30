@@ -1,41 +1,38 @@
 import Flutter
-import UIKit
 
 /**
- * Unified Stream Hub for all iOS hardware subsystems.
- * Directs global event delivery and manages native lifecycle connections.
+ * Unified stream handler for iOS hardware events.
  */
 public class HardwareStreamHandler: NSObject, FlutterStreamHandler {
-    private var eventSink: FlutterEventSink?
-    
-    // Subsystems
     private let camera: HardwareCameraManager
     private let bluetooth: HardwareBluetoothManager
     private let location: HardwareLocationManager
     private let sensor: HardwareSensorManager
-    
-    public init(camera: HardwareCameraManager, bluetooth: HardwareBluetoothManager, location: HardwareLocationManager, sensor: HardwareSensorManager) {
+    private let audio: HardwareAudioManager
+
+    init(camera: HardwareCameraManager, bluetooth: HardwareBluetoothManager, location: HardwareLocationManager, sensor: HardwareSensorManager, audio: HardwareAudioManager) {
         self.camera = camera
         self.bluetooth = bluetooth
         self.location = location
         self.sensor = sensor
+        self.audio = audio
     }
-    
+
     public func onListen(withArguments arguments: Any?, eventSink events: @escaping FlutterEventSink) -> FlutterError? {
-        self.eventSink = events
         camera.setEventSink(events)
         bluetooth.setEventSink(events)
         location.setEventSink(events)
         sensor.setEventSink(events)
+        audio.setEventSink(events)
         return nil
     }
-    
+
     public func onCancel(withArguments arguments: Any?) -> FlutterError? {
-        self.eventSink = nil
         camera.setEventSink(nil)
         bluetooth.setEventSink(nil)
         location.setEventSink(nil)
         sensor.setEventSink(nil)
+        audio.setEventSink(nil)
         return nil
     }
 }

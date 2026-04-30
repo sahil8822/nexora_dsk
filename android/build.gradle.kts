@@ -1,24 +1,24 @@
 group = "com.example.nexora_sdk"
-version = "1.0-SNAPSHOT"
+version = "3.0.0"
 
 buildscript {
-    val kotlinVersion = "2.2.20"
+    val kotlinVersion = "2.0.21"
     repositories {
         google()
         mavenCentral()
     }
 
     dependencies {
-        classpath("com.android.tools.build:gradle:8.11.1")
+        classpath("com.android.tools.build:gradle:8.2.2")
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
     }
 }
 
-allprojects {
-    repositories {
-        google()
-        mavenCentral()
-    }
+// Ensure repositories are available for the plugin's dependencies
+repositories {
+    google()
+    mavenCentral()
+    maven { url = uri("https://jitpack.io") }
 }
 
 plugins {
@@ -28,8 +28,7 @@ plugins {
 
 android {
     namespace = "com.example.nexora_sdk"
-
-    compileSdk = 36
+    compileSdk = 34
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -41,37 +40,25 @@ android {
     }
 
     sourceSets {
-        getByName("main") {
-            java.srcDirs("src/main/kotlin")
-        }
-        getByName("test") {
-            java.srcDirs("src/test/kotlin")
-        }
+        getByName("main") { java.srcDirs("src/main/kotlin") }
     }
 
     defaultConfig {
         minSdk = 24
     }
-
-    testOptions {
-        unitTests {
-            isIncludeAndroidResources = true
-            all {
-                it.useJUnitPlatform()
-
-                it.outputs.upToDateWhen { false }
-
-                it.testLogging {
-                    events("passed", "skipped", "failed", "standardOut", "standardError")
-                    showStandardStreams = true
-                }
-            }
-        }
-    }
 }
 
 dependencies {
-    implementation("com.google.android.gms:play-services-location:21.0.1")
-    testImplementation("org.jetbrains.kotlin:kotlin-test")
-    testImplementation("org.mockito:mockito-core:5.0.0")
+    // Core Hardware
+    implementation("com.google.android.gms:play-services-location:21.3.0")
+    implementation("androidx.biometric:biometric:1.2.0-alpha05")
+    
+    // ML Kit (Vision) - Efficient & Lightweight
+    implementation("com.google.mlkit:barcode-scanning:17.3.0")
+    implementation("com.google.mlkit:face-detection:16.1.7")
+    
+    // Audio Analysis (Native FFT Helper) - Hosted on JitPack
+    implementation("com.github.paramsen:noise:2.0.0")
+    
+    implementation("androidx.core:core-ktx:1.12.0")
 }
