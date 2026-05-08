@@ -14,32 +14,51 @@ void main() {
       expect(version?.isNotEmpty, true);
     });
 
-    testWidgets('Ultra-Performance Camera (Texture) test', (WidgetTester tester) async {
+    testWidgets('Ultra-Performance Camera (Texture) test', (
+      WidgetTester tester,
+    ) async {
       // Should return a native texture ID (int) instead of just bool
       final textureId = await sdk.camera.start();
-      expect(textureId, anyOf([isA<int>(), isNull])); // Null if no camera hardware found
+      expect(
+        textureId,
+        anyOf([isA<int>(), isNull]),
+      ); // Null if no camera hardware found
       await sdk.camera.stop();
     });
 
-    testWidgets('AI Vision Mode configuration test', (WidgetTester tester) async {
+    testWidgets('AI Vision Mode configuration test', (
+      WidgetTester tester,
+    ) async {
       final success = await sdk.setVisionMode(face: true, barcode: true);
       expect(success, true);
     });
 
-    testWidgets('Native FFT Audio initialization test', (WidgetTester tester) async {
+    testWidgets('Native FFT Audio initialization test', (
+      WidgetTester tester,
+    ) async {
       final success = await sdk.startAudioWithAnalysis();
       expect(success, isNotNull);
       await sdk.audio.stop();
     });
 
-    testWidgets('Background Hardware Logging test', (WidgetTester tester) async {
-      final success = await sdk.startLogging(LogConfig(fileName: "test_log.csv"));
+    testWidgets('Background Hardware Logging test', (
+      WidgetTester tester,
+    ) async {
+      final success = await sdk.startLogging(
+        LogConfig(fileName: "test_log.csv"),
+      );
       expect(success, true);
       await sdk.stopLogging();
     });
 
     testWidgets('Geofence Registration test', (WidgetTester tester) async {
-      final success = await sdk.addGeofence("test_zone", 37.422, -122.084, 100.0);
+      await sdk.location.setBackgroundEnabled(true);
+      final success = await sdk.addGeofence(
+        "test_zone",
+        37.422,
+        -122.084,
+        100.0,
+      );
       expect(success, true);
     });
   });

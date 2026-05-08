@@ -20,22 +20,31 @@ public class HardwareBluetoothManager: NSObject, CBCentralManagerDelegate {
         self.eventSink = sink
     }
     
-    public func startScan() {
-        centralManager?.scanForPeripherals(withServices: nil, options: nil)
-    }
-    
-    public func stopScan() {
-        centralManager?.stopScan()
+    public func isReady() -> Bool {
+        return centralManager?.state == .poweredOn
     }
 
-    public func connect(deviceId: String) {
+    public func startScan() -> Bool {
+        guard isReady() else { return false }
+        centralManager?.scanForPeripherals(withServices: nil, options: nil)
+        return true
+    }
+    
+    public func stopScan() -> Bool {
+        centralManager?.stopScan()
+        return true
+    }
+
+    public func connect(deviceId: String) -> Bool {
+        guard isReady() else { return false }
         guard let uuid = UUID(uuidString: deviceId),
               let peripherals = centralManager?.retrievePeripherals(withIdentifiers: [uuid]),
-              let peripheral = peripherals.first else { return }
+              let peripheral = peripherals.first else { return false }
         
         self.connectedPeripheral = peripheral
         peripheral.delegate = self
         centralManager?.connect(peripheral, options: nil)
+        return true
     }
 
     public func discoverServices(deviceId: String, callback: @escaping ([String]) -> Void) {
@@ -47,13 +56,15 @@ public class HardwareBluetoothManager: NSObject, CBCentralManagerDelegate {
         peripheral.discoverServices(nil)
     }
 
-    public func sendData(deviceId: String, serviceId: String, charId: String, data: Data) {
-        guard let peripheral = connectedPeripheral, peripheral.identifier.uuidString == deviceId else { return }
+    public func sendData(deviceId: String, serviceId: String, charId: String, data: Data) -> Bool {
+        guard isReady() else { return false }
+        guard let peripheral = connectedPeripheral, peripheral.identifier.uuidString == deviceId else { return false }
         
         guard let service = peripheral.services?.first(where: { $0.uuid.uuidString == serviceId }),
-              let char = service.characteristics?.first(where: { $0.uuid.uuidString == charId }) else { return }
+              let char = service.characteristics?.first(where: { $0.uuid.uuidString == charId }) else { return false }
         
         peripheral.writeValue(data, for: char, type: .withResponse)
+        return true
     }
 
     public func disconnect() {

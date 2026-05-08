@@ -1,8 +1,8 @@
 name: nexora_sdk
-description: "A high-performance, production-ready Flutter hardware SDK for Camera, Bluetooth LE, Location, and Sensors with unified permission management."
-version: 3.0.0
-homepage: https://github.com/sahil8822/my_hardware_plugin
-repository: https://github.com/sahil8822/my_hardware_plugin
+description: "A cross-platform Flutter hardware SDK with native Android/iOS hardware APIs plus safe web and desktop fallbacks."
+version: 3.1.0
+homepage: https://github.com/sahil8822/nexora_sdk
+repository: https://github.com/sahil8822/nexora_sdk
 topics:
   - hardware
   - camera
@@ -17,9 +17,9 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  plugin_platform_interface: ^2.0.2
   flutter_web_plugins:
     sdk: flutter
+  plugin_platform_interface: ^2.1.8
 
 dev_dependencies:
   flutter_test:
@@ -44,19 +44,22 @@ flutter:
   plugin:
     platforms:
       android:
-        package: com.example.nexora_sdk
+        package: com.nexora.sdk
         pluginClass: NexoraSdk
       ios:
         pluginClass: NexoraSdk
+      macos:
+        dartPluginClass: NexoraSdkDesktop
+        fileName: nexora_sdk_desktop.dart
+      windows:
+        dartPluginClass: NexoraSdkDesktop
+        fileName: nexora_sdk_desktop.dart
+      linux:
+        dartPluginClass: NexoraSdkDesktop
+        fileName: nexora_sdk_desktop.dart
       web:
         pluginClass: NexoraSdkWeb
         fileName: nexora_sdk_web.dart
-      windows:
-        pluginClass: NexoraSdkPlugin
-      macos:
-        pluginClass: NexoraSdk
-      linux:
-        pluginClass: NexoraSdkPlugin
 
   # To add assets to your plugin package, add an assets section, like this:
   # assets:

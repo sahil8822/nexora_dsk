@@ -1,65 +1,91 @@
-# Nexora SDK 🚀 (v3.0.0)
+# Nexora SDK
 
-[![pub package](https://img.shields.io/pub/v/nexora_sdk.svg)](https://pub.dev/packages/nexora_sdk)
-[![Aesthetics](https://img.shields.io/badge/Aesthetics-Ultimate-blueviola.svg)](#)
+Nexora SDK is a cross-platform Flutter plugin for hardware features. It provides a single Dart API for camera preview, native vision results, audio capture with FFT data, BLE scanning and GATT operations, location updates, geofencing, biometrics, haptics, device health, and app-private storage.
 
-**Nexora SDK** is a high-performance, production-ready Flutter hardware engine. It provides a unified, intelligent interface for all mobile hardware with zero-copy GPU rendering and native AI processing.
+## Platform Support
 
-## 🧠 The Intelligence Update (v3.0)
+| Platform | Status |
+| --- | --- |
+| Android | Supported |
+| iOS | Supported |
+| Web | Supported with safe Dart fallbacks |
+| macOS, Windows, Linux | Supported with safe Dart fallbacks |
 
-Nexora v3.0 brings native-level intelligence to your hardware integrations:
+Android and iOS use native hardware implementations. Web and desktop register lightweight Dart implementations so apps compile and run on every Flutter platform; hardware APIs that need platform-native integrations return safe unsupported values such as `false`, `null`, or an empty list. Desktop storage uses local files, and web storage uses an in-memory fallback.
 
-*   **👁️ Smart Vision AI**: Native background face detection and barcode scanning (Powered by Google ML Kit & Apple Vision).
-*   **📊 Audio Analysis (FFT)**: Real-time frequency spectrum analysis using native signal processing.
-*   **📡 Background Geofencing**: Trigger intelligent responses when devices enter or exit geographical boundaries.
-*   **⚡ Zero-Copy Preview**: Ultra-performance GPU texture rendering for camera previews with minimal CPU/Memory load.
-*   **📑 Hardware Telemetry**: Automated background logging of device health, thermal, and sensor data.
+## Permissions
 
-## 📦 Key Features
+Nexora SDK does not depend on `permission_handler`. Runtime permissions are requested by the native Android and iOS plugin code through:
 
-| Module | Capability | Support |
-|--------|------------|---------|
-| **Camera** | 4K Streaming, AI Vision, GPU Textures, Zoom, Flash | Android, iOS, Web |
-| **Bluetooth** | BLE Scanning, GATT, Multi-device connection | Android, iOS |
-| **Biometrics** | FaceID, Fingerprint, Secure Auth | Android, iOS |
-| **Audio** | Raw PCM, FFT Spectrum, Native processing | Android, iOS |
-| **Location** | High-accuracy GPS, Geofencing, Background updates | Android, iOS |
-| **Sensors** | Accelerometer, Gyroscope (Up to 100Hz) | Android, iOS |
-| **Health** | Battery state, Thermal, Network diagnostics | Android, iOS |
+```dart
+final sdk = NexoraSdk.instance;
+final granted = await sdk.requestPermissions();
+```
 
-## 🚀 Quick Start
+The native request covers camera, microphone, foreground location, and Bluetooth runtime permissions where Android or iOS requires them. Apps must still provide the normal Android manifest entries and iOS usage descriptions. The bundled example app shows the required iOS `Info.plist` keys.
 
-### Initialize Intelligence
+You can also request one module at a time:
+
+```dart
+await sdk.requestCameraPermission();
+await sdk.requestAudioPermission();
+await sdk.requestLocationPermission();
+await sdk.requestBluetoothPermission();
+```
+
+Background location is disabled by default. If your app needs geofencing in the background, enable it explicitly and add the platform-specific background permission, background mode, and review disclosures in the host app.
+
+```dart
+await sdk.location.setBackgroundEnabled(true);
+await sdk.addGeofence('office', 37.422, -122.084, 100);
+```
+
+## Quick Start
+
 ```dart
 final sdk = NexoraSdk.instance;
 
-// Request all hardware permissions at once
-bool granted = await sdk.requestPermissions();
-```
+final granted = await sdk.requestPermissions();
+if (!granted) {
+  return;
+}
 
-### Smart Vision Preview
-```dart
-// Start camera and get GPU Texture ID
-final int? textureId = await sdk.camera.start();
-
-// Enable AI Processing
+final textureId = await sdk.camera.start();
 await sdk.setVisionMode(face: true, barcode: true);
-
-// Show in UI
-Texture(textureId: textureId)
 ```
 
-### Real-time Audio Spectrum
+The default camera preview request is HD (1280x720). You can choose a preset or pass a custom size:
+
 ```dart
-await sdk.startAudioWithAnalysis();
+final textureId = await sdk.camera.start(quality: CameraQuality.fullHd);
+// or
+final textureId = await sdk.camera.start(width: 1920, height: 1080);
+```
+
+Show the camera preview with Flutter's `Texture` widget:
+
+```dart
+if (textureId != null) {
+  Texture(textureId: textureId);
+}
+```
+
+Start lightweight audio analysis. Raw PCM bytes are off by default; enable them only if your app needs waveform samples.
+
+```dart
+await sdk.startAudioWithAnalysis(updateIntervalMs: 80);
 
 sdk.audio.stream.listen((frame) {
-  print(frame.spectrum); // Visualizer ready!
+  final spectrum = frame.spectrum;
 });
 ```
 
-## 🛠️ Performance & Design
-Nexora is built for "Heavy Builds". It offloads all heavy computations to native worker threads, ensuring your Flutter UI stays at a consistent 60 FPS.
+For waveform data:
 
-## 📝 License
-MIT License - Created with ❤️ for the Flutter Community.
+```dart
+await sdk.audio.start(streamBytes: true, updateIntervalMs: 40);
+```
+
+## Notes
+
+Hardware APIs are permission-sensitive and device-sensitive. Methods that require permission now return a native `PERMISSION_DENIED` error instead of silently pretending to work.

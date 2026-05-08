@@ -1,12 +1,9 @@
 import UIKit
+import AudioToolbox
 
-/**
- * iOS Feedback Manager for Haptics and Vibrations.
- */
+/// iOS Feedback Manager for Haptics and Vibrations.
 public class HardwareFeedbackManager {
     public func vibrate(duration: Int) {
-        // iOS doesn't support custom duration for standard vibration easily, 
-        // we use the system sound for short vibration
         AudioServicesPlaySystemSound(kSystemSoundID_Vibrate)
     }
 
@@ -14,15 +11,19 @@ public class HardwareFeedbackManager {
         switch type {
         case "impact":
             let generator = UIImpactFeedbackGenerator(style: .medium)
+            generator.prepare()
             generator.impactOccurred()
         case "success":
             let generator = UINotificationFeedbackGenerator()
+            generator.prepare()
             generator.notificationOccurred(.success)
         case "warning":
             let generator = UINotificationFeedbackGenerator()
+            generator.prepare()
             generator.notificationOccurred(.warning)
         case "error":
             let generator = UINotificationFeedbackGenerator()
+            generator.prepare()
             generator.notificationOccurred(.error)
         default:
             break

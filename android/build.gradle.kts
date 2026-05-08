@@ -1,5 +1,5 @@
-group = "com.example.nexora_sdk"
-version = "3.0.0"
+group = "com.nexora.sdk"
+version = "3.1.0"
 
 buildscript {
     val kotlinVersion = "2.0.21"
@@ -27,7 +27,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.nexora_sdk"
+    namespace = "com.nexora.sdk"
     compileSdk = 34
 
     compileOptions {

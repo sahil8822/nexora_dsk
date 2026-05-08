@@ -7,7 +7,8 @@ class FeedbackModule {
       NexoraSdkPlatform.instance.vibrate(durationMs);
 
   /// Triggers a native haptic pattern.
-  /// 
+  ///
   /// Supported [type] values: 'impact', 'success', 'warning', 'error'.
-  Future<void> haptic(String type) => NexoraSdkPlatform.instance.hapticFeedback(type);
+  Future<void> haptic(String type) =>
+      NexoraSdkPlatform.instance.hapticFeedback(type);
 }

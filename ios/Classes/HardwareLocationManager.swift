@@ -7,15 +7,21 @@ import Flutter
 public class HardwareLocationManager: NSObject, CLLocationManagerDelegate {
     private let locationManager = CLLocationManager()
     private var eventSink: FlutterEventSink?
+    private var backgroundEnabled = false
 
     public override init() {
         super.init()
         locationManager.delegate = self
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
-        locationManager.allowsBackgroundLocationUpdates = true
+        locationManager.allowsBackgroundLocationUpdates = false
     }
 
     public func setEventSink(_ sink: FlutterEventSink?) { self.eventSink = sink }
+
+    public func setBackgroundEnabled(_ enabled: Bool) {
+        backgroundEnabled = enabled
+        locationManager.allowsBackgroundLocationUpdates = enabled
+    }
 
     public func startUpdates() {
         locationManager.startUpdatingLocation()
@@ -25,12 +31,14 @@ public class HardwareLocationManager: NSObject, CLLocationManagerDelegate {
         locationManager.stopUpdatingLocation()
     }
 
-    public func addGeofence(id: String, lat: Double, lon: Double, radius: Double) {
+    public func addGeofence(id: String, lat: Double, lon: Double, radius: Double) -> Bool {
+        guard backgroundEnabled else { return false }
         let center = CLLocationCoordinate2D(latitude: lat, longitude: lon)
         let region = CLCircularRegion(center: center, radius: radius, identifier: id)
         region.notifyOnEntry = true
         region.notifyOnExit = true
         locationManager.startMonitoring(for: region)
+        return true
     }
 
     public func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {

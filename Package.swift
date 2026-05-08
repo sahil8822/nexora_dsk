@@ -4,8 +4,7 @@ import PackageDescription
 let package = Package(
     name: "nexora_sdk",
     platforms: [
-        .iOS(.v12),
-        .macOS(.v10_14)
+        .iOS(.v13)
     ],
     products: [
         .library(name: "nexora-sdk", targets: ["nexora_sdk"])

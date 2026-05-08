@@ -4,7 +4,7 @@ import '../../core/hardware_core.dart';
 /// Module for motion and environmental hardware sensors.
 class SensorModule {
   /// Starts the accelerometer and gyroscope at the specified [frequencyHz].
-  /// 
+  ///
   /// High frequency (e.g. 100Hz) is recommended for motion analysis.
   Future<bool> start({int frequencyHz = 60}) =>
       NexoraSdkPlatform.instance.startSensor(frequencyHz: frequencyHz);

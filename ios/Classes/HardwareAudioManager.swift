@@ -1,6 +1,7 @@
 import AVFoundation
 import Flutter
 import Accelerate
+import QuartzCore
 
 /**
  * iOS Audio Manager with Native FFT Analysis (Accelerate Framework).
@@ -9,6 +10,9 @@ public class HardwareAudioManager {
     private let audioEngine = AVAudioEngine()
     private var eventSink: FlutterEventSink?
     private var fftEnabled = false
+    private var streamBytes = false
+    private var updateIntervalMs = 80.0
+    private var lastEventTime = CACurrentMediaTime()
     
     // FFT Vars
     private let fftSize = 1024
@@ -16,8 +20,13 @@ public class HardwareAudioManager {
 
     public func setEventSink(_ sink: FlutterEventSink?) { self.eventSink = sink }
     public func setFFTEnabled(_ enabled: Bool) { self.fftEnabled = enabled }
+    public func setStreamBytes(_ enabled: Bool) { self.streamBytes = enabled }
+    public func setUpdateIntervalMs(_ interval: Int) {
+        self.updateIntervalMs = Double(max(16, min(interval, 1000)))
+    }
 
     public func start() -> Bool {
+        if audioEngine.isRunning { return true }
         let inputNode = audioEngine.inputNode
         let format = inputNode.outputFormat(forBus: 0)
         
@@ -34,20 +43,25 @@ public class HardwareAudioManager {
     private func processAudio(_ buffer: AVAudioPCMBuffer) {
         guard let channelData = buffer.floatChannelData?[0] else { return }
         let frameCount = Int(buffer.frameLength)
+        let now = CACurrentMediaTime()
+        guard (now - lastEventTime) * 1000.0 >= updateIntervalMs else { return }
+        lastEventTime = now
         
         var spectrum: [Float] = []
         if fftEnabled && frameCount >= fftSize {
             spectrum = calculateFFT(channelData)
         }
 
-        let data = Data(bytes: channelData, count: frameCount * MemoryLayout<Float>.size)
+        var frame: [String: Any] = [
+            "spectrum": spectrum,
+            "sampleRate": Int(buffer.format.sampleRate)
+        ]
+        if streamBytes {
+            frame["bytes"] = FlutterStandardTypedData(bytes: Data(bytes: channelData, count: frameCount * MemoryLayout<Float>.size))
+        }
         let audioData: [String: Any] = [
             "module": "audio", "type": "data",
-            "data": [
-                "bytes": FlutterStandardTypedData(bytes: data),
-                "spectrum": spectrum,
-                "sampleRate": Int(buffer.format.sampleRate)
-            ]
+            "data": frame
         ]
         DispatchQueue.main.async { self.eventSink?(audioData) }
     }

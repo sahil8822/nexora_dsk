@@ -1,86 +1,123 @@
+import 'dart:async';
+import 'nexora_sdk_platform_interface.dart';
 import 'modules/camera/camera_module.dart';
+import 'modules/audio/audio_module.dart';
+import 'modules/sensor/sensor_module.dart';
 import 'modules/bluetooth/bluetooth_module.dart';
 import 'modules/location/location_module.dart';
-import 'modules/sensor/sensor_module.dart';
 import 'modules/biometric/biometric_module.dart';
-import 'modules/audio/audio_module.dart';
 import 'modules/feedback/feedback_module.dart';
 import 'modules/health/health_module.dart';
-import 'nexora_sdk_platform_interface.dart';
+import 'modules/storage/storage_module.dart';
 import 'models/hardware_models.dart';
 
-/// The main entry point for the Nexora SDK v3.0 (Intelligence Edition).
+export 'nexora_sdk_desktop_stub.dart'
+    if (dart.library.io) 'nexora_sdk_desktop.dart';
+export 'nexora_sdk_web_stub.dart'
+    if (dart.library.html) 'nexora_sdk_web.dart';
+
+/// Nexora SDK (v3.1.0) - Intelligence + Storage Edition.
 ///
-/// Nexora provides a unified, high-performance interface for all mobile hardware 
-/// including Camera, Bluetooth LE, Biometrics, GPS, and native AI Vision.
+/// A world-class, lightweight hardware toolkit for Flutter.
+/// Provides unified access to Camera, Audio, GPS, Bluetooth, Biometrics,
+/// Sensors, Health Diagnostics, and now device Storage.
 class NexoraSdk {
   NexoraSdk._();
-  
-  /// The singleton instance of the [NexoraSdk].
   static final NexoraSdk instance = NexoraSdk._();
 
-  /// Advanced Camera controls and high-frequency frame streaming.
+  /// Vision AI camera module with face/barcode detection.
   final camera = CameraModule();
-  
-  /// Professional Bluetooth Low Energy (BLE) management and GATT communication.
-  final bluetooth = BluetoothModule();
-  
-  /// High-accuracy Location (GPS) tracking and background Geofencing.
-  final location = LocationModule();
-  
-  /// Motion (Accelerometer/Gyro) and environmental sensor management.
-  final sensor = SensorModule();
 
-  /// Secure Biometric authentication (FaceID/Fingerprint) with system dialogs.
-  final biometrics = BiometricModule();
-
-  /// Raw PCM Audio streaming and real-time FFT frequency analysis.
+  /// Audio capture with real-time FFT spectrum analysis.
   final audio = AudioModule();
 
-  /// Tactile Haptic feedback and timed vibration patterns.
+  /// Motion sensor (accelerometer/gyroscope) module.
+  final sensors = SensorModule();
+
+  /// Bluetooth Low Energy (BLE) scanning and GATT operations.
+  final bluetooth = BluetoothModule();
+
+  /// High-accuracy GPS with geofencing support.
+  final location = LocationModule();
+
+  /// Biometric authentication (Face ID / Fingerprint).
+  final biometrics = BiometricModule();
+
+  /// Haptic feedback and vibration control.
   final feedback = FeedbackModule();
 
-  /// Real-time Battery health, Thermal state, and Network diagnostics.
+  /// Battery health, WiFi diagnostics, and telemetry logging.
   final health = HealthModule();
 
-  // --- Intelligence API ---
+  /// Lightweight file I/O, storage info, and cache management.
+  final storage = StorageModule();
 
-  /// Enables real-time AI processing on the camera stream.
-  /// 
-  /// Set [face] to true for face detection and [barcode] to true for 
-  /// QR/Barcode scanning. Processing occurs on native background threads.
-  Future<bool> setVisionMode({bool face = false, bool barcode = false}) =>
-      NexoraSdkPlatform.instance.setVisionMode(face: face, barcode: barcode);
+  /// Requests all necessary hardware permissions at once.
+  ///
+  /// Native Android/iOS code shows system prompts for Camera, Microphone,
+  /// foreground Location, and Bluetooth where the OS supports runtime prompts.
+  /// Returns [true] when the critical runtime permissions are granted.
+  Future<bool> requestPermissions() async {
+    return NexoraSdkPlatform.instance.requestPermissions();
+  }
 
-  /// Enables native FFT (Fast Fourier Transform) analysis for the microphone.
-  /// 
-  /// When active, the [audio.stream] will include frequency spectrum data.
-  Future<bool> startAudioWithAnalysis() =>
-      NexoraSdkPlatform.instance.startAudio(enableFFT: true);
+  /// Requests only camera permission.
+  Future<bool> requestCameraPermission() {
+    return NexoraSdkPlatform.instance.requestCameraPermission();
+  }
 
-  /// Starts automated hardware telemetry logging to a local CSV file.
-  /// 
-  /// Use [config] to specify the file name and update frequency.
-  Future<bool> startLogging(LogConfig config) =>
-      NexoraSdkPlatform.instance.startHardwareLogging(config);
+  /// Requests only microphone/audio permission.
+  Future<bool> requestAudioPermission() {
+    return NexoraSdkPlatform.instance.requestAudioPermission();
+  }
 
-  /// Stops the background hardware logging process.
-  Future<bool> stopLogging() =>
-      NexoraSdkPlatform.instance.stopHardwareLogging();
+  /// Requests only foreground location permission.
+  Future<bool> requestLocationPermission() {
+    return NexoraSdkPlatform.instance.requestLocationPermission();
+  }
 
-  /// Adds a circular Geofence for location-based background triggers.
-  /// 
-  /// Requires [lat] (Latitude), [lon] (Longitude), and [radius] in meters.
-  Future<bool> addGeofence(String id, double lat, double lon, double radius) =>
-      NexoraSdkPlatform.instance.addGeofence(id, lat, lon, radius);
+  /// Requests only Bluetooth runtime permission where required by the OS.
+  Future<bool> requestBluetoothPermission() {
+    return NexoraSdkPlatform.instance.requestBluetoothPermission();
+  }
 
-  // --- Base ---
-  
-  /// Returns the current native platform version (e.g., 'Android 14', 'iOS 17.2').
-  Future<String?> getPlatformVersion() => NexoraSdkPlatform.instance.getPlatformVersion();
+  /// Sets the native Vision AI mode.
+  Future<bool> setVisionMode({bool face = false, bool barcode = false}) {
+    return NexoraSdkPlatform.instance.setVisionMode(
+      face: face,
+      barcode: barcode,
+    );
+  }
 
-  /// Requests all required hardware permissions (Camera, Mic, GPS, Bluetooth).
-  /// 
-  /// Returns true if all permissions are successfully granted.
-  Future<bool> requestPermissions() => NexoraSdkPlatform.instance.requestPermissions();
+  /// Starts background telemetry logging.
+  Future<bool> startLogging(LogConfig config) {
+    return NexoraSdkPlatform.instance.startHardwareLogging(config);
+  }
+
+  /// Stops background telemetry logging.
+  Future<bool> stopLogging() {
+    return NexoraSdkPlatform.instance.stopHardwareLogging();
+  }
+
+  /// Convenience method for quick audio analysis startup.
+  Future<bool> startAudioWithAnalysis({
+    bool streamBytes = false,
+    int updateIntervalMs = 80,
+  }) {
+    return audio.start(
+      enableFFT: true,
+      streamBytes: streamBytes,
+      updateIntervalMs: updateIntervalMs,
+    );
+  }
+
+  /// Returns the current platform version.
+  Future<String?> getPlatformVersion() {
+    return NexoraSdkPlatform.instance.getPlatformVersion();
+  }
+
+  /// Adds a circular Geofence for background monitoring.
+  Future<bool> addGeofence(String id, double lat, double lon, double radius) {
+    return NexoraSdkPlatform.instance.addGeofence(id, lat, lon, radius);
+  }
 }

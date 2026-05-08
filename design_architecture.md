@@ -1,9 +1,9 @@
-# Modular Hardware SDK Architecture (High-Performance Layered)
+# Nexora SDK Architecture
 
-This document describes the high-level architecture of the modular hardware SDK.
+This document describes the high-level architecture of the lightweight native hardware SDK.
 
 ## 1. System Architecture
-The SDK follows a **Layered & Modular Messaging** architecture designed for low latency and high throughput.
+The SDK follows a layered modular architecture designed for low latency, clear permission boundaries, and small publish size.
 
 ### Diagram
 ```mermaid
@@ -12,21 +12,22 @@ graph TD
     API --> Modules[Camera | BLE | GPS | WiFi | Sensors]
     
     subgraph Bridge Layer
-        Modules -- BasicMessageChannel --> BinaryBridge[Binary Message Channel]
         Modules -- EventChannel --> StreamingBridge[Stream Dispatcher]
         Modules -- MethodChannel --> ControlBridge[Command Dispatcher]
     end
 
     subgraph Native iOS (Swift)
         StreamingBridge --> iOSManagers[iOS Subsystem Managers]
-        BinaryBridge --> iOSMetal[Metal / CoreMedia Processor]
         iOSManagers --> CoreOS[CoreBluetooth | CoreLocation | AVFoundation]
     end
 
     subgraph Native Android (Kotlin)
         StreamingBridge --> AndroidManagers[Android Subsystem Managers]
-        BinaryBridge --> AndroidNDK[C++ NDK Pixel Processor]
-        AndroidManagers --> AndroidOS[Camera2 | BLE | FusedLocation]
+        AndroidManagers --> AndroidOS[Camera2 | BLE | LocationManager | AudioRecord]
+    end
+
+    subgraph Web and Desktop Fallbacks (Dart)
+        API --> Fallbacks[Safe Unsupported Hardware Responses | Storage Fallbacks]
     end
 ```
 
@@ -36,19 +37,22 @@ graph TD
 Each hardware component (Camera, Bluetooth, GPS) is an independent module with its own:
 - **Interface**: Platform-specific implementation selection.
 - **Manager**: Native handling and queuing.
-- **Channel**: Dedicated communication path.
+- **Channel**: Shared command and event dispatch with module tags.
 
-### B. High-Performance Bridge (`BasicMessageChannel`)
-Used for **Camera Frame Streaming**. Instead of JSON-like maps (MethodChannel), raw `Uint8List` (Binary) is sent across the bridge to avoid serialization overhead.
+### B. Lightweight Streaming
+Camera preview uses native textures instead of raw frame copies. Audio raw bytes are disabled by default, FFT events are throttled, and camera vision results are sampled to keep bridge traffic low.
 
-### C. Background execution
-- **Android**: Implements a `Foreground Service` to maintain active scanning/tracking when the UI is detached.
-- **iOS**: Uses `Background Modes` (Location, BLE-Peripheral) enabled in the Capability settings.
+### C. Native permissions
+The plugin requests Android and iOS runtime permissions directly without depending on `permission_handler`. Host apps still own manifest entries, iOS usage descriptions, and any required background disclosures.
 
-### D. Buffering & Throttling
-- **Batching**: GPS coordinates are buffered and sent in batches every 500ms to reduce bridge traffic.
-- **Throttling**: High-frequency sensors (Gyroscope) are throttled to 60Hz.
+### D. Web and desktop fallbacks
+Web, macOS, Windows, and Linux are registered with Dart-only implementations. Hardware APIs that need native platform integrations return safe unsupported values instead of throwing missing-plugin errors. Desktop storage writes local files; web storage uses an in-memory fallback.
 
-## 3. Advanced C++/Native Layer
-- **Android NDK**: Handled via JNI to perform zero-copy image manipulation.
-- **iOS Bridge**: Objective-C++ bridging for SIMD/Metal optimization.
+### E. Background location opt-in
+Background geofencing is disabled by default. Apps must explicitly enable it and configure the platform background permission/mode before adding geofences that need background execution.
+
+## 3. Performance choices
+- **Native textures** keep camera preview fast and memory efficient.
+- **Throttled vision and audio events** reduce Dart bridge pressure.
+- **App-private storage only** avoids broad storage permissions.
+- **Lifecycle cleanup** stops native hardware managers when the plugin detaches.

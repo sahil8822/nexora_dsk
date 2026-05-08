@@ -1,4 +1,3 @@
-
 /// Encapsulates sensor data from native hardware.
 class SensorData {
   final double x;

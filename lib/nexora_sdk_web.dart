@@ -1,126 +1,234 @@
 import 'dart:async';
-import 'dart:html' as html;
+import 'dart:typed_data';
+
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
-import 'nexora_sdk_platform_interface.dart';
+
 import 'core/hardware_core.dart';
 import 'models/hardware_models.dart';
+import 'nexora_sdk_platform_interface.dart';
 
-/// Nexora SDK Web Implementation.
-/// Updated for v3.0 Intelligence Edition.
+/// Web implementation for browsers.
 class NexoraSdkWeb extends NexoraSdkPlatform {
+  final StreamController<HardwareEvent> _eventController =
+      StreamController<HardwareEvent>.broadcast();
+  final Map<String, Object> _storage = <String, Object>{};
+
   static void registerWith(Registrar registrar) {
     NexoraSdkPlatform.instance = NexoraSdkWeb();
   }
-
-  final StreamController<HardwareEvent> _eventController = StreamController<HardwareEvent>.broadcast();
-  html.MediaStream? _cameraStream;
-  String _facingMode = 'user';
 
   @override
   Stream<HardwareEvent> get unifiedStream => _eventController.stream;
 
   @override
-  Future<String?> getPlatformVersion() async => 'Web Browsers';
+  Future<String?> getPlatformVersion() async {
+    return 'Web';
+  }
 
   @override
   Future<bool> requestPermissions() async => true;
 
-  // --- Camera & Vision ---
   @override
-  Future<dynamic> startCamera({int width = 640, int height = 480}) async {
-    try {
-      final constraints = {'video': {'width': width, 'height': height, 'facingMode': _facingMode}};
-      _cameraStream = await html.window.navigator.mediaDevices?.getUserMedia(constraints);
-      return true; // Web uses video tags, not texture IDs currently
-    } catch (e) { return false; }
+  Future<bool> requestCameraPermission() async => true;
+
+  @override
+  Future<bool> requestAudioPermission() async => true;
+
+  @override
+  Future<bool> requestLocationPermission() async => true;
+
+  @override
+  Future<bool> requestBluetoothPermission() async => true;
+
+  @override
+  Future<dynamic> startCamera({int width = 1280, int height = 720}) async {
+    return false;
   }
 
   @override
-  Future<bool> stopCamera() async {
-    _cameraStream?.getTracks().forEach((track) => track.stop());
-    _cameraStream = null;
-    return true;
-  }
+  Future<bool> stopCamera() async => true;
 
   @override
-  Future<bool> setVisionMode({bool barcode = false, bool face = false}) async => false;
+  Future<bool> setVisionMode({bool barcode = false, bool face = false}) async {
+    return false;
+  }
+
   @override
   Future<bool> setFlash(bool on) async => false;
+
   @override
-  Future<bool> setZoom(double level) async => true;
+  Future<bool> setZoom(double level) async => false;
+
   @override
-  Future<bool> flipCamera() async {
-    _facingMode = (_facingMode == 'user') ? 'environment' : 'user';
-    await stopCamera();
-    return await startCamera();
+  Future<bool> flipCamera() async => false;
+
+  @override
+  Future<bool> startAudio({
+    bool enableFFT = false,
+    bool streamBytes = false,
+    int updateIntervalMs = 80,
+  }) async {
+    return false;
   }
 
-  // --- Audio & FFT ---
-  @override
-  Future<bool> startAudio({bool enableFFT = false}) async => true;
   @override
   Future<bool> stopAudio() async => true;
 
-  // --- Intelligence ---
   @override
   Future<bool> startHardwareLogging(LogConfig config) async => false;
-  @override
-  Future<bool> stopHardwareLogging() async => false;
-  @override
-  Future<bool> addGeofence(String id, double lat, double lon, double radius) async => false;
 
-  // --- Bluetooth ---
   @override
-  Future<bool> startBluetoothScan() async => true;
+  Future<bool> stopHardwareLogging() async => true;
+
+  @override
+  Future<bool> addGeofence(
+    String id,
+    double lat,
+    double lon,
+    double radius,
+  ) async {
+    return false;
+  }
+
+  @override
+  Future<bool> startBluetoothScan() async => false;
+
   @override
   Future<bool> stopBluetoothScan() async => true;
+
   @override
-  Future<bool> connectDevice(String id) async => true;
+  Future<bool> connectDevice(String id) async => false;
+
   @override
   Future<List<String>> discoverServices(String deviceId) async => [];
-  @override
-  Future<bool> sendData(String d, String s, String c, List<int> data) async => true;
 
-  // --- Biometrics ---
   @override
-  Future<bool> authenticate(String reason) async => true;
+  Future<bool> sendData(
+    String deviceId,
+    String serviceId,
+    String charId,
+    List<int> data,
+  ) async {
+    return false;
+  }
+
+  @override
+  Future<bool> authenticate(String reason) async => false;
+
   @override
   Future<bool> canAuthenticate() async => false;
 
-  // --- Feedback ---
   @override
-  Future<void> vibrate(int durationMs) async {
-    (html.window.navigator as dynamic).vibrate(durationMs);
-  }
-  @override
-  Future<void> hapticFeedback(String type) async {
-    (html.window.navigator as dynamic).vibrate(50);
-  }
+  Future<void> vibrate(int durationMs) async {}
 
-  // --- Health ---
   @override
-  Future<BatteryInfo?> getBatteryInfo() async {
-    try {
-      final battery = await (html.window.navigator as dynamic).getBattery();
-      return BatteryInfo(
-        level: battery.level.toDouble(),
-        isCharging: battery.charging,
-        status: battery.charging ? 'charging' : 'discharging',
-        temperature: 0.0
-      );
-    } catch (e) { return null; }
-  }
+  Future<void> hapticFeedback(String type) async {}
+
+  @override
+  Future<BatteryInfo?> getBatteryInfo() async => null;
 
   @override
   Future<WifiInfo?> getWifiInfo() async => null;
 
-  // --- Location & Sensors ---
   @override
-  Future<bool> startLocation() async => true;
+  Future<bool> startLocation() async => false;
+
   @override
   Future<bool> stopLocation() async => true;
+
   @override
-  Future<bool> startSensor({int frequencyHz = 60}) async => true;
+  Future<bool> setBackgroundLocationEnabled(bool enabled) async => false;
+
+  @override
+  Future<bool> startSensor({int frequencyHz = 60}) async => false;
+
   @override
   Future<bool> stopSensor() async => true;
+
+  @override
+  Future<StorageInfo?> getStorageInfo() async {
+    final size = _storage.entries.fold<int>(
+      0,
+      (total, entry) => total + entry.key.length + _valueSize(entry.value),
+    );
+    return StorageInfo(
+      internalTotal: 0,
+      internalFree: 0,
+      externalTotal: 0,
+      externalFree: 0,
+      appCacheSize: 0,
+      appDataSize: size,
+    );
+  }
+
+  @override
+  Future<String?> writeFile(String fileName, String content) async {
+    _storage[_key(fileName)] = content;
+    return fileName;
+  }
+
+  @override
+  Future<String?> readFile(String fileName) async {
+    final value = _storage[_key(fileName)];
+    return value is String ? value : null;
+  }
+
+  @override
+  Future<bool> deleteFile(String fileName) async {
+    return _storage.remove(_key(fileName)) != null;
+  }
+
+  @override
+  Future<bool> fileExists(String fileName) async {
+    return _storage.containsKey(_key(fileName));
+  }
+
+  @override
+  Future<List<FileInfo>> listFiles() async {
+    return _storage.entries
+        .where((entry) => entry.key.startsWith(_storagePrefix))
+        .map(
+          (entry) => FileInfo(
+            name: entry.key.substring(_storagePrefix.length),
+            size: _valueSize(entry.value),
+            isDirectory: false,
+            lastModified: DateTime.now(),
+          ),
+        )
+        .toList();
+  }
+
+  @override
+  Future<String?> writeBytes(String fileName, Uint8List bytes) async {
+    _storage[_key(fileName)] = Uint8List.fromList(bytes);
+    return fileName;
+  }
+
+  @override
+  Future<Uint8List?> readBytes(String fileName) async {
+    final value = _storage[_key(fileName)];
+    return value is Uint8List ? Uint8List.fromList(value) : null;
+  }
+
+  @override
+  Future<bool> clearCache() async => true;
+
+  @override
+  Future<String?> getAppDirectory() async => 'localStorage://nexora_sdk';
+
+  @override
+  Future<String?> getCacheDirectory() async => 'memory://nexora_sdk/cache';
+
+  @override
+  Future<String?> getExternalDirectory() async => null;
+
+  static const String _storagePrefix = 'nexora_sdk:file:';
+
+  String _key(String fileName) => '$_storagePrefix$fileName';
+
+  int _valueSize(Object value) {
+    if (value is Uint8List) return value.length;
+    if (value is String) return value.length;
+    return 0;
+  }
 }
