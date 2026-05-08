@@ -1,5 +1,15 @@
 # Changelog
 
+## 3.1.2
+
+* Aligned local Android, iOS, example, and Dart metadata with the published Swift Package Manager-enabled release.
+* Refreshed example dependency locks for the current plugin version.
+
+## 3.1.1
+
+* Added iOS Swift Package Manager support for Flutter's platform scoring and SPM-enabled projects.
+* Updated CocoaPods source paths to share the Swift Package Manager source layout.
+
 ## 3.1.0
 
 * Kept the package name as `nexora_sdk`.

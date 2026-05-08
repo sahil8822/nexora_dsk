@@ -3,7 +3,7 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'nexora_sdk'
-  s.version          = '3.1.0'
+  s.version          = '3.1.2'
   s.summary          = 'High-performance Flutter Hardware SDK with AI Intelligence & Storage.'
   s.description      = <<-DESC
 A premium hardware engine for Flutter supporting Camera (Vision AI), Bluetooth LE, FFT Audio, Biometrics, Geofencing, and Device Storage.
@@ -12,7 +12,7 @@ A premium hardware engine for Flutter supporting Camera (Vision AI), Bluetooth L
   s.license          = { :file => '../LICENSE' }
   s.author           = { 'Sahil' => 'email@example.com' }
   s.source           = { :path => '.' }
-  s.source_files = 'Classes/**/*'
+  s.source_files = 'nexora_sdk/Sources/nexora_sdk/**/*.swift'
   s.dependency 'Flutter'
   s.platform = :ios, '13.0'
 
@@ -23,5 +23,5 @@ A premium hardware engine for Flutter supporting Camera (Vision AI), Bluetooth L
   s.frameworks = 'AVFoundation', 'CoreBluetooth', 'CoreLocation', 'CoreMotion', 'LocalAuthentication', 'AudioToolbox', 'Vision', 'Accelerate'
 
   # Required for App Store Privacy Compliance
-  s.resource_bundles = {'nexora_sdk_privacy' => ['Resources/PrivacyInfo.xcprivacy']}
+  s.resource_bundles = {'nexora_sdk_privacy' => ['nexora_sdk/Sources/nexora_sdk/PrivacyInfo.xcprivacy']}
 end

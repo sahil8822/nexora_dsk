@@ -19,7 +19,7 @@ import io.flutter.plugin.common.PluginRegistry
 import io.flutter.view.TextureRegistry
 
 /**
- * Nexora SDK v3.1.0 — Complete Native Plugin with Storage.
+ * Nexora SDK v3.1.2 — Complete Native Plugin with Storage.
  */
 class NexoraSdk: FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry.RequestPermissionsResultListener {
     companion object {

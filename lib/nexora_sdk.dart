@@ -16,7 +16,7 @@ export 'nexora_sdk_desktop_stub.dart'
 export 'nexora_sdk_web_stub.dart'
     if (dart.library.html) 'nexora_sdk_web.dart';
 
-/// Nexora SDK (v3.1.0) - Intelligence + Storage Edition.
+/// Nexora SDK (v3.1.2) - Intelligence + Storage Edition.
 ///
 /// A world-class, lightweight hardware toolkit for Flutter.
 /// Provides unified access to Camera, Audio, GPS, Bluetooth, Biometrics,
