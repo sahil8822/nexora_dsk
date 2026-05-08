@@ -8,6 +8,10 @@ class HealthModule {
   Future<BatteryInfo?> getBatteryInfo() =>
       NexoraSdkPlatform.instance.getBatteryInfo();
 
+  /// Retrieves current WiFi diagnostics.
+  /// Returns null if WiFi data is unavailable.
+  Future<WifiInfo?> getWifiInfo() => NexoraSdkPlatform.instance.getWifiInfo();
+
   /// Starts background logging of hardware telemetry.
   Future<bool> startLogging(LogConfig config) =>
       NexoraSdkPlatform.instance.startHardwareLogging(config);

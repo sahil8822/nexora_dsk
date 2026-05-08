@@ -1,6 +1,8 @@
 import 'dart:typed_data';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
+import 'models/device_models.dart';
 import 'models/hardware_models.dart';
+import 'models/permission_models.dart';
 import 'core/hardware_core.dart';
 import 'nexora_sdk_method_channel.dart';
 
@@ -22,6 +24,12 @@ abstract class NexoraSdkPlatform extends PlatformInterface {
   Future<bool> requestAudioPermission();
   Future<bool> requestLocationPermission();
   Future<bool> requestBluetoothPermission();
+  Future<HardwarePermissionStatus> getPermissionStatus(
+    HardwarePermission permission,
+  );
+  Future<bool> openAppSettings();
+  Future<DeviceInfo> getDeviceInfo();
+  Future<ConnectivityInfo> getConnectivityInfo();
 
   // --- Camera & Vision (AI) ---
   Future<dynamic> startCamera({int width = 1280, int height = 720});
@@ -30,6 +38,9 @@ abstract class NexoraSdkPlatform extends PlatformInterface {
   Future<bool> setFlash(bool on);
   Future<bool> setZoom(double level);
   Future<bool> flipCamera();
+  Future<String?> takePhoto({String? fileName});
+  Future<String?> startVideoRecording({String? fileName});
+  Future<String?> stopVideoRecording();
 
   // --- Audio & Analysis (AI) ---
   Future<bool> startAudio({
@@ -86,6 +97,12 @@ abstract class NexoraSdkPlatform extends PlatformInterface {
   Future<String?> getAppDirectory();
   Future<String?> getCacheDirectory();
   Future<String?> getExternalDirectory();
+
+  // --- Native Utilities ---
+  Future<bool> copyText(String text);
+  Future<String?> pasteText();
+  Future<bool> openUrl(String url);
+  Future<bool> shareText(String text, {String? subject});
 
   // --- Unified Streams ---
   Stream<HardwareEvent> get unifiedStream;

@@ -10,6 +10,8 @@ public class HardwareCameraManager: NSObject, FlutterTexture, AVCaptureVideoData
     private var captureSession: AVCaptureSession?
     private var currentDevice: AVCaptureDevice?
     private var currentInput: AVCaptureDeviceInput?
+    private var photoOutput: AVCapturePhotoOutput?
+    private var photoDelegate: PhotoCaptureDelegate?
     private var eventSink: FlutterEventSink?
     private let videoOutputQueue = DispatchQueue(label: "camera.video.output.queue", qos: .userInteractive)
     
@@ -43,6 +45,7 @@ public class HardwareCameraManager: NSObject, FlutterTexture, AVCaptureVideoData
         currentInput = input
 
         let output = AVCaptureVideoDataOutput()
+        let photoOutput = AVCapturePhotoOutput()
         output.alwaysDiscardsLateVideoFrames = true
         output.setSampleBufferDelegate(self, queue: videoOutputQueue)
         output.videoSettings = [kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA]
@@ -50,6 +53,10 @@ public class HardwareCameraManager: NSObject, FlutterTexture, AVCaptureVideoData
         captureSession?.beginConfiguration()
         if captureSession?.canAddInput(input) == true { captureSession?.addInput(input) }
         if captureSession?.canAddOutput(output) == true { captureSession?.addOutput(output) }
+        if captureSession?.canAddOutput(photoOutput) == true {
+            captureSession?.addOutput(photoOutput)
+            self.photoOutput = photoOutput
+        }
         captureSession?.commitConfiguration()
         
         DispatchQueue.global(qos: .userInitiated).async {
@@ -83,6 +90,22 @@ public class HardwareCameraManager: NSObject, FlutterTexture, AVCaptureVideoData
         stop()
         currentPosition = (currentPosition == .back) ? .front : .back
         start(width: lastWidth, height: lastHeight)
+    }
+
+    public func takePhoto(fileName: String?, completion: @escaping (String?) -> Void) {
+        guard let photoOutput = photoOutput else {
+            completion(nil)
+            return
+        }
+        let name = (fileName?.isEmpty == false ? fileName! : "nexora_photo_\(Int(Date().timeIntervalSince1970 * 1000)).jpg")
+        let url = FileManager.default.temporaryDirectory.appendingPathComponent(name)
+        let settings = AVCapturePhotoSettings()
+        let delegate = PhotoCaptureDelegate(outputUrl: url) { [weak self] path in
+            self?.photoDelegate = nil
+            completion(path)
+        }
+        photoDelegate = delegate
+        photoOutput.capturePhoto(with: settings, delegate: delegate)
     }
 
     // MARK: - FlutterTexture
@@ -137,5 +160,34 @@ public class HardwareCameraManager: NSObject, FlutterTexture, AVCaptureVideoData
         latestPixelBuffer = nil
         currentDevice = nil
         currentInput = nil
+        photoOutput = nil
+        photoDelegate = nil
+    }
+}
+
+private final class PhotoCaptureDelegate: NSObject, AVCapturePhotoCaptureDelegate {
+    private let outputUrl: URL
+    private let completion: (String?) -> Void
+
+    init(outputUrl: URL, completion: @escaping (String?) -> Void) {
+        self.outputUrl = outputUrl
+        self.completion = completion
+    }
+
+    func photoOutput(
+        _ output: AVCapturePhotoOutput,
+        didFinishProcessingPhoto photo: AVCapturePhoto,
+        error: Error?
+    ) {
+        guard error == nil, let data = photo.fileDataRepresentation() else {
+            completion(nil)
+            return
+        }
+        do {
+            try data.write(to: outputUrl, options: .atomic)
+            completion(outputUrl.path)
+        } catch {
+            completion(nil)
+        }
     }
 }

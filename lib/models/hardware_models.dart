@@ -55,9 +55,17 @@ class CameraFrame {
           : null,
     );
   }
+
+  Map<String, Object?> toMap() => <String, Object?>{
+    'bytes': bytes,
+    'textureId': textureId,
+    'width': width,
+    'height': height,
+    'format': format,
+    'vision': vision?.toMap(),
+  };
 }
 
-// ... rest of the models remain same ...
 class VisionResult {
   final List<String> barcodes;
   final List<FaceData> faces;
@@ -70,6 +78,11 @@ class VisionResult {
           [],
     );
   }
+
+  Map<String, Object?> toMap() => <String, Object?>{
+    'barcodes': barcodes,
+    'faces': faces.map((face) => face.toMap()).toList(growable: false),
+  };
 }
 
 class FaceData {
@@ -88,6 +101,12 @@ class FaceData {
       smileProb: (map['smile'] as num?)?.toDouble(),
     );
   }
+
+  Map<String, Object?> toMap() => <String, Object?>{
+    'top': boundingBoxTop,
+    'left': boundingBoxLeft,
+    'smile': smileProb,
+  };
 }
 
 class AudioFrame {
@@ -106,6 +125,12 @@ class AudioFrame {
       sampleRate: (map['sampleRate'] as num?)?.toInt() ?? 0,
     );
   }
+
+  Map<String, Object?> toMap() => <String, Object?>{
+    'bytes': bytes,
+    'spectrum': spectrum,
+    'sampleRate': sampleRate,
+  };
 }
 
 class LogConfig {
@@ -119,6 +144,13 @@ class LogConfig {
     this.includeGPS = true,
     this.intervalMs = 100,
   });
+
+  Map<String, Object> toMap() => <String, Object>{
+    'fileName': fileName,
+    'includeSensors': includeSensors,
+    'includeGPS': includeGPS,
+    'intervalMs': intervalMs,
+  };
 }
 
 class BleDevice {
@@ -133,6 +165,12 @@ class BleDevice {
       rssi: map['rssi'] as int? ?? 0,
     );
   }
+
+  Map<String, Object> toMap() => <String, Object>{
+    'id': id,
+    'name': name,
+    'rssi': rssi,
+  };
 }
 
 class LocationData {
@@ -157,6 +195,14 @@ class LocationData {
       speed: (map['speed'] as num).toDouble(),
     );
   }
+
+  Map<String, Object> toMap() => <String, Object>{
+    'latitude': latitude,
+    'longitude': longitude,
+    'altitude': altitude,
+    'accuracy': accuracy,
+    'speed': speed,
+  };
 }
 
 class BatteryInfo {
@@ -178,6 +224,13 @@ class BatteryInfo {
       temperature: (map['temperature'] as num).toDouble(),
     );
   }
+
+  Map<String, Object> toMap() => <String, Object>{
+    'level': level,
+    'isCharging': isCharging,
+    'status': status,
+    'temperature': temperature,
+  };
 }
 
 class WifiInfo {
@@ -199,6 +252,13 @@ class WifiInfo {
       ipAddress: map['ipAddress'] as String,
     );
   }
+
+  Map<String, Object> toMap() => <String, Object>{
+    'ssid': ssid,
+    'bssid': bssid,
+    'signalStrength': signalStrength,
+    'ipAddress': ipAddress,
+  };
 }
 
 /// Device storage information including internal, external, cache, and data sizes.
@@ -240,6 +300,15 @@ class StorageInfo {
       appDataSize: (map['appDataSize'] as num).toInt(),
     );
   }
+
+  Map<String, Object> toMap() => <String, Object>{
+    'internalTotal': internalTotal,
+    'internalFree': internalFree,
+    'externalTotal': externalTotal,
+    'externalFree': externalFree,
+    'appCacheSize': appCacheSize,
+    'appDataSize': appDataSize,
+  };
 
   /// Returns internal storage usage as a percentage (0.0 - 1.0).
   double get internalUsage =>
@@ -285,6 +354,13 @@ class FileInfo {
       ),
     );
   }
+
+  Map<String, Object> toMap() => <String, Object>{
+    'name': name,
+    'size': size,
+    'isDirectory': isDirectory,
+    'lastModified': lastModified.millisecondsSinceEpoch,
+  };
 
   /// Human-readable file size.
   String get sizeFormatted => StorageInfo.formatBytes(size);

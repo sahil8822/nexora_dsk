@@ -6,8 +6,16 @@ class SensorModule {
   /// Starts the accelerometer and gyroscope at the specified [frequencyHz].
   ///
   /// High frequency (e.g. 100Hz) is recommended for motion analysis.
-  Future<bool> start({int frequencyHz = 60}) =>
-      NexoraSdkPlatform.instance.startSensor(frequencyHz: frequencyHz);
+  Future<bool> start({int frequencyHz = 60}) {
+    if (frequencyHz <= 0) {
+      throw ArgumentError.value(
+        frequencyHz,
+        'frequencyHz',
+        'Must be greater than zero.',
+      );
+    }
+    return NexoraSdkPlatform.instance.startSensor(frequencyHz: frequencyHz);
+  }
 
   /// Stops all sensor monitoring.
   Future<bool> stop() => NexoraSdkPlatform.instance.stopSensor();

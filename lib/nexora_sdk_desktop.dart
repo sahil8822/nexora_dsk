@@ -3,7 +3,9 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'core/hardware_core.dart';
+import 'models/device_models.dart';
 import 'models/hardware_models.dart';
+import 'models/permission_models.dart';
 import 'nexora_sdk_platform_interface.dart';
 
 /// Desktop fallback implementation for Linux, macOS, and Windows.
@@ -43,6 +45,49 @@ class NexoraSdkDesktop extends NexoraSdkPlatform {
   Future<bool> requestBluetoothPermission() async => true;
 
   @override
+  Future<HardwarePermissionStatus> getPermissionStatus(
+    HardwarePermission permission,
+  ) async {
+    return HardwarePermissionStatus(
+      permission: permission,
+      state: HardwarePermissionState.granted,
+      canRequest: false,
+    );
+  }
+
+  @override
+  Future<bool> openAppSettings() async => false;
+
+  @override
+  Future<DeviceInfo> getDeviceInfo() async {
+    return DeviceInfo(
+      platform: Platform.operatingSystem,
+      manufacturer: Platform.operatingSystem,
+      model: Platform.localHostname,
+      osVersion: Platform.operatingSystemVersion,
+      sdkVersion: Platform.version,
+      isPhysicalDevice: true,
+      totalRamBytes: 0,
+      availableRamBytes: 0,
+      cpuArchitecture: _cpuArchitecture(),
+      screenRefreshRate: 0,
+      thermalState: 'unknown',
+    );
+  }
+
+  @override
+  Future<ConnectivityInfo> getConnectivityInfo() async {
+    return const ConnectivityInfo(
+      isConnected: true,
+      networkType: 'desktop',
+      isMetered: false,
+      isVpn: false,
+      signalStrength: null,
+      ipAddress: null,
+    );
+  }
+
+  @override
   Future<dynamic> startCamera({int width = 1280, int height = 720}) async {
     return false;
   }
@@ -63,6 +108,15 @@ class NexoraSdkDesktop extends NexoraSdkPlatform {
 
   @override
   Future<bool> flipCamera() async => false;
+
+  @override
+  Future<String?> takePhoto({String? fileName}) async => null;
+
+  @override
+  Future<String?> startVideoRecording({String? fileName}) async => null;
+
+  @override
+  Future<String?> stopVideoRecording() async => null;
 
   @override
   Future<bool> startAudio({
@@ -251,9 +305,26 @@ class NexoraSdkDesktop extends NexoraSdkPlatform {
   @override
   Future<String?> getExternalDirectory() async => null;
 
+  @override
+  Future<bool> copyText(String text) async => false;
+
+  @override
+  Future<String?> pasteText() async => null;
+
+  @override
+  Future<bool> openUrl(String url) async => false;
+
+  @override
+  Future<bool> shareText(String text, {String? subject}) async => false;
+
   Future<File> _file(String fileName) async {
-    final safeName = fileName.replaceAll(RegExp(r'[\\/]+'), Platform.pathSeparator);
-    return File('${(await _appDirectory()).path}${Platform.pathSeparator}$safeName');
+    final safeName = fileName.replaceAll(
+      RegExp(r'[\\/]+'),
+      Platform.pathSeparator,
+    );
+    return File(
+      '${(await _appDirectory()).path}${Platform.pathSeparator}$safeName',
+    );
   }
 
   Future<Directory> _appDirectory() async {
@@ -279,6 +350,17 @@ class NexoraSdkDesktop extends NexoraSdkPlatform {
     }
     return Platform.environment['XDG_DATA_HOME'] ??
         '${Platform.environment['HOME'] ?? Directory.systemTemp.path}/.local/share';
+  }
+
+  String _cpuArchitecture() {
+    final executable = Platform.resolvedExecutable.toLowerCase();
+    if (executable.contains('arm64') || executable.contains('aarch64')) {
+      return 'arm64';
+    }
+    if (executable.contains('x64') || executable.contains('x86_64')) {
+      return 'x64';
+    }
+    return Platform.version.contains('arm64') ? 'arm64' : 'unknown';
   }
 
   Future<int> _directorySize(Directory directory) async {

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:nexora_sdk/nexora_sdk.dart';
-import 'package:nexora_sdk/models/hardware_models.dart';
 
 void main() {
   runApp(
@@ -39,12 +38,18 @@ class _IntelligenceDashboardState extends State<IntelligenceDashboard> {
   LocationData? _currentLocation;
   BatteryInfo? _batteryInfo;
   StorageInfo? _storageInfo;
+  DeviceInfo? _deviceInfo;
+  ConnectivityInfo? _connectivityInfo;
+  HardwarePermissionSnapshot? _permissionSnapshot;
+  HardwareLifecycleController? _lifecycleController;
+  String _lastNativeAction = "Ready";
   List<FileInfo> _files = [];
   Timer? _healthTimer;
 
   @override
   void initState() {
     super.initState();
+    _lifecycleController = _sdk.attachLifecycleController(stopLogging: false);
     _requestAllPermissions();
     _startPeriodicHealthCheck();
   }
@@ -53,6 +58,7 @@ class _IntelligenceDashboardState extends State<IntelligenceDashboard> {
     await _sdk.requestPermissions();
     _setupListeners();
     _loadStorageInfo();
+    _loadProInfo();
   }
 
   void _setupListeners() {
@@ -105,12 +111,26 @@ class _IntelligenceDashboardState extends State<IntelligenceDashboard> {
     }
   }
 
+  Future<void> _loadProInfo() async {
+    final device = await _sdk.device.getInfo();
+    final connectivity = await _sdk.connectivity.getInfo();
+    final permissions = await _sdk.getPermissionSnapshot();
+    if (mounted) {
+      setState(() {
+        _deviceInfo = device;
+        _connectivityInfo = connectivity;
+        _permissionSnapshot = permissions;
+      });
+    }
+  }
+
   @override
   void dispose() {
     _cameraSub?.cancel();
     _audioSub?.cancel();
     _locationSub?.cancel();
     _healthTimer?.cancel();
+    _lifecycleController?.dispose();
     _sdk.camera.stop();
     _sdk.audio.stop();
     _sdk.location.stop();
@@ -171,6 +191,8 @@ class _IntelligenceDashboardState extends State<IntelligenceDashboard> {
                   _buildLocationCard(),
                   const SizedBox(height: 20),
                   _buildStorageCard(),
+                  const SizedBox(height: 20),
+                  _buildProCard(),
                   const SizedBox(height: 20),
                   _buildLoggingCard(),
                   const SizedBox(height: 40),
@@ -311,6 +333,35 @@ class _IntelligenceDashboardState extends State<IntelligenceDashboard> {
                   backgroundColor: _isCameraRunning ? Colors.red : Colors.blue,
                 ),
                 child: Text(_isCameraRunning ? "STOP" : "START"),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: _isCameraRunning
+                      ? () async {
+                          final path = await _sdk.camera.takePhoto();
+                          if (mounted) {
+                            setState(() => _lastNativeAction = path ?? "Photo failed");
+                          }
+                        }
+                      : null,
+                  icon: const Icon(Icons.photo_camera),
+                  label: const Text("PHOTO"),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: () async {
+                    await _sdk.native.shareText("Nexora SDK hardware demo");
+                  },
+                  icon: const Icon(Icons.ios_share),
+                  label: const Text("SHARE"),
+                ),
               ),
             ],
           ),
@@ -531,6 +582,46 @@ class _IntelligenceDashboardState extends State<IntelligenceDashboard> {
           style: TextStyle(color: Colors.white54, fontSize: 11),
         ),
         trailing: Switch(value: _isLogging, onChanged: (_) => _toggleLogging()),
+      ),
+    );
+  }
+
+  Widget _buildProCard() {
+    return _buildDashboardCard(
+      title: "Native Pro Layer",
+      icon: Icons.settings_input_component,
+      child: Column(
+        children: [
+          _buildDataRow("Device", _deviceInfo?.model ?? '--'),
+          _buildDataRow("CPU", _deviceInfo?.cpuArchitecture ?? '--'),
+          _buildDataRow(
+            "Network",
+            "${_connectivityInfo?.networkType ?? '--'} ${_connectivityInfo?.isMetered == true ? '(metered)' : ''}",
+          ),
+          _buildDataRow(
+            "Permissions",
+            _permissionSnapshot?.allGranted == true ? "Granted" : "Needs review",
+          ),
+          _buildDataRow("Last Action", _lastNativeAction),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              _buildToggleButton("REFRESH", false, _loadProInfo),
+              _buildToggleButton("COPY", false, () async {
+                await _sdk.native.copyText("Copied from Nexora SDK");
+                setState(() => _lastNativeAction = "Copied text");
+              }),
+              _buildToggleButton("OPEN SETTINGS", false, () async {
+                await _sdk.openAppSettings();
+              }),
+              _buildToggleButton("OPEN WEB", false, () async {
+                await _sdk.native.openUrl("https://flutter.dev");
+              }),
+            ],
+          ),
+        ],
       ),
     );
   }

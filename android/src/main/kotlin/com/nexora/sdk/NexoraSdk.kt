@@ -1,11 +1,21 @@
 package com.nexora.sdk
 
 import android.Manifest
+import android.app.ActivityManager
 import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
+import android.net.Uri
+import android.net.wifi.WifiManager
 import android.os.Build
+import android.provider.Settings
+import android.content.ClipData
+import android.content.ClipboardManager
 import androidx.annotation.NonNull
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
@@ -24,6 +34,7 @@ import io.flutter.view.TextureRegistry
 class NexoraSdk: FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry.RequestPermissionsResultListener {
     companion object {
         private const val PERMISSION_REQUEST_CODE = 7310
+        private const val PREFS_NAME = "nexora_sdk_permissions"
     }
 
     private lateinit var channel: MethodChannel
@@ -123,6 +134,16 @@ class NexoraSdk: FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry
                 camera.flipCamera()
                 result.success(true)
             }
+            "takePhoto" -> {
+                val path = camera.takePhoto(call.argument<String>("fileName"))
+                if (path == null) {
+                    result.error("CAMERA_UNAVAILABLE", "Camera is not running or photo capture failed.", null)
+                } else {
+                    result.success(path)
+                }
+            }
+            "startVideoRecording" -> result.error("NOT_SUPPORTED", "Video recording is not implemented on Android yet.", null)
+            "stopVideoRecording" -> result.error("NOT_SUPPORTED", "Video recording is not implemented on Android yet.", null)
 
             // ==================== Audio & FFT ====================
             "startAudio" -> {
@@ -302,6 +323,14 @@ class NexoraSdk: FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry
 
             // ==================== Base ====================
             "getPlatformVersion" -> result.success("Android ${android.os.Build.VERSION.RELEASE}")
+            "getDeviceInfo" -> result.success(getDeviceInfo())
+            "getConnectivityInfo" -> result.success(getConnectivityInfo())
+            "getPermissionStatus" -> result.success(getPermissionStatus(call.argument<String>("type")))
+            "openAppSettings" -> result.success(openAppSettings())
+            "copyText" -> result.success(copyText(call.argument<String>("text") ?: ""))
+            "pasteText" -> result.success(pasteText())
+            "openUrl" -> result.success(openUrl(call.argument<String>("url") ?: ""))
+            "shareText" -> result.success(shareText(call.argument<String>("text") ?: "", call.argument<String>("subject")))
             "requestPermissions" -> requestNativePermissions(result)
             "requestPermission" -> requestNativePermission(call.argument<String>("type"), result)
             
@@ -385,6 +414,10 @@ class NexoraSdk: FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray): Boolean {
         if (requestCode != PERMISSION_REQUEST_CODE) return false
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val editor = prefs.edit()
+        permissions.forEach { editor.putBoolean("requested:$it", true) }
+        editor.apply()
         pendingPermissionResult?.success(
             if (pendingPermissionType == null) hasAllCriticalPermissions() else permissionsSatisfied(pendingPermissionType)
         )
@@ -440,6 +473,150 @@ class NexoraSdk: FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry
             hasPermission(Manifest.permission.RECORD_AUDIO) &&
             hasLocationPermission() &&
             hasBluetoothPermissions()
+    }
+
+    private fun getPermissionStatus(type: String?): Map<String, Any> {
+        val permissionType = type ?: "unknown"
+        val granted = permissionsSatisfied(permissionType)
+        val canRequest = canRequestPermission(permissionType)
+        val state = when {
+            permissionType !in listOf("camera", "audio", "location", "bluetooth") -> "unsupported"
+            granted -> "granted"
+            !canRequest -> "permanentlyDenied"
+            else -> "denied"
+        }
+        return mapOf(
+            "permission" to permissionType,
+            "state" to state,
+            "canRequest" to canRequest
+        )
+    }
+
+    private fun canRequestPermission(type: String?): Boolean {
+        val act = activity ?: return true
+        val permissions = when (type) {
+            "camera" -> listOf(Manifest.permission.CAMERA)
+            "audio" -> listOf(Manifest.permission.RECORD_AUDIO)
+            "location" -> listOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
+            "bluetooth" -> bluetoothRuntimePermissions()
+            else -> return false
+        }
+        if (permissions.any { hasPermission(it) }) return true
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        return permissions.any {
+            !prefs.getBoolean("requested:$it", false) ||
+                ActivityCompat.shouldShowRequestPermissionRationale(act, it)
+        }
+    }
+
+    private fun openAppSettings(): Boolean {
+        val intent = Intent(
+            Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+            Uri.fromParts("package", context.packageName, null)
+        ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        return try {
+            context.startActivity(intent)
+            true
+        } catch (_: Exception) {
+            false
+        }
+    }
+
+    private fun copyText(text: String): Boolean {
+        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        clipboard.setPrimaryClip(ClipData.newPlainText("Nexora", text))
+        return true
+    }
+
+    private fun pasteText(): String? {
+        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        val clip = clipboard.primaryClip ?: return null
+        if (clip.itemCount == 0) return null
+        return clip.getItemAt(0).coerceToText(context)?.toString()
+    }
+
+    private fun openUrl(url: String): Boolean {
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        return try {
+            context.startActivity(intent)
+            true
+        } catch (_: Exception) {
+            false
+        }
+    }
+
+    private fun shareText(text: String, subject: String?): Boolean {
+        val intent = Intent(Intent.ACTION_SEND).apply {
+            type = "text/plain"
+            putExtra(Intent.EXTRA_TEXT, text)
+            if (!subject.isNullOrBlank()) putExtra(Intent.EXTRA_SUBJECT, subject)
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
+        return try {
+            context.startActivity(Intent.createChooser(intent, subject ?: "Share").addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+            true
+        } catch (_: Exception) {
+            false
+        }
+    }
+
+    private fun getDeviceInfo(): Map<String, Any> {
+        val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+        val memoryInfo = ActivityManager.MemoryInfo()
+        activityManager.getMemoryInfo(memoryInfo)
+        val displayRefreshRate = activity?.windowManager?.defaultDisplay?.refreshRate ?: 0f
+
+        return mapOf(
+            "platform" to "android",
+            "manufacturer" to Build.MANUFACTURER,
+            "model" to Build.MODEL,
+            "osVersion" to Build.VERSION.RELEASE,
+            "sdkVersion" to Build.VERSION.SDK_INT.toString(),
+            "isPhysicalDevice" to !isEmulator(),
+            "totalRamBytes" to memoryInfo.totalMem,
+            "availableRamBytes" to memoryInfo.availMem,
+            "cpuArchitecture" to Build.SUPPORTED_ABIS.firstOrNull().orEmpty(),
+            "screenRefreshRate" to displayRefreshRate.toDouble(),
+            "thermalState" to "unknown"
+        )
+    }
+
+    private fun getConnectivityInfo(): Map<String, Any?> {
+        val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val network = connectivityManager.activeNetwork
+        val capabilities = network?.let { connectivityManager.getNetworkCapabilities(it) }
+        val isConnected = capabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true
+        val type = when {
+            capabilities == null -> "none"
+            capabilities.hasTransport(NetworkCapabilities.TRANSPORT_VPN) -> "vpn"
+            capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> "wifi"
+            capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> "mobile"
+            capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> "ethernet"
+            capabilities.hasTransport(NetworkCapabilities.TRANSPORT_BLUETOOTH) -> "bluetooth"
+            else -> "unknown"
+        }
+        val wifiManager = context.applicationContext.getSystemService(Context.WIFI_SERVICE) as? WifiManager
+        val signalStrength = if (type == "wifi") wifiManager?.connectionInfo?.rssi else null
+
+        return mapOf(
+            "isConnected" to isConnected,
+            "networkType" to type,
+            "isMetered" to connectivityManager.isActiveNetworkMetered,
+            "isVpn" to (capabilities?.hasTransport(NetworkCapabilities.TRANSPORT_VPN) == true),
+            "signalStrength" to signalStrength,
+            "ipAddress" to null
+        )
+    }
+
+    private fun isEmulator(): Boolean {
+        return Build.FINGERPRINT.startsWith("generic") ||
+            Build.FINGERPRINT.lowercase().contains("vbox") ||
+            Build.MODEL.contains("google_sdk") ||
+            Build.MODEL.contains("Emulator") ||
+            Build.MODEL.contains("Android SDK built for x86") ||
+            Build.MANUFACTURER.contains("Genymotion") ||
+            Build.BRAND.startsWith("generic") && Build.DEVICE.startsWith("generic") ||
+            "google_sdk" == Build.PRODUCT
     }
 
     override fun onAttachedToActivity(binding: ActivityPluginBinding) {

@@ -45,6 +45,10 @@ await sdk.addGeofence('office', 37.422, -122.084, 100);
 ```dart
 final sdk = NexoraSdk.instance;
 
+if (!sdk.supports(HardwareFeature.camera)) {
+  return;
+}
+
 final granted = await sdk.requestPermissions();
 if (!granted) {
   return;
@@ -86,6 +90,144 @@ For waveform data:
 await sdk.audio.start(streamBytes: true, updateIntervalMs: 40);
 ```
 
+## Capability and Lifecycle Helpers
+
+Use `capabilities` when you want to hide unsupported hardware controls before
+calling into native APIs:
+
+```dart
+final capabilities = sdk.capabilities;
+
+if (capabilities.isMobile && capabilities.bluetooth) {
+  await sdk.bluetooth.startScan();
+}
+```
+
+Request permissions one-by-one and get a detailed result for your UI:
+
+```dart
+final report = await sdk.requestPermissionReport();
+
+if (!report.allGranted) {
+  debugPrint('Missing: ${report.deniedPermissions.join(', ')}');
+}
+```
+
+Check current permission state without showing a system prompt, and guide users
+to app settings when the OS requires it:
+
+```dart
+final cameraStatus = await sdk.permissions.status(HardwarePermission.camera);
+
+if (cameraStatus.needsSettings) {
+  await sdk.openAppSettings();
+}
+
+final snapshot = await sdk.getPermissionSnapshot();
+debugPrint(snapshot.toMap().toString());
+```
+
+Collect a diagnostics snapshot for support screens, debug logs, or issue
+reports:
+
+```dart
+final diagnostics = await sdk.collectDiagnostics();
+debugPrint(diagnostics.toMap().toString());
+```
+
+Read native device and connectivity details to make your Flutter app adapt like
+a platform app:
+
+```dart
+final device = await sdk.device.getInfo();
+final network = await sdk.connectivity.getInfo();
+
+if (device.thermalState == 'serious' || network.isMetered) {
+  await sdk.audio.start(updateIntervalMs: 250);
+}
+```
+
+Attach lifecycle cleanup so hardware sessions are released when the app moves
+to the background:
+
+```dart
+final lifecycle = sdk.attachLifecycleController(
+  stopCamera: true,
+  stopAudio: true,
+  stopLocation: true,
+);
+
+// Later, usually in dispose:
+lifecycle.dispose();
+```
+
+When your app is paused, closed, or the user signs out, stop active hardware
+sessions with one call:
+
+```dart
+final result = await sdk.stopAll();
+
+if (!result.success) {
+  debugPrint('Could not stop: ${result.failedModules.join(', ')}');
+}
+```
+
+Filter the unified event stream without manually parsing every event:
+
+```dart
+sdk.eventsFor('camera').listen((event) {
+  debugPrint('Camera event: ${event.type}');
+});
+
+sdk.errors.listen((event) {
+  debugPrint('Hardware error: ${event.data}');
+});
+```
+
+Camera Pro adds native still-photo capture and forward-compatible video APIs:
+
+```dart
+final photoPath = await sdk.camera.takePhoto();
+
+try {
+  await sdk.camera.startVideoRecording();
+} on HardwareException catch (error) {
+  debugPrint('Video not available yet: ${error.code}');
+}
+```
+
+Use native platform utilities for small but important app integrations:
+
+```dart
+await sdk.native.copyText('Copied from Nexora');
+final pasted = await sdk.native.pasteText();
+await sdk.native.openUrl('https://flutter.dev');
+await sdk.native.shareText('Shared from Nexora SDK');
+```
+
+Connectivity can be watched with a lightweight polling stream:
+
+```dart
+sdk.connectivity.watch().listen((info) {
+  debugPrint('${info.networkType}: ${info.isConnected}');
+});
+```
+
+Storage includes convenience helpers for app settings and lightweight logs:
+
+```dart
+await sdk.storage.writeJson('settings.json', {'audioFft': true});
+final settings = await sdk.storage.readJson<Map<String, dynamic>>(
+  'settings.json',
+);
+
+await sdk.storage.appendFile('session.log', 'Started\n');
+```
+
 ## Notes
 
 Hardware APIs are permission-sensitive and device-sensitive. Methods that require permission now return a native `PERMISSION_DENIED` error instead of silently pretending to work.
+
+High-level Dart APIs validate common bad inputs before crossing the platform
+channel, including empty Bluetooth IDs, invalid geofence coordinates, invalid
+camera sizes, unsupported haptic names, and non-positive sensor/audio intervals.

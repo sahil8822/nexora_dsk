@@ -5,8 +5,16 @@ class BiometricModule {
   /// Triggers a system biometric prompt with the specified [reason].
   ///
   /// Returns true if the user successfully authenticated.
-  Future<bool> authenticate({String reason = "Authenticate to continue"}) =>
-      NexoraSdkPlatform.instance.authenticate(reason);
+  Future<bool> authenticate({String reason = "Authenticate to continue"}) {
+    if (reason.trim().isEmpty) {
+      throw ArgumentError.value(
+        reason,
+        'reason',
+        'Authentication reason cannot be empty.',
+      );
+    }
+    return NexoraSdkPlatform.instance.authenticate(reason);
+  }
 
   /// Checks if the device supports and has biometrics configured.
   Future<bool> canAuthenticate() =>

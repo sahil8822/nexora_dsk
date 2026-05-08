@@ -3,6 +3,7 @@ import UIKit
 import AVFoundation
 import CoreLocation
 import CoreBluetooth
+import Network
 
 /// Nexora SDK v3.1.2 — Complete iOS Plugin with all method handlers.
 public class NexoraSdk: NSObject, FlutterPlugin, CLLocationManagerDelegate {
@@ -84,6 +85,21 @@ public class NexoraSdk: NSObject, FlutterPlugin, CLLocationManagerDelegate {
             if textureId != -1 { registrar?.textures().unregisterTexture(textureId) }
             textureId = registrar?.textures().register(camera) ?? -1
             result(true)
+
+        case "takePhoto":
+            camera.takePhoto(fileName: args?["fileName"] as? String) { path in
+                if let path = path {
+                    result(path)
+                } else {
+                    result(FlutterError(code: "CAMERA_UNAVAILABLE", message: "Camera is not running or photo capture failed.", details: nil))
+                }
+            }
+
+        case "startVideoRecording":
+            result(FlutterError(code: "NOT_SUPPORTED", message: "Video recording is not implemented on iOS yet.", details: nil))
+
+        case "stopVideoRecording":
+            result(FlutterError(code: "NOT_SUPPORTED", message: "Video recording is not implemented on iOS yet.", details: nil))
 
         // ==================== Audio & FFT ====================
         case "startAudio":
@@ -259,6 +275,31 @@ public class NexoraSdk: NSObject, FlutterPlugin, CLLocationManagerDelegate {
         case "getPlatformVersion":
             result("iOS " + UIDevice.current.systemVersion)
 
+        case "getDeviceInfo":
+            result(getDeviceInfo())
+
+        case "getConnectivityInfo":
+            getConnectivityInfo(result: result)
+
+        case "getPermissionStatus":
+            result(getPermissionStatus(type: args?["type"] as? String))
+
+        case "openAppSettings":
+            openAppSettings(result: result)
+
+        case "copyText":
+            UIPasteboard.general.string = args?["text"] as? String ?? ""
+            result(true)
+
+        case "pasteText":
+            result(UIPasteboard.general.string)
+
+        case "openUrl":
+            openUrl(args?["url"] as? String ?? "", result: result)
+
+        case "shareText":
+            shareText(args?["text"] as? String ?? "", subject: args?["subject"] as? String, result: result)
+
         case "requestPermissions":
             requestNativePermissions(result: result)
 
@@ -427,5 +468,224 @@ public class NexoraSdk: NSObject, FlutterPlugin, CLLocationManagerDelegate {
             return CBManager.authorization == .allowedAlways
         }
         return true
+    }
+
+    private func getPermissionStatus(type: String?) -> [String: Any] {
+        let permission = type ?? "unknown"
+        let state: String
+        let canRequest: Bool
+
+        switch type {
+        case "camera":
+            switch AVCaptureDevice.authorizationStatus(for: .video) {
+            case .authorized:
+                state = "granted"
+                canRequest = false
+            case .notDetermined:
+                state = "notDetermined"
+                canRequest = true
+            case .denied:
+                state = "permanentlyDenied"
+                canRequest = false
+            case .restricted:
+                state = "restricted"
+                canRequest = false
+            @unknown default:
+                state = "unsupported"
+                canRequest = false
+            }
+        case "audio":
+            switch AVAudioSession.sharedInstance().recordPermission {
+            case .granted:
+                state = "granted"
+                canRequest = false
+            case .undetermined:
+                state = "notDetermined"
+                canRequest = true
+            case .denied:
+                state = "permanentlyDenied"
+                canRequest = false
+            @unknown default:
+                state = "unsupported"
+                canRequest = false
+            }
+        case "location":
+            switch CLLocationManager.authorizationStatus() {
+            case .authorizedAlways, .authorizedWhenInUse:
+                state = "granted"
+                canRequest = false
+            case .notDetermined:
+                state = "notDetermined"
+                canRequest = true
+            case .denied:
+                state = "permanentlyDenied"
+                canRequest = false
+            case .restricted:
+                state = "restricted"
+                canRequest = false
+            @unknown default:
+                state = "unsupported"
+                canRequest = false
+            }
+        case "bluetooth":
+            if #available(iOS 13.1, *) {
+                switch CBManager.authorization {
+                case .allowedAlways:
+                    state = "granted"
+                    canRequest = false
+                case .notDetermined:
+                    state = "notDetermined"
+                    canRequest = true
+                case .denied:
+                    state = "permanentlyDenied"
+                    canRequest = false
+                case .restricted:
+                    state = "restricted"
+                    canRequest = false
+                @unknown default:
+                    state = "unsupported"
+                    canRequest = false
+                }
+            } else {
+                state = "granted"
+                canRequest = false
+            }
+        default:
+            state = "unsupported"
+            canRequest = false
+        }
+
+        return [
+            "permission": permission,
+            "state": state,
+            "canRequest": canRequest
+        ]
+    }
+
+    private func openAppSettings(result: @escaping FlutterResult) {
+        guard let url = URL(string: UIApplication.openSettingsURLString),
+              UIApplication.shared.canOpenURL(url) else {
+            result(false)
+            return
+        }
+        UIApplication.shared.open(url, options: [:]) { success in
+            result(success)
+        }
+    }
+
+    private func openUrl(_ urlString: String, result: @escaping FlutterResult) {
+        guard let url = URL(string: urlString) else {
+            result(false)
+            return
+        }
+        UIApplication.shared.open(url, options: [:]) { success in
+            result(success)
+        }
+    }
+
+    private func shareText(_ text: String, subject: String?, result: @escaping FlutterResult) {
+        var items: [Any] = [text]
+        if let subject = subject, !subject.isEmpty {
+            items.append(subject)
+        }
+        guard let controller = UIApplication.shared.connectedScenes
+            .compactMap({ $0 as? UIWindowScene })
+            .flatMap({ $0.windows })
+            .first(where: { $0.isKeyWindow })?
+            .rootViewController else {
+            result(false)
+            return
+        }
+        let activity = UIActivityViewController(activityItems: items, applicationActivities: nil)
+        controller.present(activity, animated: true) {
+            result(true)
+        }
+    }
+
+    private func getDeviceInfo() -> [String: Any] {
+        let processInfo = ProcessInfo.processInfo
+        let thermalState: String
+        switch processInfo.thermalState {
+        case .nominal:
+            thermalState = "nominal"
+        case .fair:
+            thermalState = "fair"
+        case .serious:
+            thermalState = "serious"
+        case .critical:
+            thermalState = "critical"
+        @unknown default:
+            thermalState = "unknown"
+        }
+
+        #if targetEnvironment(simulator)
+        let isPhysicalDevice = false
+        #else
+        let isPhysicalDevice = true
+        #endif
+
+        return [
+            "platform": "ios",
+            "manufacturer": "Apple",
+            "model": UIDevice.current.model,
+            "osVersion": UIDevice.current.systemVersion,
+            "sdkVersion": processInfo.operatingSystemVersionString,
+            "isPhysicalDevice": isPhysicalDevice,
+            "totalRamBytes": Int64(processInfo.physicalMemory),
+            "availableRamBytes": 0,
+            "cpuArchitecture": cpuArchitecture(),
+            "screenRefreshRate": Double(UIScreen.main.maximumFramesPerSecond),
+            "thermalState": thermalState
+        ]
+    }
+
+    private func getConnectivityInfo(result: @escaping FlutterResult) {
+        let monitor = NWPathMonitor()
+        let queue = DispatchQueue(label: "com.nexora.sdk.connectivity")
+        var didReturn = false
+
+        monitor.pathUpdateHandler = { path in
+            guard !didReturn else { return }
+            didReturn = true
+            monitor.cancel()
+
+            let networkType: String
+            if path.usesInterfaceType(.wifi) {
+                networkType = "wifi"
+            } else if path.usesInterfaceType(.cellular) {
+                networkType = "mobile"
+            } else if path.usesInterfaceType(.wiredEthernet) {
+                networkType = "ethernet"
+            } else if path.usesInterfaceType(.loopback) {
+                networkType = "loopback"
+            } else {
+                networkType = path.status == .satisfied ? "unknown" : "none"
+            }
+
+            DispatchQueue.main.async {
+                result([
+                    "isConnected": path.status == .satisfied,
+                    "networkType": networkType,
+                    "isMetered": path.isExpensive,
+                    "isVpn": false,
+                    "signalStrength": nil,
+                    "ipAddress": nil
+                ])
+            }
+        }
+
+        monitor.start(queue: queue)
+    }
+
+    private func cpuArchitecture() -> String {
+        #if arch(arm64)
+        return "arm64"
+        #elseif arch(x86_64)
+        return "x86_64"
+        #elseif arch(arm)
+        return "arm"
+        #else
+        return "unknown"
+        #endif
     }
 }

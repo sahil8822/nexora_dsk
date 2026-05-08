@@ -10,6 +10,8 @@ import android.os.Handler
 import android.os.HandlerThread
 import android.view.Surface
 import io.flutter.plugin.common.EventChannel
+import java.io.File
+import java.io.FileOutputStream
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.face.FaceDetection
@@ -24,6 +26,7 @@ class HardwareCameraManager(private val context: Context) {
     private var previewRequestBuilder: CaptureRequest.Builder? = null
     
     private var imageReader: ImageReader? = null
+    private var photoReader: ImageReader? = null
     private var previewSurface: Surface? = null
     private var backgroundThread: HandlerThread? = null
     private var backgroundHandler: Handler? = null
@@ -80,6 +83,8 @@ class HardwareCameraManager(private val context: Context) {
             } catch (e: Exception) {}
         }, backgroundHandler)
 
+        photoReader = ImageReader.newInstance(width, height, ImageFormat.JPEG, 1)
+
         openCurrentCamera()
     }
 
@@ -104,6 +109,7 @@ class HardwareCameraManager(private val context: Context) {
         val targets = mutableListOf<Surface>()
         previewSurface?.let { targets.add(it) }
         imageReader?.surface?.let { targets.add(it) }
+        photoReader?.surface?.let { targets.add(it) }
 
         try {
             previewRequestBuilder = camera.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW)
@@ -170,6 +176,41 @@ class HardwareCameraManager(private val context: Context) {
         } catch (e: Exception) {}
     }
 
+    fun takePhoto(fileName: String?): String? {
+        val camera = cameraDevice ?: return null
+        val session = captureSession ?: return null
+        val reader = photoReader ?: return null
+        val handler = backgroundHandler ?: return null
+        val outputFile = File(
+            context.cacheDir,
+            fileName?.takeIf { it.isNotBlank() } ?: "nexora_photo_${System.currentTimeMillis()}.jpg"
+        )
+
+        reader.setOnImageAvailableListener({ imageReader ->
+            val image = imageReader.acquireNextImage() ?: return@setOnImageAvailableListener
+            try {
+                val buffer = image.planes[0].buffer
+                val bytes = ByteArray(buffer.remaining())
+                buffer.get(bytes)
+                FileOutputStream(outputFile).use { it.write(bytes) }
+            } catch (_: Exception) {
+            } finally {
+                image.close()
+            }
+        }, handler)
+
+        return try {
+            val request = camera.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE)
+            request.addTarget(reader.surface)
+            request.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE)
+            request.set(CaptureRequest.FLASH_MODE, if (isFlashOn) CaptureRequest.FLASH_MODE_SINGLE else CaptureRequest.FLASH_MODE_OFF)
+            session.capture(request.build(), null, handler)
+            outputFile.absolutePath
+        } catch (_: Exception) {
+            null
+        }
+    }
+
     @Synchronized
     fun flipCamera() {
         val newId = if (currentCameraId == "0") "1" else "0"
@@ -189,8 +230,9 @@ class HardwareCameraManager(private val context: Context) {
             captureSession?.close()
             cameraDevice?.close()
             imageReader?.close()
+            photoReader?.close()
             backgroundThread?.quitSafely()
         } catch (e: Exception) {}
-        captureSession = null; cameraDevice = null; imageReader = null
+        captureSession = null; cameraDevice = null; imageReader = null; photoReader = null
     }
 }

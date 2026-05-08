@@ -11,11 +11,20 @@ class AudioModule {
     bool enableFFT = false,
     bool streamBytes = false,
     int updateIntervalMs = 80,
-  }) => NexoraSdkPlatform.instance.startAudio(
-    enableFFT: enableFFT,
-    streamBytes: streamBytes,
-    updateIntervalMs: updateIntervalMs,
-  );
+  }) {
+    if (updateIntervalMs <= 0) {
+      throw ArgumentError.value(
+        updateIntervalMs,
+        'updateIntervalMs',
+        'Must be greater than zero.',
+      );
+    }
+    return NexoraSdkPlatform.instance.startAudio(
+      enableFFT: enableFFT,
+      streamBytes: streamBytes,
+      updateIntervalMs: updateIntervalMs,
+    );
+  }
 
   /// Stops audio capture and analysis.
   Future<bool> stop() => NexoraSdkPlatform.instance.stopAudio();

@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:typed_data';
 import '../../nexora_sdk_platform_interface.dart';
 import '../../models/hardware_models.dart';
@@ -18,6 +19,15 @@ class StorageModule {
     return NexoraSdkPlatform.instance.writeFile(fileName, content);
   }
 
+  /// Appends text to a file in app-private storage.
+  ///
+  /// If the file does not exist, it is created.
+  Future<String?> appendFile(String fileName, String content) async {
+    _validateFileName(fileName);
+    final current = await NexoraSdkPlatform.instance.readFile(fileName) ?? '';
+    return NexoraSdkPlatform.instance.writeFile(fileName, '$current$content');
+  }
+
   /// Reads a text file from app-private storage.
   /// Returns null if the file does not exist.
   Future<String?> readFile(String fileName) {
@@ -25,9 +35,37 @@ class StorageModule {
     return NexoraSdkPlatform.instance.readFile(fileName);
   }
 
+  /// Writes a JSON-serializable value to app-private storage.
+  Future<String?> writeJson(String fileName, Object? value) {
+    _validateFileName(fileName);
+    return NexoraSdkPlatform.instance.writeFile(fileName, jsonEncode(value));
+  }
+
+  /// Reads a JSON value from app-private storage.
+  ///
+  /// Returns null if the file is missing or contains invalid JSON.
+  Future<T?> readJson<T extends Object>(String fileName) async {
+    _validateFileName(fileName);
+    final content = await NexoraSdkPlatform.instance.readFile(fileName);
+    if (content == null) return null;
+    try {
+      final value = jsonDecode(content);
+      return value is T ? value : null;
+    } on FormatException {
+      return null;
+    }
+  }
+
   /// Deletes a file from app-private storage.
   Future<bool> deleteFile(String fileName) {
     _validateFileName(fileName);
+    return NexoraSdkPlatform.instance.deleteFile(fileName);
+  }
+
+  /// Deletes a file if present and returns true when no file remains.
+  Future<bool> deleteIfExists(String fileName) async {
+    _validateFileName(fileName);
+    if (!await NexoraSdkPlatform.instance.fileExists(fileName)) return true;
     return NexoraSdkPlatform.instance.deleteFile(fileName);
   }
 

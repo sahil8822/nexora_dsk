@@ -11,13 +11,19 @@ class CameraModule {
     CameraQuality quality = CameraQuality.hd,
     int? width,
     int? height,
-  }) async {
-    final result = await NexoraSdkPlatform.instance.startCamera(
-      width: width ?? quality.width,
-      height: height ?? quality.height,
-    );
-    if (result is int) return result;
-    return null;
+  }) {
+    if (width != null && width <= 0) {
+      throw ArgumentError.value(width, 'width', 'Must be greater than zero.');
+    }
+    if (height != null && height <= 0) {
+      throw ArgumentError.value(height, 'height', 'Must be greater than zero.');
+    }
+    return NexoraSdkPlatform.instance
+        .startCamera(
+          width: width ?? quality.width,
+          height: height ?? quality.height,
+        )
+        .then((result) => result is int ? result : null);
   }
 
   /// Stops the camera and releases all native resources.
@@ -27,11 +33,36 @@ class CameraModule {
   Future<bool> setFlash(bool on) => NexoraSdkPlatform.instance.setFlash(on);
 
   /// Sets the digital zoom level (e.g., 1.0 to 10.0).
-  Future<bool> setZoom(double level) =>
-      NexoraSdkPlatform.instance.setZoom(level);
+  Future<bool> setZoom(double level) {
+    if (level <= 0) {
+      throw ArgumentError.value(level, 'level', 'Must be greater than zero.');
+    }
+    return NexoraSdkPlatform.instance.setZoom(level);
+  }
 
   /// Flips between front and back cameras.
   Future<bool> flip() => NexoraSdkPlatform.instance.flipCamera();
+
+  /// Captures a still photo and returns the saved file path when supported.
+  Future<String?> takePhoto({String? fileName}) {
+    if (fileName != null && fileName.trim().isEmpty) {
+      throw ArgumentError.value(fileName, 'fileName', 'File name is empty.');
+    }
+    return NexoraSdkPlatform.instance.takePhoto(fileName: fileName);
+  }
+
+  /// Starts native video recording and returns the output file path.
+  Future<String?> startVideoRecording({String? fileName}) {
+    if (fileName != null && fileName.trim().isEmpty) {
+      throw ArgumentError.value(fileName, 'fileName', 'File name is empty.');
+    }
+    return NexoraSdkPlatform.instance.startVideoRecording(fileName: fileName);
+  }
+
+  /// Stops native video recording and returns the saved file path.
+  Future<String?> stopVideoRecording() {
+    return NexoraSdkPlatform.instance.stopVideoRecording();
+  }
 
   /// A stream of [CameraFrame] objects captured in real-time.
   Stream<CameraFrame> get stream => NexoraSdkPlatform.instance.cameraStream;

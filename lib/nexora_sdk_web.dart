@@ -4,7 +4,9 @@ import 'dart:typed_data';
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 
 import 'core/hardware_core.dart';
+import 'models/device_models.dart';
 import 'models/hardware_models.dart';
+import 'models/permission_models.dart';
 import 'nexora_sdk_platform_interface.dart';
 
 /// Web implementation for browsers.
@@ -41,6 +43,51 @@ class NexoraSdkWeb extends NexoraSdkPlatform {
   Future<bool> requestBluetoothPermission() async => true;
 
   @override
+  Future<HardwarePermissionStatus> getPermissionStatus(
+    HardwarePermission permission,
+  ) async {
+    return HardwarePermissionStatus(
+      permission: permission,
+      state: permission == HardwarePermission.bluetooth
+          ? HardwarePermissionState.unsupported
+          : HardwarePermissionState.granted,
+      canRequest: false,
+    );
+  }
+
+  @override
+  Future<bool> openAppSettings() async => false;
+
+  @override
+  Future<DeviceInfo> getDeviceInfo() async {
+    return const DeviceInfo(
+      platform: 'web',
+      manufacturer: 'browser',
+      model: 'browser',
+      osVersion: 'web',
+      sdkVersion: 'web',
+      isPhysicalDevice: true,
+      totalRamBytes: 0,
+      availableRamBytes: 0,
+      cpuArchitecture: 'unknown',
+      screenRefreshRate: 0,
+      thermalState: 'unknown',
+    );
+  }
+
+  @override
+  Future<ConnectivityInfo> getConnectivityInfo() async {
+    return const ConnectivityInfo(
+      isConnected: true,
+      networkType: 'browser',
+      isMetered: false,
+      isVpn: false,
+      signalStrength: null,
+      ipAddress: null,
+    );
+  }
+
+  @override
   Future<dynamic> startCamera({int width = 1280, int height = 720}) async {
     return false;
   }
@@ -61,6 +108,15 @@ class NexoraSdkWeb extends NexoraSdkPlatform {
 
   @override
   Future<bool> flipCamera() async => false;
+
+  @override
+  Future<String?> takePhoto({String? fileName}) async => null;
+
+  @override
+  Future<String?> startVideoRecording({String? fileName}) async => null;
+
+  @override
+  Future<String?> stopVideoRecording() async => null;
 
   @override
   Future<bool> startAudio({
@@ -221,6 +277,18 @@ class NexoraSdkWeb extends NexoraSdkPlatform {
 
   @override
   Future<String?> getExternalDirectory() async => null;
+
+  @override
+  Future<bool> copyText(String text) async => false;
+
+  @override
+  Future<String?> pasteText() async => null;
+
+  @override
+  Future<bool> openUrl(String url) async => false;
+
+  @override
+  Future<bool> shareText(String text, {String? subject}) async => false;
 
   static const String _storagePrefix = 'nexora_sdk:file:';
 

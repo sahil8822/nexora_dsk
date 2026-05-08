@@ -2,7 +2,10 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'nexora_sdk_platform_interface.dart';
 import 'core/hardware_core.dart';
+import 'models/device_models.dart';
+import 'models/hardware_exception.dart';
 import 'models/hardware_models.dart';
+import 'models/permission_models.dart';
 
 /// An implementation of [NexoraSdkPlatform] that uses method channels.
 class MethodChannelNexoraSdk extends NexoraSdkPlatform {
@@ -11,53 +14,85 @@ class MethodChannelNexoraSdk extends NexoraSdkPlatform {
   @visibleForTesting
   final eventChannel = const EventChannel('nexora_sdk/events');
 
+  Future<T?> _invoke<T>(String method, [Object? arguments]) async {
+    try {
+      return await methodChannel.invokeMethod<T>(method, arguments);
+    } on PlatformException catch (error) {
+      throw HardwareException.fromPlatformException(error);
+    }
+  }
+
   @override
   Future<String?> getPlatformVersion() async {
-    return await methodChannel.invokeMethod<String>('getPlatformVersion');
+    return await _invoke<String>('getPlatformVersion');
   }
 
   @override
   Future<bool> requestPermissions() async {
-    return await methodChannel.invokeMethod<bool>('requestPermissions') ??
-        false;
+    return await _invoke<bool>('requestPermissions') ?? false;
   }
 
   @override
   Future<bool> requestCameraPermission() async {
-    return await methodChannel.invokeMethod<bool>('requestPermission', {
-          'type': 'camera',
-        }) ??
+    return await _invoke<bool>('requestPermission', {'type': 'camera'}) ??
         false;
   }
 
   @override
   Future<bool> requestAudioPermission() async {
-    return await methodChannel.invokeMethod<bool>('requestPermission', {
-          'type': 'audio',
-        }) ??
-        false;
+    return await _invoke<bool>('requestPermission', {'type': 'audio'}) ?? false;
   }
 
   @override
   Future<bool> requestLocationPermission() async {
-    return await methodChannel.invokeMethod<bool>('requestPermission', {
-          'type': 'location',
-        }) ??
+    return await _invoke<bool>('requestPermission', {'type': 'location'}) ??
         false;
   }
 
   @override
   Future<bool> requestBluetoothPermission() async {
-    return await methodChannel.invokeMethod<bool>('requestPermission', {
-          'type': 'bluetooth',
-        }) ??
+    return await _invoke<bool>('requestPermission', {'type': 'bluetooth'}) ??
         false;
+  }
+
+  @override
+  Future<HardwarePermissionStatus> getPermissionStatus(
+    HardwarePermission permission,
+  ) async {
+    final map = await methodChannel.invokeMapMethod('getPermissionStatus', {
+      'type': permission.value,
+    });
+    return HardwarePermissionStatus.fromMap(
+      map ??
+          <String, Object>{
+            'permission': permission.value,
+            'state': HardwarePermissionState.unsupported.name,
+            'canRequest': false,
+          },
+    );
+  }
+
+  @override
+  Future<bool> openAppSettings() async {
+    return await _invoke<bool>('openAppSettings') ?? false;
+  }
+
+  @override
+  Future<DeviceInfo> getDeviceInfo() async {
+    final map = await methodChannel.invokeMapMethod('getDeviceInfo');
+    return DeviceInfo.fromMap(map ?? const <String, Object>{});
+  }
+
+  @override
+  Future<ConnectivityInfo> getConnectivityInfo() async {
+    final map = await methodChannel.invokeMapMethod('getConnectivityInfo');
+    return ConnectivityInfo.fromMap(map ?? const <String, Object>{});
   }
 
   // --- Camera & Vision ---
   @override
   Future<dynamic> startCamera({int width = 1280, int height = 720}) async {
-    return await methodChannel.invokeMethod<dynamic>('startCamera', {
+    return await _invoke<dynamic>('startCamera', {
       'width': width,
       'height': height,
     });
@@ -65,12 +100,12 @@ class MethodChannelNexoraSdk extends NexoraSdkPlatform {
 
   @override
   Future<bool> stopCamera() async {
-    return await methodChannel.invokeMethod<bool>('stopCamera') ?? false;
+    return await _invoke<bool>('stopCamera') ?? false;
   }
 
   @override
   Future<bool> setVisionMode({bool barcode = false, bool face = false}) async {
-    return await methodChannel.invokeMethod<bool>('setVisionMode', {
+    return await _invoke<bool>('setVisionMode', {
           'barcode': barcode,
           'face': face,
         }) ??
@@ -79,21 +114,32 @@ class MethodChannelNexoraSdk extends NexoraSdkPlatform {
 
   @override
   Future<bool> setFlash(bool on) async {
-    return await methodChannel.invokeMethod<bool>('setFlash', {'on': on}) ??
-        false;
+    return await _invoke<bool>('setFlash', {'on': on}) ?? false;
   }
 
   @override
   Future<bool> setZoom(double level) async {
-    return await methodChannel.invokeMethod<bool>('setZoom', {
-          'level': level,
-        }) ??
-        false;
+    return await _invoke<bool>('setZoom', {'level': level}) ?? false;
   }
 
   @override
   Future<bool> flipCamera() async {
-    return await methodChannel.invokeMethod<bool>('flipCamera') ?? false;
+    return await _invoke<bool>('flipCamera') ?? false;
+  }
+
+  @override
+  Future<String?> takePhoto({String? fileName}) async {
+    return await _invoke<String>('takePhoto', {'fileName': fileName});
+  }
+
+  @override
+  Future<String?> startVideoRecording({String? fileName}) async {
+    return await _invoke<String>('startVideoRecording', {'fileName': fileName});
+  }
+
+  @override
+  Future<String?> stopVideoRecording() async {
+    return await _invoke<String>('stopVideoRecording');
   }
 
   // --- Audio ---
@@ -342,6 +388,30 @@ class MethodChannelNexoraSdk extends NexoraSdkPlatform {
   @override
   Future<String?> getExternalDirectory() async {
     return await methodChannel.invokeMethod<String>('getExternalDirectory');
+  }
+
+  @override
+  Future<bool> copyText(String text) async {
+    return await _invoke<bool>('copyText', {'text': text}) ?? false;
+  }
+
+  @override
+  Future<String?> pasteText() async {
+    return await _invoke<String>('pasteText');
+  }
+
+  @override
+  Future<bool> openUrl(String url) async {
+    return await _invoke<bool>('openUrl', {'url': url}) ?? false;
+  }
+
+  @override
+  Future<bool> shareText(String text, {String? subject}) async {
+    return await _invoke<bool>('shareText', {
+          'text': text,
+          'subject': subject,
+        }) ??
+        false;
   }
 
   // --- Unified Stream ---
