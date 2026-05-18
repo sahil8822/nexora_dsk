@@ -93,10 +93,24 @@ class NexoraSdkDesktop extends NexoraSdkPlatform {
   }
 
   @override
+  Future<dynamic> startCameraWithOptions(CameraOptions options) async {
+    return false;
+  }
+
+  @override
   Future<bool> stopCamera() async => true;
 
   @override
   Future<bool> setVisionMode({bool barcode = false, bool face = false}) async {
+    return false;
+  }
+
+  @override
+  Future<bool> registerCustomClassifier({
+    required String modelAssetPath,
+    required List<String> labels,
+    double threshold = 0.5,
+  }) async {
     return false;
   }
 
@@ -128,7 +142,27 @@ class NexoraSdkDesktop extends NexoraSdkPlatform {
   }
 
   @override
+  Future<bool> startAudioWithOptions(AudioOptions options) async {
+    return false;
+  }
+
+  @override
   Future<bool> stopAudio() async => true;
+
+  @override
+  Future<bool> routeAudioOutput(AudioOutputRoute route) async => true;
+
+  @override
+  Future<double> getAudioVolume() async => 0.5;
+
+  @override
+  Future<bool> setAudioVolume(double level) async => true;
+
+  @override
+  Future<bool> selectAudioInput(AudioInputDevice device) async => true;
+
+  @override
+  Future<bool> setAudioGain(double gain) async => true;
 
   @override
   Future<bool> startHardwareLogging(LogConfig config) async => false;
@@ -148,6 +182,9 @@ class NexoraSdkDesktop extends NexoraSdkPlatform {
 
   @override
   Future<bool> startBluetoothScan() async => false;
+
+  @override
+  Future<bool> startBluetoothScanWithOptions(BluetoothScanOptions options) async => false;
 
   @override
   Future<bool> stopBluetoothScan() async => true;
@@ -172,6 +209,9 @@ class NexoraSdkDesktop extends NexoraSdkPlatform {
   Future<bool> authenticate(String reason) async => false;
 
   @override
+  Future<bool> authenticateWithOptions(BiometricPromptOptions options) async => false;
+
+  @override
   Future<bool> canAuthenticate() async => false;
 
   @override
@@ -179,6 +219,9 @@ class NexoraSdkDesktop extends NexoraSdkPlatform {
 
   @override
   Future<void> hapticFeedback(String type) async {}
+
+  @override
+  Future<void> performHapticWithOptions(HapticOptions options) async {}
 
   @override
   Future<BatteryInfo?> getBatteryInfo() async => null;
@@ -190,6 +233,9 @@ class NexoraSdkDesktop extends NexoraSdkPlatform {
   Future<bool> startLocation() async => false;
 
   @override
+  Future<bool> startLocationWithOptions(LocationOptions options) async => false;
+
+  @override
   Future<bool> stopLocation() async => true;
 
   @override
@@ -197,6 +243,9 @@ class NexoraSdkDesktop extends NexoraSdkPlatform {
 
   @override
   Future<bool> startSensor({int frequencyHz = 60}) async => false;
+
+  @override
+  Future<bool> startSensorWithOptions(SensorOptions options) async => false;
 
   @override
   Future<bool> stopSensor() async => true;
@@ -227,6 +276,14 @@ class NexoraSdkDesktop extends NexoraSdkPlatform {
     final file = await _file(fileName);
     await file.parent.create(recursive: true);
     await file.writeAsString(content);
+    return file.path;
+  }
+
+  @override
+  Future<String?> appendFile(String fileName, String content) async {
+    final file = await _file(fileName);
+    await file.parent.create(recursive: true);
+    await file.writeAsString(content, mode: FileMode.append);
     return file.path;
   }
 
@@ -316,6 +373,32 @@ class NexoraSdkDesktop extends NexoraSdkPlatform {
 
   @override
   Future<bool> shareText(String text, {String? subject}) async => false;
+
+  @override
+  Future<bool> enableSmartSync({
+    required String uploadEndpointUrl,
+    required Map<String, String> headers,
+    int rollLimitBytes = 2 * 1024 * 1024,
+    bool requireWifi = true,
+  }) async => false;
+
+  @override
+  Future<bool> applyCameraFilterShader(String shaderType) async => false;
+
+  @override
+  Stream<Uint8List> openL2capStream(String deviceId, int psm) => const Stream.empty();
+
+  @override
+  Future<bool> enableDeadReckoning(bool enabled) async => false;
+
+  @override
+  Future<void> setEcoModeEnabled(bool enabled) async {}
+
+  @override
+  Future<bool> isEcoModeActive() async => false;
+
+  @override
+  Future<DeviceThermalState> getThermalState() async => DeviceThermalState.normal;
 
   Future<File> _file(String fileName) async {
     final safeName = fileName.replaceAll(

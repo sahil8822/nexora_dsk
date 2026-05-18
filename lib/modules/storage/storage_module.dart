@@ -24,8 +24,7 @@ class StorageModule {
   /// If the file does not exist, it is created.
   Future<String?> appendFile(String fileName, String content) async {
     _validateFileName(fileName);
-    final current = await NexoraSdkPlatform.instance.readFile(fileName) ?? '';
-    return NexoraSdkPlatform.instance.writeFile(fileName, '$current$content');
+    return NexoraSdkPlatform.instance.appendFile(fileName, content);
   }
 
   /// Reads a text file from app-private storage.

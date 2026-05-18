@@ -35,6 +35,29 @@ public class HardwareStorageManager {
         } catch { return nil }
     }
 
+    /// Appends text content to a file in the Documents directory.
+    public func appendFile(fileName: String, content: String) -> String? {
+        guard let url = safeFileURL(fileName: fileName) else { return nil }
+        guard let data = content.data(using: .utf8) else { return nil }
+        
+        if FileManager.default.fileExists(atPath: url.path) {
+            do {
+                let fileHandle = try FileHandle(forWritingTo: url)
+                defer { try? fileHandle.close() }
+                try fileHandle.seekToEnd()
+                try fileHandle.write(contentsOf: data)
+                return url.path
+            } catch {
+                return nil
+            }
+        } else {
+            do {
+                try content.write(to: url, atomically: true, encoding: .utf8)
+                return url.path
+            } catch { return nil }
+        }
+    }
+
     /// Reads a text file from the Documents directory.
     public func readFile(fileName: String) -> String? {
         guard let url = safeFileURL(fileName: fileName) else { return nil }

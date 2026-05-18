@@ -16,18 +16,43 @@ class CameraModule {
     CameraQuality quality = CameraQuality.hd,
     int? width,
     int? height,
-  }) {
+    bool autoRequestPermission = true,
+  }) async {
     if (width != null && width <= 0) {
       throw ArgumentError.value(width, 'width', 'Must be greater than zero.');
     }
     if (height != null && height <= 0) {
       throw ArgumentError.value(height, 'height', 'Must be greater than zero.');
     }
+    if (autoRequestPermission) {
+      final granted = await NexoraSdkPlatform.instance.requestCameraPermission();
+      if (!granted) return null;
+    }
     return NexoraSdkPlatform.instance
         .startCamera(
           width: width ?? quality.width,
           height: height ?? quality.height,
         )
+        .then((result) {
+          if (result is int) {
+            _isRunning = true;
+            return result;
+          }
+          return null;
+        });
+  }
+
+  /// Starts the camera with granular, fully-customized native options.
+  Future<int?> startWithOptions(
+    CameraOptions options, {
+    bool autoRequestPermission = true,
+  }) async {
+    if (autoRequestPermission) {
+      final granted = await NexoraSdkPlatform.instance.requestCameraPermission();
+      if (!granted) return null;
+    }
+    return NexoraSdkPlatform.instance
+        .startCameraWithOptions(options)
         .then((result) {
           if (result is int) {
             _isRunning = true;
@@ -77,6 +102,46 @@ class CameraModule {
   /// Stops native video recording and returns the saved file path.
   Future<String?> stopVideoRecording() {
     return NexoraSdkPlatform.instance.stopVideoRecording();
+  }
+
+  /// Registers a custom TensorFlow Lite or CoreML model for real-time edge classification.
+  Future<bool> registerCustomClassifier({
+    required String modelAssetPath,
+    required List<String> labels,
+    double threshold = 0.5,
+  }) {
+    if (modelAssetPath.trim().isEmpty) {
+      throw ArgumentError.value(
+        modelAssetPath,
+        'modelAssetPath',
+        'Model asset path cannot be empty.',
+      );
+    }
+    if (labels.isEmpty) {
+      throw ArgumentError.value(
+        labels,
+        'labels',
+        'Labels list cannot be empty.',
+      );
+    }
+    return NexoraSdkPlatform.instance.registerCustomClassifier(
+      modelAssetPath: modelAssetPath,
+      labels: labels,
+      threshold: threshold,
+    );
+  }
+
+  /// Applies a real-time GPU fragment shader filter to the camera preview.
+  /// Supported types: 'none', 'chromaKey', 'monochrome', 'sepia'
+  Future<bool> applyFilterShader(String shaderType) {
+    if (shaderType.trim().isEmpty) {
+      throw ArgumentError.value(
+        shaderType,
+        'shaderType',
+        'Shader type cannot be empty.',
+      );
+    }
+    return NexoraSdkPlatform.instance.applyCameraFilterShader(shaderType);
   }
 
   /// A stream of [CameraFrame] objects captured in real-time.

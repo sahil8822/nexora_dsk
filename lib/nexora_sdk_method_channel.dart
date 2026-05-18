@@ -99,6 +99,11 @@ class MethodChannelNexoraSdk extends NexoraSdkPlatform {
   }
 
   @override
+  Future<dynamic> startCameraWithOptions(CameraOptions options) async {
+    return await _invoke<dynamic>('startCameraWithOptions', options.toMap());
+  }
+
+  @override
   Future<bool> stopCamera() async {
     return await _invoke<bool>('stopCamera') ?? false;
   }
@@ -108,6 +113,20 @@ class MethodChannelNexoraSdk extends NexoraSdkPlatform {
     return await _invoke<bool>('setVisionMode', {
           'barcode': barcode,
           'face': face,
+        }) ??
+        false;
+  }
+
+  @override
+  Future<bool> registerCustomClassifier({
+    required String modelAssetPath,
+    required List<String> labels,
+    double threshold = 0.5,
+  }) async {
+    return await _invoke<bool>('registerCustomClassifier', {
+          'modelAssetPath': modelAssetPath,
+          'labels': labels,
+          'threshold': threshold,
         }) ??
         false;
   }
@@ -158,8 +177,50 @@ class MethodChannelNexoraSdk extends NexoraSdkPlatform {
   }
 
   @override
+  Future<bool> startAudioWithOptions(AudioOptions options) async {
+    return await _invoke<bool>('startAudioWithOptions', options.toMap()) ?? false;
+  }
+
+  @override
   Future<bool> stopAudio() async {
     return await methodChannel.invokeMethod<bool>('stopAudio') ?? false;
+  }
+
+  @override
+  Future<bool> routeAudioOutput(AudioOutputRoute route) async {
+    return await methodChannel.invokeMethod<bool>('routeAudioOutput', {
+          'route': route.name,
+        }) ??
+        false;
+  }
+
+  @override
+  Future<double> getAudioVolume() async {
+    return await methodChannel.invokeMethod<double>('getAudioVolume') ?? 0.5;
+  }
+
+  @override
+  Future<bool> setAudioVolume(double level) async {
+    return await methodChannel.invokeMethod<bool>('setAudioVolume', {
+          'level': level,
+        }) ??
+        false;
+  }
+
+  @override
+  Future<bool> selectAudioInput(AudioInputDevice device) async {
+    return await methodChannel.invokeMethod<bool>('selectAudioInput', {
+          'device': device.name,
+        }) ??
+        false;
+  }
+
+  @override
+  Future<bool> setAudioGain(double gain) async {
+    return await methodChannel.invokeMethod<bool>('setAudioGain', {
+          'gain': gain,
+        }) ??
+        false;
   }
 
   // --- Intelligence & Logging ---
@@ -198,6 +259,11 @@ class MethodChannelNexoraSdk extends NexoraSdkPlatform {
   Future<bool> startBluetoothScan() async {
     return await methodChannel.invokeMethod<bool>('startBluetoothScan') ??
         false;
+  }
+
+  @override
+  Future<bool> startBluetoothScanWithOptions(BluetoothScanOptions options) async {
+    return await _invoke<bool>('startBluetoothScanWithOptions', options.toMap()) ?? false;
   }
 
   @override
@@ -248,6 +314,11 @@ class MethodChannelNexoraSdk extends NexoraSdkPlatform {
   }
 
   @override
+  Future<bool> authenticateWithOptions(BiometricPromptOptions options) async {
+    return await _invoke<bool>('authenticateWithOptions', options.toMap()) ?? false;
+  }
+
+  @override
   Future<bool> canAuthenticate() async {
     return await methodChannel.invokeMethod<bool>('canAuthenticate') ?? false;
   }
@@ -261,6 +332,11 @@ class MethodChannelNexoraSdk extends NexoraSdkPlatform {
   @override
   Future<void> hapticFeedback(String type) async {
     await methodChannel.invokeMethod('hapticFeedback', {'type': type});
+  }
+
+  @override
+  Future<void> performHapticWithOptions(HapticOptions options) async {
+    await _invoke<void>('performHapticWithOptions', options.toMap());
   }
 
   // --- Health ---
@@ -280,6 +356,11 @@ class MethodChannelNexoraSdk extends NexoraSdkPlatform {
   @override
   Future<bool> startLocation() async {
     return await methodChannel.invokeMethod<bool>('startLocation') ?? false;
+  }
+
+  @override
+  Future<bool> startLocationWithOptions(LocationOptions options) async {
+    return await _invoke<bool>('startLocationWithOptions', options.toMap()) ?? false;
   }
 
   @override
@@ -305,6 +386,11 @@ class MethodChannelNexoraSdk extends NexoraSdkPlatform {
   }
 
   @override
+  Future<bool> startSensorWithOptions(SensorOptions options) async {
+    return await _invoke<bool>('startSensorWithOptions', options.toMap()) ?? false;
+  }
+
+  @override
   Future<bool> stopSensor() async {
     return await methodChannel.invokeMethod<bool>('stopSensor') ?? false;
   }
@@ -320,6 +406,14 @@ class MethodChannelNexoraSdk extends NexoraSdkPlatform {
   @override
   Future<String?> writeFile(String fileName, String content) async {
     return await methodChannel.invokeMethod<String>('writeFile', {
+      'fileName': fileName,
+      'content': content,
+    });
+  }
+
+  @override
+  Future<String?> appendFile(String fileName, String content) async {
+    return await methodChannel.invokeMethod<String>('appendFile', {
       'fileName': fileName,
       'content': content,
     });
@@ -412,6 +506,71 @@ class MethodChannelNexoraSdk extends NexoraSdkPlatform {
           'subject': subject,
         }) ??
         false;
+  }
+
+  @override
+  Future<bool> enableSmartSync({
+    required String uploadEndpointUrl,
+    required Map<String, String> headers,
+    int rollLimitBytes = 2 * 1024 * 1024,
+    bool requireWifi = true,
+  }) async {
+    return await _invoke<bool>('enableSmartSync', {
+          'uploadEndpointUrl': uploadEndpointUrl,
+          'headers': headers,
+          'rollLimitBytes': rollLimitBytes,
+          'requireWifi': requireWifi,
+        }) ??
+        false;
+  }
+
+  @override
+  Future<bool> applyCameraFilterShader(String shaderType) async {
+    return await _invoke<bool>('applyCameraFilterShader', {
+          'shaderType': shaderType,
+        }) ??
+        false;
+  }
+
+  @override
+  Stream<Uint8List> openL2capStream(String deviceId, int psm) {
+    return unifiedStream
+        .where((e) =>
+            e.module == 'bluetooth' &&
+            e.type == 'l2cap' &&
+            (e.data as Map?)?['deviceId'] == deviceId &&
+            (e.data as Map?)?['psm'] == psm)
+        .map((e) => Uint8List.fromList(
+            List<int>.from((e.data as Map?)?['bytes'] as List? ?? [])));
+  }
+
+  @override
+  Future<bool> enableDeadReckoning(bool enabled) async {
+    return await _invoke<bool>('enableDeadReckoning', {
+          'enabled': enabled,
+        }) ??
+        false;
+  }
+
+  @override
+  Future<void> setEcoModeEnabled(bool enabled) async {
+    await methodChannel.invokeMethod('setEcoModeEnabled', {
+      'enabled': enabled,
+    });
+  }
+
+  @override
+  Future<bool> isEcoModeActive() async {
+    return await methodChannel.invokeMethod<bool>('isEcoModeActive') ?? false;
+  }
+
+  @override
+  Future<DeviceThermalState> getThermalState() async {
+    final stateStr = await methodChannel.invokeMethod<String>('getThermalState') ?? 'normal';
+    return DeviceThermalState.values.firstWhere(
+      (s) => s.name == stateStr,
+      orElse: () => DeviceThermalState.normal,
+    );
   }
 
   // --- Unified Stream ---

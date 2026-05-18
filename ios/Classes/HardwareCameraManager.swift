@@ -24,6 +24,19 @@ public class HardwareCameraManager: NSObject, FlutterTexture, AVCaptureVideoData
     private var lastHeight: Int = 480
     private var lastVisionFrameTime = CACurrentMediaTime()
 
+    private var customModelAssetPath: String?
+    private var customLabels: [String]?
+    private var customThreshold: Float = 0.5
+    private var isCustomClassifierRegistered = false
+
+    public func registerCustomClassifier(modelAssetPath: String, labels: [String], threshold: Float) -> Bool {
+        self.customModelAssetPath = modelAssetPath
+        self.customLabels = labels
+        self.customThreshold = threshold
+        self.isCustomClassifierRegistered = true
+        return true
+    }
+
     public func setEventSink(_ sink: FlutterEventSink?) { self.eventSink = sink }
     
     public func setVisionMode(face: Bool, barcode: Bool) {

@@ -13,6 +13,7 @@ import 'modules/device/device_module.dart';
 import 'modules/connectivity/connectivity_module.dart';
 import 'modules/native/native_module.dart';
 import 'modules/permissions/permissions_module.dart';
+import 'modules/utility/utility_module.dart';
 import 'core/hardware_lifecycle.dart';
 import 'models/device_models.dart';
 import 'models/hardware_capabilities.dart';
@@ -45,6 +46,7 @@ export 'modules/device/device_module.dart';
 export 'modules/connectivity/connectivity_module.dart';
 export 'modules/native/native_module.dart';
 export 'modules/permissions/permissions_module.dart';
+export 'modules/utility/utility_module.dart';
 
 /// Nexora SDK (v3.1.2) - Intelligence + Storage Edition.
 ///
@@ -55,44 +57,62 @@ class NexoraSdk {
   NexoraSdk._();
   static final NexoraSdk instance = NexoraSdk._();
 
+  CameraModule? _camera;
+  AudioModule? _audio;
+  SensorModule? _sensors;
+  BluetoothModule? _bluetooth;
+  LocationModule? _location;
+  BiometricModule? _biometrics;
+  FeedbackModule? _feedback;
+  HealthModule? _health;
+  StorageModule? _storage;
+  DeviceModule? _device;
+  ConnectivityModule? _connectivity;
+  PermissionsModule? _permissions;
+  NativeModule? _native;
+  UtilityModule? _utility;
+
   /// Vision AI camera module with face/barcode detection.
-  final camera = CameraModule();
+  CameraModule get camera => _camera ??= CameraModule();
 
   /// Audio capture with real-time FFT spectrum analysis.
-  final audio = AudioModule();
+  AudioModule get audio => _audio ??= AudioModule();
 
   /// Motion sensor (accelerometer/gyroscope) module.
-  final sensors = SensorModule();
+  SensorModule get sensors => _sensors ??= SensorModule();
 
   /// Bluetooth Low Energy (BLE) scanning and GATT operations.
-  final bluetooth = BluetoothModule();
+  BluetoothModule get bluetooth => _bluetooth ??= BluetoothModule();
 
   /// High-accuracy GPS with geofencing support.
-  final location = LocationModule();
+  LocationModule get location => _location ??= LocationModule();
 
   /// Biometric authentication (Face ID / Fingerprint).
-  final biometrics = BiometricModule();
+  BiometricModule get biometrics => _biometrics ??= BiometricModule();
 
   /// Haptic feedback and vibration control.
-  final feedback = FeedbackModule();
+  FeedbackModule get feedback => _feedback ??= FeedbackModule();
 
   /// Battery health, WiFi diagnostics, and telemetry logging.
-  final health = HealthModule();
+  HealthModule get health => _health ??= HealthModule();
 
   /// Lightweight file I/O, storage info, and cache management.
-  final storage = StorageModule();
+  StorageModule get storage => _storage ??= StorageModule();
 
   /// Device identity, memory, display, CPU, and thermal diagnostics.
-  final device = DeviceModule();
+  DeviceModule get device => _device ??= DeviceModule();
 
   /// Current network route and connectivity diagnostics.
-  final connectivity = ConnectivityModule();
+  ConnectivityModule get connectivity => _connectivity ??= ConnectivityModule();
 
   /// Permission status checks and settings helpers.
-  final permissions = PermissionsModule();
+  PermissionsModule get permissions => _permissions ??= PermissionsModule();
 
   /// Clipboard, share sheet, and URL/deep-link helpers.
-  final native = NativeModule();
+  NativeModule get native => _native ??= NativeModule();
+
+  /// EcoMode power-saver and thermal protection controls.
+  UtilityModule get utility => _utility ??= UtilityModule();
 
   /// Runtime capability snapshot for the current platform.
   HardwareCapabilities get capabilities => HardwareCapabilities.current();

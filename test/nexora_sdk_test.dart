@@ -71,10 +71,19 @@ class MockNexoraSdkPlatform
   Future<bool> startCamera({int width = 1280, int height = 720}) =>
       Future.value(true);
   @override
+  Future<dynamic> startCameraWithOptions(CameraOptions options) =>
+      Future.value(42);
+  @override
   Future<bool> stopCamera() => Future.value(true);
   @override
   Future<bool> setVisionMode({bool barcode = false, bool face = false}) =>
       Future.value(true);
+  @override
+  Future<bool> registerCustomClassifier({
+    required String modelAssetPath,
+    required List<String> labels,
+    double threshold = 0.5,
+  }) => Future.value(true);
   @override
   Future<bool> setFlash(bool on) => Future.value(true);
   @override
@@ -95,9 +104,25 @@ class MockNexoraSdkPlatform
     bool enableFFT = false,
     bool streamBytes = false,
     int updateIntervalMs = 80,
-  }) => Future.value(true);
+  }) async {
+    return false;
+  }
+
+  @override
+  Future<bool> startAudioWithOptions(AudioOptions options) =>
+      Future.value(true);
   @override
   Future<bool> stopAudio() => Future.value(true);
+  @override
+  Future<bool> routeAudioOutput(AudioOutputRoute route) => Future.value(true);
+  @override
+  Future<double> getAudioVolume() => Future.value(0.5);
+  @override
+  Future<bool> setAudioVolume(double level) => Future.value(true);
+  @override
+  Future<bool> selectAudioInput(AudioInputDevice device) => Future.value(true);
+  @override
+  Future<bool> setAudioGain(double gain) => Future.value(true);
 
   @override
   Future<bool> startHardwareLogging(LogConfig config) => Future.value(true);
@@ -109,6 +134,9 @@ class MockNexoraSdkPlatform
 
   @override
   Future<bool> startBluetoothScan() => Future.value(true);
+  @override
+  Future<bool> startBluetoothScanWithOptions(BluetoothScanOptions options) =>
+      Future.value(true);
   @override
   Future<bool> stopBluetoothScan() => Future.value(true);
   @override
@@ -127,12 +155,17 @@ class MockNexoraSdkPlatform
   @override
   Future<bool> authenticate(String reason) => Future.value(true);
   @override
+  Future<bool> authenticateWithOptions(BiometricPromptOptions options) =>
+      Future.value(true);
+  @override
   Future<bool> canAuthenticate() => Future.value(true);
 
   @override
   Future<void> vibrate(int durationMs) => Future.value();
   @override
   Future<void> hapticFeedback(String type) => Future.value();
+  @override
+  Future<void> performHapticWithOptions(HapticOptions options) => Future.value();
 
   @override
   Future<BatteryInfo?> getBatteryInfo() => Future.value(
@@ -156,11 +189,17 @@ class MockNexoraSdkPlatform
   @override
   Future<bool> startLocation() => Future.value(true);
   @override
+  Future<bool> startLocationWithOptions(LocationOptions options) =>
+      Future.value(true);
+  @override
   Future<bool> stopLocation() => Future.value(true);
   @override
   Future<bool> setBackgroundLocationEnabled(bool enabled) => Future.value(true);
   @override
   Future<bool> startSensor({int frequencyHz = 60}) => Future.value(true);
+  @override
+  Future<bool> startSensorWithOptions(SensorOptions options) =>
+      Future.value(true);
   @override
   Future<bool> stopSensor() => Future.value(true);
 
@@ -192,6 +231,13 @@ class MockNexoraSdkPlatform
   @override
   Future<String?> writeFile(String fileName, String content) async {
     storedFiles[fileName] = content;
+    return '/test/$fileName';
+  }
+
+  @override
+  Future<String?> appendFile(String fileName, String content) async {
+    final current = storedFiles[fileName] as String? ?? '';
+    storedFiles[fileName] = '$current$content';
     return '/test/$fileName';
   }
 
@@ -250,6 +296,30 @@ class MockNexoraSdkPlatform
   Future<bool> openUrl(String url) => Future.value(true);
   @override
   Future<bool> shareText(String text, {String? subject}) => Future.value(true);
+
+  @override
+  Future<bool> enableSmartSync({
+    required String uploadEndpointUrl,
+    required Map<String, String> headers,
+    int rollLimitBytes = 2 * 1024 * 1024,
+    bool requireWifi = true,
+  }) => Future.value(true);
+
+  @override
+  Future<bool> applyCameraFilterShader(String shaderType) => Future.value(true);
+
+  @override
+  Stream<Uint8List> openL2capStream(String deviceId, int psm) => const Stream.empty();
+
+  @override
+  Future<bool> enableDeadReckoning(bool enabled) => Future.value(true);
+
+  @override
+  Future<void> setEcoModeEnabled(bool enabled) => Future.value();
+  @override
+  Future<bool> isEcoModeActive() => Future.value(false);
+  @override
+  Future<DeviceThermalState> getThermalState() => Future.value(DeviceThermalState.normal);
 }
 
 void main() {
@@ -347,6 +417,27 @@ void main() {
       );
       expect(
         () => NexoraSdk.instance.camera.takePhoto(fileName: ' '),
+        throwsArgumentError,
+      );
+      expect(
+        await NexoraSdk.instance.camera.registerCustomClassifier(
+          modelAssetPath: 'assets/model.tflite',
+          labels: ['cat', 'dog'],
+        ),
+        isTrue,
+      );
+      expect(
+        () => NexoraSdk.instance.camera.registerCustomClassifier(
+          modelAssetPath: ' ',
+          labels: ['cat'],
+        ),
+        throwsArgumentError,
+      );
+      expect(
+        () => NexoraSdk.instance.camera.registerCustomClassifier(
+          modelAssetPath: 'assets/model.tflite',
+          labels: [],
+        ),
         throwsArgumentError,
       );
     });
@@ -478,6 +569,115 @@ void main() {
       expect(await storage.deleteIfExists('missing.txt'), isTrue);
       expect(await storage.deleteIfExists('log.txt'), isTrue);
       expect(await storage.fileExists('log.txt'), isFalse);
+    });
+
+    test('supports pro features (smart sync, camera filters, BLE L2CAP, and Dead Reckoning)', () async {
+      expect(
+        await NexoraSdk.instance.health.enableSmartSync(
+          uploadEndpointUrl: 'https://example.com/sync',
+          headers: {'Authorization': 'Bearer 123'},
+        ),
+        isTrue,
+      );
+      expect(
+        () => NexoraSdk.instance.health.enableSmartSync(
+          uploadEndpointUrl: ' ',
+          headers: {},
+        ),
+        throwsArgumentError,
+      );
+
+      expect(await NexoraSdk.instance.camera.applyFilterShader('chromaKey'), isTrue);
+      expect(
+        () => NexoraSdk.instance.camera.applyFilterShader(' '),
+        throwsArgumentError,
+      );
+
+      expect(NexoraSdk.instance.bluetooth.openL2capStream('device_1', 12), isNotNull);
+      expect(
+        () => NexoraSdk.instance.bluetooth.openL2capStream(' ', 12),
+        throwsArgumentError,
+      );
+      expect(
+        () => NexoraSdk.instance.bluetooth.openL2capStream('device_1', 0),
+        throwsArgumentError,
+      );
+
+      expect(await NexoraSdk.instance.location.enableDeadReckoning(true), isTrue);
+    });
+
+    test('supports lazy modules, customizable options builders, and auto-permissions', () async {
+      expect(NexoraSdk.instance.camera, isNotNull);
+      expect(NexoraSdk.instance.audio, isNotNull);
+      expect(NexoraSdk.instance.location, isNotNull);
+
+      const camOptions = CameraOptions(
+        resolution: CameraQuality.fullHd,
+        focusMode: CameraFocusMode.macro,
+        exposureMode: CameraExposureMode.locked,
+        exposureCompensation: -0.5,
+      );
+      expect(await NexoraSdk.instance.camera.startWithOptions(camOptions), isNotNull);
+
+      const audOptions = AudioOptions(
+        sampleRate: 48000,
+        channels: AudioChannelFormat.stereo,
+        enableEchoCancellation: false,
+        enableNoiseSuppression: false,
+      );
+      expect(await NexoraSdk.instance.audio.startWithOptions(audOptions), isTrue);
+
+      expect(await NexoraSdk.instance.location.start(autoRequestPermission: true), isTrue);
+
+      // 4. BLE Options scan
+      const bleOptions = BluetoothScanOptions(
+        scanMode: BluetoothScanMode.lowLatency,
+        allowDuplicates: true,
+      );
+      expect(await NexoraSdk.instance.bluetooth.startScanWithOptions(bleOptions), isTrue);
+
+      // 5. Biometric Options prompt
+      const bioOptions = BiometricPromptOptions(
+        title: 'Sign Transactions',
+        subtitle: 'Authorize security token',
+      );
+      expect(await NexoraSdk.instance.biometrics.authenticateWithOptions(bioOptions), isTrue);
+
+      // 6. Haptic Options perform
+      const hapticOptions = HapticOptions(
+        type: HapticFeedbackType.success,
+        intensityPercent: 80,
+      );
+      await NexoraSdk.instance.feedback.performHapticWithOptions(hapticOptions);
+
+      // 7. Location Options
+      const locOptions = LocationOptions(
+        accuracy: LocationAccuracy.navigation,
+        distanceFilterMeters: 5.0,
+      );
+      expect(await NexoraSdk.instance.location.startWithOptions(locOptions), isTrue);
+
+      // 8. Sensor Options
+      const sensorOptions = SensorOptions(
+        accuracy: SensorAccuracy.fastest,
+        enableLowPassFilter: true,
+      );
+      expect(await NexoraSdk.instance.sensors.startWithOptions(sensorOptions), isTrue);
+
+      // 9. Speaker & Microphone Controls
+      expect(await NexoraSdk.instance.audio.output.routeTo(AudioOutputRoute.speakerphone), isTrue);
+      expect(await NexoraSdk.instance.audio.output.getVolume(), equals(0.5));
+      expect(await NexoraSdk.instance.audio.output.setVolume(0.8), isTrue);
+      expect(await NexoraSdk.instance.audio.input.selectMicrophone(AudioInputDevice.bluetoothMic), isTrue);
+      expect(await NexoraSdk.instance.audio.input.setGain(0.75), isTrue);
+
+      expect(() => NexoraSdk.instance.audio.output.setVolume(-0.1), throwsArgumentError);
+      expect(() => NexoraSdk.instance.audio.input.setGain(1.5), throwsArgumentError);
+
+      // 10. EcoMode & Thermal Safeguard System
+      await NexoraSdk.instance.utility.setEcoModeEnabled(true);
+      expect(await NexoraSdk.instance.utility.isEcoModeActive(), isFalse);
+      expect(await NexoraSdk.instance.utility.getThermalState(), equals(DeviceThermalState.normal));
     });
   });
 }

@@ -1,4 +1,5 @@
 import '../../nexora_sdk_platform_interface.dart';
+import '../../models/hardware_models.dart';
 
 /// Module for secure biometric authentication (FaceID/Fingerprint).
 class BiometricModule {
@@ -14,6 +15,18 @@ class BiometricModule {
       );
     }
     return NexoraSdkPlatform.instance.authenticate(reason);
+  }
+
+  /// Triggers a system biometric prompt with native-level customizable options.
+  Future<bool> authenticateWithOptions(BiometricPromptOptions options) {
+    if (options.title.trim().isEmpty) {
+      throw ArgumentError.value(
+        options.title,
+        'title',
+        'Authentication title cannot be empty.',
+      );
+    }
+    return NexoraSdkPlatform.instance.authenticateWithOptions(options);
   }
 
   /// Checks if the device supports and has biometrics configured.

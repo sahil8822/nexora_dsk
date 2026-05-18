@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import '../../nexora_sdk_platform_interface.dart';
 import '../../models/hardware_models.dart';
 
@@ -6,6 +7,18 @@ class BluetoothModule {
   /// Starts scanning for nearby BLE devices. Discovered devices are
   /// delivered via the [scanStream].
   Future<bool> startScan() => NexoraSdkPlatform.instance.startBluetoothScan();
+
+  /// Starts scanning with granular native Bluetooth scanning options.
+  Future<bool> startScanWithOptions(
+    BluetoothScanOptions options, {
+    bool autoRequestPermission = true,
+  }) async {
+    if (autoRequestPermission) {
+      final granted = await NexoraSdkPlatform.instance.requestBluetoothPermission();
+      if (!granted) return false;
+    }
+    return NexoraSdkPlatform.instance.startBluetoothScanWithOptions(options);
+  }
 
   /// Stops the active BLE scan.
   Future<bool> stopScan() => NexoraSdkPlatform.instance.stopBluetoothScan();
@@ -41,6 +54,18 @@ class BluetoothModule {
       charId,
       data,
     );
+  }
+
+  /// Opens a raw binary socket directly to a BLE device over L2CAP.
+  /// Returns a stream of [Uint8List] bytes.
+  Stream<Uint8List> openL2capStream(String deviceId, int psm) {
+    if (deviceId.trim().isEmpty) {
+      throw ArgumentError.value(deviceId, 'deviceId', 'Device ID cannot be empty.');
+    }
+    if (psm <= 0) {
+      throw ArgumentError.value(psm, 'psm', 'PSM must be greater than zero.');
+    }
+    return NexoraSdkPlatform.instance.openL2capStream(deviceId, psm);
   }
 
   /// A stream of [BleDevice] objects discovered during a scan.

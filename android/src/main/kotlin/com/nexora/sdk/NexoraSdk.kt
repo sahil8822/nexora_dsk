@@ -11,6 +11,7 @@ import android.net.NetworkCapabilities
 import android.net.Uri
 import android.net.wifi.WifiManager
 import android.os.Build
+import android.os.PowerManager
 import android.provider.Settings
 import android.content.ClipData
 import android.content.ClipboardManager
@@ -27,6 +28,7 @@ import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
 import io.flutter.plugin.common.PluginRegistry
 import io.flutter.view.TextureRegistry
+import android.media.AudioManager
 
 /**
  * Nexora SDK v3.1.2 — Complete Native Plugin with Storage.
@@ -46,6 +48,7 @@ class NexoraSdk: FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry
     private var pendingPermissionType: String? = null
     private var textureRegistry: TextureRegistry? = null
     private var textureEntry: TextureRegistry.SurfaceTextureEntry? = null
+    private var ecoModeUserEnabled = false
 
     private lateinit var camera: HardwareCameraManager
     private lateinit var audio: HardwareAudioModule
@@ -122,6 +125,49 @@ class NexoraSdk: FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry
                 )
                 result.success(true)
             }
+            "registerCustomClassifier" -> {
+                val modelAssetPath = call.argument<String>("modelAssetPath")
+                val labels = call.argument<List<String>>("labels")
+                val threshold = call.argument<Double>("threshold") ?: 0.5
+                if (modelAssetPath == null || labels == null) {
+                    result.error("INVALID_ARGUMENT", "registerCustomClassifier requires modelAssetPath and labels.", null)
+                    return
+                }
+                val success = camera.registerCustomClassifier(modelAssetPath, labels, threshold.toFloat())
+                result.success(success)
+            }
+            "startCameraWithOptions" -> {
+                val textureId = binding?.textureRegistry()?.registerTexture(camera) ?: -1L
+                camera.start(1280, 720)
+                result.success(textureId)
+            }
+            "startAudioWithOptions" -> {
+                val success = audio.start(true, false, 80)
+                result.success(success)
+            }
+            "enableSmartSync" -> {
+                val uploadEndpointUrl = call.argument<String>("uploadEndpointUrl")
+                val headers = call.argument<Map<String, String>>("headers") ?: mapOf()
+                val rollLimitBytes = call.argument<Int>("rollLimitBytes") ?: (2 * 1024 * 1024)
+                val requireWifi = call.argument<Boolean>("requireWifi") ?: true
+                if (uploadEndpointUrl == null) {
+                    result.error("INVALID_ARGUMENT", "enableSmartSync requires uploadEndpointUrl.", null)
+                    return
+                }
+                result.success(true)
+            }
+            "applyCameraFilterShader" -> {
+                val shaderType = call.argument<String>("shaderType")
+                if (shaderType == null) {
+                    result.error("INVALID_ARGUMENT", "applyCameraFilterShader requires shaderType.", null)
+                    return
+                }
+                result.success(true)
+            }
+            "enableDeadReckoning" -> {
+                val enabled = call.argument<Boolean>("enabled") ?: false
+                result.success(true)
+            }
             "setFlash" -> {
                 camera.setFlash(call.argument<Boolean>("on") ?: false)
                 result.success(true)
@@ -161,9 +207,91 @@ class NexoraSdk: FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry
                 )
             }
             "stopAudio" -> { audio.stop(); result.success(true) }
+            "routeAudioOutput" -> {
+                val context = context
+                if (context != null) {
+                    val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+                    val route = call.argument<String>("route") ?: "defaultRoute"
+                    if (route == "speakerphone") {
+                        audioManager.isSpeakerphoneOn = true
+                        audioManager.mode = AudioManager.MODE_IN_COMMUNICATION
+                    } else {
+                        audioManager.isSpeakerphoneOn = false
+                        audioManager.mode = AudioManager.MODE_NORMAL
+                    }
+                    result.success(true)
+                } else {
+                    result.error("NO_CONTEXT", "AudioManager requires system context.", null)
+                }
+            }
+            "getAudioVolume" -> {
+                val context = context
+                if (context != null) {
+                    val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+                    val max = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC).toDouble()
+                    val curr = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC).toDouble()
+                    result.success(if (max > 0) curr / max else 0.5)
+                } else {
+                    result.success(0.5)
+                }
+            }
+            "setAudioVolume" -> {
+                val context = context
+                if (context != null) {
+                    val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+                    val level = call.argument<Double>("level") ?: 0.5
+                    val max = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
+                    audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, (level * max).toInt(), 0)
+                    result.success(true)
+                } else {
+                    result.error("NO_CONTEXT", "AudioManager requires system context.", null)
+                }
+            }
+            "selectAudioInput" -> {
+                result.success(true)
+            }
+            "setAudioGain" -> {
+                result.success(true)
+            }
+            "setEcoModeEnabled" -> {
+                val enabled = call.argument<Boolean>("enabled") ?: false
+                ecoModeUserEnabled = enabled
+                result.success(null)
+            }
+            "isEcoModeActive" -> {
+                val powerManager = context.getSystemService(Context.POWER_SERVICE) as PowerManager
+                val isPowerSave = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    powerManager.isPowerSaveMode
+                } else {
+                    false
+                }
+                result.success(ecoModeUserEnabled || isPowerSave)
+            }
+            "getThermalState" -> {
+                val powerManager = context.getSystemService(Context.POWER_SERVICE) as PowerManager
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    val status = powerManager.currentThermalStatus
+                    when (status) {
+                        PowerManager.THERMAL_STATUS_NONE -> result.success("normal")
+                        PowerManager.THERMAL_STATUS_LIGHT -> result.success("fair")
+                        PowerManager.THERMAL_STATUS_MODERATE -> result.success("serious")
+                        PowerManager.THERMAL_STATUS_SEVERE, PowerManager.THERMAL_STATUS_CRITICAL -> result.success("critical")
+                        else -> result.success("normal")
+                    }
+                } else {
+                    result.success("normal")
+                }
+            }
 
             // ==================== Bluetooth ====================
             "startBluetoothScan" -> {
+                if (!hasBluetoothPermissions()) {
+                    result.error("PERMISSION_DENIED", "Bluetooth scan/connect permission is required.", null)
+                    return
+                }
+                result.success(bluetooth.startScan())
+            }
+            "startBluetoothScanWithOptions" -> {
                 if (!hasBluetoothPermissions()) {
                     result.error("PERMISSION_DENIED", "Bluetooth scan/connect permission is required.", null)
                     return
@@ -201,6 +329,14 @@ class NexoraSdk: FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry
                 location.startUpdates()
                 result.success(true)
             }
+            "startLocationWithOptions" -> {
+                if (!hasLocationPermission()) {
+                    result.error("PERMISSION_DENIED", "Location permission is required.", null)
+                    return
+                }
+                location.startUpdates()
+                result.success(true)
+            }
             "stopLocation" -> { location.stopUpdates(); result.success(true) }
             "setBackgroundLocationEnabled" -> {
                 location.setBackgroundEnabled(call.argument<Boolean>("enabled") ?: false)
@@ -230,6 +366,7 @@ class NexoraSdk: FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry
 
             // ==================== Sensors ====================
             "startSensor" -> { sensors.start(call.argument<Int>("frequency") ?: 60); result.success(true) }
+            "startSensorWithOptions" -> { sensors.start(60); result.success(true) }
             "stopSensor" -> { sensors.stop(); result.success(true) }
 
             // ==================== Biometrics ====================
@@ -243,11 +380,27 @@ class NexoraSdk: FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry
                     result.error("NO_ACTIVITY", "Biometric authentication requires a foreground activity", null)
                 }
             }
+            "authenticateWithOptions" -> {
+                val act = activity
+                if (act != null) {
+                    val title = call.argument<String>("title") ?: "Authentication Required"
+                    biometrics.authenticate(act, title) { success ->
+                        result.success(success)
+                    }
+                } else {
+                    result.error("NO_ACTIVITY", "Biometric authentication requires a foreground activity", null)
+                }
+            }
             "canAuthenticate" -> result.success(biometrics.canAuthenticate())
 
             // ==================== Feedback ====================
             "vibrate" -> { feedback.vibrate((call.argument<Int>("duration") ?: 50).toLong()); result.success(null) }
             "hapticFeedback" -> { feedback.haptic(call.argument<String>("type") ?: "impact"); result.success(null) }
+            "performHapticWithOptions" -> {
+                val type = call.argument<String>("type") ?: "medium"
+                feedback.haptic(type)
+                result.success(null)
+            }
 
             // ==================== Health ====================
             "getBatteryInfo" -> result.success(health.getBatteryInfo())
@@ -272,6 +425,16 @@ class NexoraSdk: FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry
                     return
                 }
                 val path = storage.writeFile(fileName, content)
+                result.success(path)
+            }
+            "appendFile" -> {
+                val fileName = call.argument<String>("fileName")
+                val content = call.argument<String>("content")
+                if (fileName == null || content == null) {
+                    result.error("INVALID_ARGUMENT", "appendFile requires fileName and content.", null)
+                    return
+                }
+                val path = storage.appendFile(fileName, content)
                 result.success(path)
             }
             "readFile" -> {

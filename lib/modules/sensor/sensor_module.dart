@@ -1,5 +1,6 @@
 import '../../nexora_sdk_platform_interface.dart';
 import '../../core/hardware_core.dart';
+import '../../models/hardware_models.dart';
 
 /// Module for motion and environmental hardware sensors.
 class SensorModule {
@@ -24,6 +25,15 @@ class SensorModule {
     if (success) {
       _isRunning = true;
       _lastFrequencyHz = frequencyHz;
+    }
+    return success;
+  }
+
+  /// Starts accelerometer/gyroscope tracking with granular native customizations.
+  Future<bool> startWithOptions(SensorOptions options) async {
+    final success = await NexoraSdkPlatform.instance.startSensorWithOptions(options);
+    if (success) {
+      _isRunning = true;
     }
     return success;
   }

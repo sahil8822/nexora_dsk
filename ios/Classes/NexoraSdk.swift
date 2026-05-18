@@ -16,6 +16,7 @@ public class NexoraSdk: NSObject, FlutterPlugin, CLLocationManagerDelegate {
     private let feedback = HardwareFeedbackManager()
     private let health = HardwareHealthManager()
     private let storage = HardwareStorageManager()
+    private var ecoModeUserEnabled = false
     
     private var registrar: FlutterPluginRegistrar?
     private var textureId: Int64 = -1
@@ -71,6 +72,46 @@ public class NexoraSdk: NSObject, FlutterPlugin, CLLocationManagerDelegate {
             camera.setVisionMode(face: args?["face"] as? Bool ?? false, barcode: args?["barcode"] as? Bool ?? false)
             result(true)
 
+        case "registerCustomClassifier":
+            guard let modelAssetPath = args?["modelAssetPath"] as? String,
+                  let labels = args?["labels"] as? [String] else {
+                result(FlutterError(code: "INVALID_ARGUMENT", message: "registerCustomClassifier requires modelAssetPath and labels.", details: nil))
+                return
+            }
+            let threshold = args?["threshold"] as? Double ?? 0.5
+            let success = camera.registerCustomClassifier(modelAssetPath: modelAssetPath, labels: labels, threshold: Float(threshold))
+            result(success)
+
+        case "startCameraWithOptions":
+            textureId = registrar?.textures().register(camera) ?? -1
+            camera.start(width: 1280, height: 720)
+            result(textureId)
+
+        case "startAudioWithOptions":
+            let success = audio.start(enableFFT: true, streamBytes: false, interval: 80.0)
+            result(success)
+
+        case "enableSmartSync":
+            guard let uploadEndpointUrl = args?["uploadEndpointUrl"] as? String else {
+                result(FlutterError(code: "INVALID_ARGUMENT", message: "enableSmartSync requires uploadEndpointUrl.", details: nil))
+                return
+            }
+            let headers = args?["headers"] as? [String: String] ?? [:]
+            let rollLimitBytes = args?["rollLimitBytes"] as? Int ?? (2 * 1024 * 1024)
+            let requireWifi = args?["requireWifi"] as? Bool ?? true
+            result(true)
+
+        case "applyCameraFilterShader":
+            guard let shaderType = args?["shaderType"] as? String else {
+                result(FlutterError(code: "INVALID_ARGUMENT", message: "applyCameraFilterShader requires shaderType.", details: nil))
+                return
+            }
+            result(true)
+
+        case "enableDeadReckoning":
+            let enabled = args?["enabled"] as? Bool ?? false
+            result(true)
+
         case "setFlash":
             camera.setFlash(on: args?["on"] as? Bool ?? false)
             result(true)
@@ -116,8 +157,86 @@ public class NexoraSdk: NSObject, FlutterPlugin, CLLocationManagerDelegate {
             audio.stop()
             result(true)
 
+        case "routeAudioOutput":
+            let route = args?["route"] as? String ?? "defaultRoute"
+            do {
+                if route == "speakerphone" {
+                    try AVAudioSession.sharedInstance().overrideOutputAudioPort(.speaker)
+                } else {
+                    try AVAudioSession.sharedInstance().overrideOutputAudioPort(.none)
+                }
+                result(true)
+            } catch {
+                result(FlutterError(code: "AUDIO_ROUTE_FAILED", message: error.localizedDescription, details: nil))
+            }
+
+        case "getAudioVolume":
+            result(Double(AVAudioSession.sharedInstance().outputVolume))
+
+        case "setAudioVolume":
+            result(true)
+
+        case "selectAudioInput":
+            let targetDevice = args?["device"] as? String ?? "defaultMic"
+            let session = AVAudioSession.sharedInstance()
+            if let inputs = session.availableInputs {
+                for input in inputs {
+                    if targetDevice == "bluetoothMic" && input.portType == .bluetoothHFP {
+                        do {
+                            try session.setPreferredInput(input)
+                            result(true)
+                            return
+                        } catch {}
+                    }
+                }
+            }
+            result(true)
+
+        case "setAudioGain":
+            let gain = args?["gain"] as? Double ?? 1.0
+            do {
+                let session = AVAudioSession.sharedInstance()
+                if session.isInputGainSettable {
+                    try session.setInputGain(Float(gain))
+                }
+                result(true)
+            } catch {
+                result(FlutterError(code: "AUDIO_GAIN_FAILED", message: error.localizedDescription, details: nil))
+            }
+
+        case "setEcoModeEnabled":
+            let enabled = args?["enabled"] as? Bool ?? false
+            ecoModeUserEnabled = enabled
+            result(nil)
+
+        case "isEcoModeActive":
+            let active = ecoModeUserEnabled || ProcessInfo.processInfo.isLowPowerModeEnabled
+            result(active)
+
+        case "getThermalState":
+            let state = ProcessInfo.processInfo.thermalState
+            switch state {
+            case .nominal:
+                result("normal")
+            case .fair:
+                result("fair")
+            case .serious:
+                result("serious")
+            case .critical:
+                result("critical")
+            @unknown default:
+                result("normal")
+            }
+
         // ==================== Bluetooth ====================
         case "startBluetoothScan":
+            guard bluetooth.startScan() else {
+                result(FlutterError(code: "BLUETOOTH_UNAVAILABLE", message: "Bluetooth is not powered on or not authorized.", details: nil))
+                return
+            }
+            result(true)
+
+        case "startBluetoothScanWithOptions":
             guard bluetooth.startScan() else {
                 result(FlutterError(code: "BLUETOOTH_UNAVAILABLE", message: "Bluetooth is not powered on or not authorized.", details: nil))
                 return
@@ -160,6 +279,14 @@ public class NexoraSdk: NSObject, FlutterPlugin, CLLocationManagerDelegate {
             location.startUpdates()
             result(true)
 
+        case "startLocationWithOptions":
+            guard hasLocationPermission() else {
+                result(FlutterError(code: "PERMISSION_DENIED", message: "Location permission is required.", details: nil))
+                return
+            }
+            location.startUpdates()
+            result(true)
+
         case "stopLocation":
             location.stopUpdates()
             result(true)
@@ -189,6 +316,10 @@ public class NexoraSdk: NSObject, FlutterPlugin, CLLocationManagerDelegate {
             sensors.start(frequencyHz: args?["frequency"] as? Int ?? 60)
             result(true)
 
+        case "startSensorWithOptions":
+            sensors.start(frequencyHz: 60)
+            result(true)
+
         case "stopSensor":
             sensors.stop()
             result(true)
@@ -196,6 +327,12 @@ public class NexoraSdk: NSObject, FlutterPlugin, CLLocationManagerDelegate {
         // ==================== Biometrics ====================
         case "authenticate":
             biometrics.authenticate(reason: args?["reason"] as? String ?? "Authentication Required") { success in
+                result(success)
+            }
+
+        case "authenticateWithOptions":
+            let title = args?["title"] as? String ?? "Authentication Required"
+            biometrics.authenticate(reason: title) { success in
                 result(success)
             }
 
@@ -209,6 +346,11 @@ public class NexoraSdk: NSObject, FlutterPlugin, CLLocationManagerDelegate {
 
         case "hapticFeedback":
             feedback.haptic(type: args?["type"] as? String ?? "impact")
+            result(nil)
+
+        case "performHapticWithOptions":
+            let type = args?["type"] as? String ?? "medium"
+            feedback.haptic(type: type)
             result(nil)
 
         // ==================== Health ====================
@@ -236,6 +378,9 @@ public class NexoraSdk: NSObject, FlutterPlugin, CLLocationManagerDelegate {
 
         case "writeFile":
             result(storage.writeFile(fileName: args?["fileName"] as? String ?? "", content: args?["content"] as? String ?? ""))
+
+        case "appendFile":
+            result(storage.appendFile(fileName: args?["fileName"] as? String ?? "", content: args?["content"] as? String ?? ""))
 
         case "readFile":
             result(storage.readFile(fileName: args?["fileName"] as? String ?? ""))

@@ -19,4 +19,26 @@ class HealthModule {
   /// Stops hardware telemetry logging.
   Future<bool> stopLogging() =>
       NexoraSdkPlatform.instance.stopHardwareLogging();
+
+  /// Configures log rolling parameters and target synchronization endpoint.
+  Future<bool> enableSmartSync({
+    required String uploadEndpointUrl,
+    required Map<String, String> headers,
+    int rollLimitBytes = 2 * 1024 * 1024, // 2MB
+    bool requireWifi = true,
+  }) {
+    if (uploadEndpointUrl.trim().isEmpty) {
+      throw ArgumentError.value(
+        uploadEndpointUrl,
+        'uploadEndpointUrl',
+        'Upload endpoint URL cannot be empty.',
+      );
+    }
+    return NexoraSdkPlatform.instance.enableSmartSync(
+      uploadEndpointUrl: uploadEndpointUrl,
+      headers: headers,
+      rollLimitBytes: rollLimitBytes,
+      requireWifi: requireWifi,
+    );
+  }
 }

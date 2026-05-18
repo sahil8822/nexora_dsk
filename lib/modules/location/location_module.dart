@@ -9,8 +9,26 @@ class LocationModule {
   bool get isRunning => _isRunning;
 
   /// Starts real-time location updates. Coordinates are delivered via the [stream].
-  Future<bool> start() async {
+  Future<bool> start({bool autoRequestPermission = true}) async {
+    if (autoRequestPermission) {
+      final granted = await NexoraSdkPlatform.instance.requestLocationPermission();
+      if (!granted) return false;
+    }
     final success = await NexoraSdkPlatform.instance.startLocation();
+    if (success) _isRunning = true;
+    return success;
+  }
+
+  /// Starts real-time location updates with granular native options.
+  Future<bool> startWithOptions(
+    LocationOptions options, {
+    bool autoRequestPermission = true,
+  }) async {
+    if (autoRequestPermission) {
+      final granted = await NexoraSdkPlatform.instance.requestLocationPermission();
+      if (!granted) return false;
+    }
+    final success = await NexoraSdkPlatform.instance.startLocationWithOptions(options);
     if (success) _isRunning = true;
     return success;
   }
@@ -47,6 +65,13 @@ class LocationModule {
     }
     return NexoraSdkPlatform.instance.addGeofence(id, lat, lon, radius);
   }
+
+  /// Enables or disables real-time Kalman Filter Dead Reckoning Sensor Fusion.
+  ///
+  /// Fuses GPS telemetry with high-frequency inertial sensor inputs (IMU)
+  /// to forecast tracking inside tunnels or indoor environments.
+  Future<bool> enableDeadReckoning(bool enabled) =>
+      NexoraSdkPlatform.instance.enableDeadReckoning(enabled);
 
   /// A stream of real-time [LocationData] telemetry.
   Stream<LocationData> get stream => NexoraSdkPlatform.instance.locationStream;

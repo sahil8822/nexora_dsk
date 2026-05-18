@@ -48,6 +48,19 @@ class HardwareCameraManager(private val context: Context) {
         .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_FAST)
         .build())
 
+    private var customModelAssetPath: String? = null
+    private var customLabels: List<String>? = null
+    private var customThreshold: Float = 0.5f
+    private var isCustomClassifierRegistered: Boolean = false
+
+    fun registerCustomClassifier(modelAssetPath: String, labels: List<String>, threshold: Float): Boolean {
+        this.customModelAssetPath = modelAssetPath
+        this.customLabels = labels
+        this.customThreshold = threshold
+        this.isCustomClassifierRegistered = true
+        return true
+    }
+
     fun setEventSink(sink: EventChannel.EventSink?) { this.eventSink = sink }
     
     fun setVisionMode(face: Boolean, barcode: Boolean) {

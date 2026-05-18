@@ -365,3 +365,235 @@ class FileInfo {
   /// Human-readable file size.
   String get sizeFormatted => StorageInfo.formatBytes(size);
 }
+
+/// Focus modes supported by the custom camera engine.
+enum CameraFocusMode {
+  auto,
+  continuous,
+  macro,
+  locked,
+}
+
+/// Exposure modes supported by the custom camera engine.
+enum CameraExposureMode {
+  auto,
+  locked,
+}
+
+/// Customizable camera rendering configurations.
+class CameraOptions {
+  final CameraQuality resolution;
+  final CameraFocusMode focusMode;
+  final CameraExposureMode exposureMode;
+  final double exposureCompensation;
+  final bool mirrorFrontCamera;
+
+  const CameraOptions({
+    this.resolution = CameraQuality.hd,
+    this.focusMode = CameraFocusMode.continuous,
+    this.exposureMode = CameraExposureMode.auto,
+    this.exposureCompensation = 0.0,
+    this.mirrorFrontCamera = true,
+  });
+
+  Map<String, dynamic> toMap() => {
+        'resolution': resolution.name,
+        'focusMode': focusMode.name,
+        'exposureMode': exposureMode.name,
+        'exposureCompensation': exposureCompensation,
+        'mirrorFrontCamera': mirrorFrontCamera,
+      };
+}
+
+/// Format specifying number of audio channels.
+enum AudioChannelFormat {
+  mono,
+  stereo,
+}
+
+/// Customizable audio capture configurations.
+class AudioOptions {
+  final int sampleRate;
+  final AudioChannelFormat channels;
+  final bool enableEchoCancellation;
+  final bool enableNoiseSuppression;
+
+  const AudioOptions({
+    this.sampleRate = 44100,
+    this.channels = AudioChannelFormat.mono,
+    this.enableEchoCancellation = true,
+    this.enableNoiseSuppression = true,
+  });
+
+  Map<String, dynamic> toMap() => {
+        'sampleRate': sampleRate,
+        'channels': channels.name,
+        'enableEchoCancellation': enableEchoCancellation,
+        'enableNoiseSuppression': enableNoiseSuppression,
+      };
+}
+
+/// Sampling frequencies supported by native motion sensors.
+enum SensorAccuracy {
+  normal,
+  ui,
+  game,
+  fastest,
+}
+
+/// Customization options for motion sensors (accelerometer/gyroscope).
+class SensorOptions {
+  final SensorAccuracy accuracy;
+  final bool enableLowPassFilter;
+  final double lowPassAlpha;
+
+  const SensorOptions({
+    this.accuracy = SensorAccuracy.normal,
+    this.enableLowPassFilter = false,
+    this.lowPassAlpha = 0.15,
+  });
+
+  Map<String, dynamic> toMap() => {
+        'accuracy': accuracy.name,
+        'enableLowPassFilter': enableLowPassFilter,
+        'lowPassAlpha': lowPassAlpha,
+      };
+}
+
+/// Scanning modes for Bluetooth Low Energy.
+enum BluetoothScanMode {
+  balanced,
+  lowPower,
+  lowLatency,
+}
+
+/// Customization options for BLE scanning.
+class BluetoothScanOptions {
+  final BluetoothScanMode scanMode;
+  final List<String> serviceUuids;
+  final bool allowDuplicates;
+
+  const BluetoothScanOptions({
+    this.scanMode = BluetoothScanMode.balanced,
+    this.serviceUuids = const [],
+    this.allowDuplicates = false,
+  });
+
+  Map<String, dynamic> toMap() => {
+        'scanMode': scanMode.name,
+        'serviceUuids': serviceUuids,
+        'allowDuplicates': allowDuplicates,
+      };
+}
+
+/// Native coordinate accuracies for location services.
+enum LocationAccuracy {
+  powerSaving,
+  balanced,
+  highAccuracy,
+  navigation,
+}
+
+/// Customization options for GPS and Inertial Sensor Fusion positioning.
+class LocationOptions {
+  final LocationAccuracy accuracy;
+  final double distanceFilterMeters;
+  final bool enableBackgroundUpdates;
+  final bool showsBackgroundLocationIndicator;
+
+  const LocationOptions({
+    this.accuracy = LocationAccuracy.highAccuracy,
+    this.distanceFilterMeters = 0.0,
+    this.enableBackgroundUpdates = false,
+    this.showsBackgroundLocationIndicator = false,
+  });
+
+  Map<String, dynamic> toMap() => {
+        'accuracy': accuracy.name,
+        'distanceFilterMeters': distanceFilterMeters,
+        'enableBackgroundUpdates': enableBackgroundUpdates,
+        'showsBackgroundLocationIndicator': showsBackgroundLocationIndicator,
+      };
+}
+
+/// Customization options for native Biometric Prompt overlays (Face ID / Touch ID / Fingerprint).
+class BiometricPromptOptions {
+  final String title;
+  final String subtitle;
+  final String description;
+  final String negativeButtonText;
+  final bool confirmationRequired;
+
+  const BiometricPromptOptions({
+    required this.title,
+    this.subtitle = '',
+    this.description = '',
+    this.negativeButtonText = 'Cancel',
+    this.confirmationRequired = true,
+  });
+
+  Map<String, dynamic> toMap() => {
+        'title': title,
+        'subtitle': subtitle,
+        'description': description,
+        'negativeButtonText': negativeButtonText,
+        'confirmationRequired': confirmationRequired,
+      };
+}
+
+/// Vibration intensities and pattern types for haptic actuators.
+enum HapticFeedbackType {
+  light,
+  medium,
+  heavy,
+  selection,
+  success,
+  warning,
+  error,
+}
+
+/// Customization options for high-precision haptics.
+class HapticOptions {
+  final HapticFeedbackType type;
+  final int intensityPercent; // 0 to 100
+  final int durationMs;
+
+  const HapticOptions({
+    this.type = HapticFeedbackType.medium,
+    this.intensityPercent = 100,
+    this.durationMs = 50,
+  });
+
+  Map<String, dynamic> toMap() => {
+        'type': type.name,
+        'intensityPercent': intensityPercent,
+        'durationMs': durationMs,
+      };
+}
+
+/// Target output channels for routing audio playback.
+enum AudioOutputRoute {
+  speakerphone,
+  earpiece,
+  bluetooth,
+  wiredHeadphones,
+  defaultRoute,
+}
+
+/// Target input capture hardware microphones.
+enum AudioInputDevice {
+  defaultMic,
+  frontMic,
+  backMic,
+  bottomMic,
+  bluetoothMic,
+  wiredHeadsetMic;
+}
+
+/// Device thermal warning status states.
+enum DeviceThermalState {
+  normal,
+  fair,
+  serious,
+  critical,
+}

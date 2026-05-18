@@ -33,8 +33,14 @@ abstract class NexoraSdkPlatform extends PlatformInterface {
 
   // --- Camera & Vision (AI) ---
   Future<dynamic> startCamera({int width = 1280, int height = 720});
+  Future<dynamic> startCameraWithOptions(CameraOptions options);
   Future<bool> stopCamera();
   Future<bool> setVisionMode({bool barcode = false, bool face = false});
+  Future<bool> registerCustomClassifier({
+    required String modelAssetPath,
+    required List<String> labels,
+    double threshold = 0.5,
+  });
   Future<bool> setFlash(bool on);
   Future<bool> setZoom(double level);
   Future<bool> flipCamera();
@@ -48,7 +54,13 @@ abstract class NexoraSdkPlatform extends PlatformInterface {
     bool streamBytes = false,
     int updateIntervalMs = 80,
   });
+  Future<bool> startAudioWithOptions(AudioOptions options);
   Future<bool> stopAudio();
+  Future<bool> routeAudioOutput(AudioOutputRoute route);
+  Future<double> getAudioVolume();
+  Future<bool> setAudioVolume(double level);
+  Future<bool> selectAudioInput(AudioInputDevice device);
+  Future<bool> setAudioGain(double gain);
 
   // --- Intelligence & Logging ---
   Future<bool> startHardwareLogging(LogConfig config);
@@ -57,6 +69,7 @@ abstract class NexoraSdkPlatform extends PlatformInterface {
 
   // --- Bluetooth Pro ---
   Future<bool> startBluetoothScan();
+  Future<bool> startBluetoothScanWithOptions(BluetoothScanOptions options);
   Future<bool> stopBluetoothScan();
   Future<bool> connectDevice(String id);
   Future<List<String>> discoverServices(String deviceId);
@@ -69,24 +82,29 @@ abstract class NexoraSdkPlatform extends PlatformInterface {
 
   // --- Biometrics & Security ---
   Future<bool> authenticate(String reason);
+  Future<bool> authenticateWithOptions(BiometricPromptOptions options);
   Future<bool> canAuthenticate();
 
   // --- Feedback & Health ---
   Future<void> vibrate(int durationMs);
   Future<void> hapticFeedback(String type);
+  Future<void> performHapticWithOptions(HapticOptions options);
   Future<BatteryInfo?> getBatteryInfo();
   Future<WifiInfo?> getWifiInfo();
 
   // --- Location & Sensors ---
   Future<bool> startLocation();
+  Future<bool> startLocationWithOptions(LocationOptions options);
   Future<bool> stopLocation();
   Future<bool> setBackgroundLocationEnabled(bool enabled);
   Future<bool> startSensor({int frequencyHz = 60});
+  Future<bool> startSensorWithOptions(SensorOptions options);
   Future<bool> stopSensor();
 
   // --- Storage ---
   Future<StorageInfo?> getStorageInfo();
   Future<String?> writeFile(String fileName, String content);
+  Future<String?> appendFile(String fileName, String content);
   Future<String?> readFile(String fileName);
   Future<bool> deleteFile(String fileName);
   Future<bool> fileExists(String fileName);
@@ -103,6 +121,24 @@ abstract class NexoraSdkPlatform extends PlatformInterface {
   Future<String?> pasteText();
   Future<bool> openUrl(String url);
   Future<bool> shareText(String text, {String? subject});
+
+  // --- Pro Features (AI & Streams) ---
+  Future<bool> enableSmartSync({
+    required String uploadEndpointUrl,
+    required Map<String, String> headers,
+    int rollLimitBytes = 2 * 1024 * 1024,
+    bool requireWifi = true,
+  });
+
+  Future<bool> applyCameraFilterShader(String shaderType);
+
+  Stream<Uint8List> openL2capStream(String deviceId, int psm);
+
+  Future<bool> enableDeadReckoning(bool enabled);
+
+  Future<void> setEcoModeEnabled(bool enabled);
+  Future<bool> isEcoModeActive();
+  Future<DeviceThermalState> getThermalState();
 
   // --- Unified Streams ---
   Stream<HardwareEvent> get unifiedStream;

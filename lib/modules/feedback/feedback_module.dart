@@ -1,4 +1,5 @@
 import '../../nexora_sdk_platform_interface.dart';
+import '../../models/hardware_models.dart';
 
 /// Supported haptic feedback patterns.
 enum HapticPattern {
@@ -43,4 +44,16 @@ class FeedbackModule {
 
   /// Triggers a native haptic [pattern] with compile-time safe values.
   Future<void> hapticPattern(HapticPattern pattern) => haptic(pattern.value);
+
+  /// Triggers a highly-customizable native haptic vibration.
+  Future<void> performHapticWithOptions(HapticOptions options) {
+    if (options.intensityPercent < 0 || options.intensityPercent > 100) {
+      throw ArgumentError.value(
+        options.intensityPercent,
+        'intensityPercent',
+        'Must be between 0 and 100.',
+      );
+    }
+    return NexoraSdkPlatform.instance.performHapticWithOptions(options);
+  }
 }

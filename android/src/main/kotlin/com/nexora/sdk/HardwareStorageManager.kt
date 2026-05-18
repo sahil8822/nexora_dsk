@@ -46,6 +46,13 @@ class HardwareStorageManager(private val context: Context) {
         return file.absolutePath
     }
 
+    /// Appends text content to a file inside app-private storage.
+    fun appendFile(fileName: String, content: String): String {
+        val file = safeFile(fileName)
+        FileOutputStream(file, true).use { it.write(content.toByteArray()) }
+        return file.absolutePath
+    }
+
     /// Reads a text file from app-private storage.
     fun readFile(fileName: String): String? {
         val file = safeFile(fileName)
