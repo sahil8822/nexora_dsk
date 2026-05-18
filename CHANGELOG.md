@@ -1,5 +1,13 @@
 # Changelog
 
+## 3.2.0
+
+* Introduced `utility` module with EcoMode power-saver and proactive Thermal Safeguard crash prevention.
+* Built custom native option builders for Camera, Sensors, Bluetooth, Location, Biometrics, and Haptic feedback.
+* Refactored eager module initializers into lazy cached properties for zero startup overhead.
+* Designed advanced Speaker & Microphone controllers with input gain and output routing.
+* Fully verified with 21 unit tests.
+
 ## 3.1.2
 
 * Aligned local Android, iOS, example, and Dart metadata with the published Swift Package Manager-enabled release.
