@@ -3,6 +3,11 @@ import '../../models/hardware_models.dart';
 
 /// Module for controlling device cameras and receiving frame streams.
 class CameraModule {
+  bool _isRunning = false;
+
+  /// Returns whether the camera is currently active.
+  bool get isRunning => _isRunning;
+
   /// Starts the camera and returns the native [textureId] for rendering.
   ///
   /// Use the returned ID with a [Texture] widget for high-performance preview.
@@ -23,11 +28,21 @@ class CameraModule {
           width: width ?? quality.width,
           height: height ?? quality.height,
         )
-        .then((result) => result is int ? result : null);
+        .then((result) {
+          if (result is int) {
+            _isRunning = true;
+            return result;
+          }
+          return null;
+        });
   }
 
   /// Stops the camera and releases all native resources.
-  Future<bool> stop() => NexoraSdkPlatform.instance.stopCamera();
+  Future<bool> stop() async {
+    final success = await NexoraSdkPlatform.instance.stopCamera();
+    if (success) _isRunning = false;
+    return success;
+  }
 
   /// Toggles the device flash/torch.
   Future<bool> setFlash(bool on) => NexoraSdkPlatform.instance.setFlash(on);

@@ -27,6 +27,18 @@ class HardwareLifecycleController with WidgetsBindingObserver {
   bool _isStarted = false;
   HardwareShutdownResult? _lastShutdownResult;
 
+  // Track operational states before teardown
+  bool _wasCameraRunning = false;
+  bool _wasAudioRunning = false;
+  bool _wasLocationRunning = false;
+  bool _wasSensorsRunning = false;
+
+  // Cached module parameters for reconstruction
+  bool _audioFFT = false;
+  bool _audioStreamBytes = false;
+  int _audioInterval = 80;
+  int _sensorFrequency = 60;
+
   /// Last automatic shutdown result, if lifecycle cleanup has run.
   HardwareShutdownResult? get lastShutdownResult => _lastShutdownResult;
 
@@ -51,10 +63,24 @@ class HardwareLifecycleController with WidgetsBindingObserver {
         state == AppLifecycleState.inactive ||
         state == AppLifecycleState.detached) {
       _stopSelectedHardware();
+    } else if (state == AppLifecycleState.resumed) {
+      _resumeSelectedHardware();
     }
   }
 
   Future<void> _stopSelectedHardware() async {
+    // Capture state before shutting down
+    _wasCameraRunning = _sdk.camera.isRunning;
+    _wasAudioRunning = _sdk.audio.isRunning;
+    _wasLocationRunning = _sdk.location.isRunning;
+    _wasSensorsRunning = _sdk.sensors.isRunning;
+
+    // Cache configurations
+    _audioFFT = _sdk.audio.lastEnableFFT;
+    _audioStreamBytes = _sdk.audio.lastStreamBytes;
+    _audioInterval = _sdk.audio.lastUpdateIntervalMs;
+    _sensorFrequency = _sdk.sensors.lastFrequencyHz;
+
     _lastShutdownResult = await _sdk.stopAll(
       camera: stopCamera,
       audio: stopAudio,
@@ -63,6 +89,29 @@ class HardwareLifecycleController with WidgetsBindingObserver {
       sensors: stopSensors,
       logging: stopLogging,
     );
+  }
+
+  Future<void> _resumeSelectedHardware() async {
+    if (stopCamera && _wasCameraRunning) {
+      await _sdk.camera.start();
+      _wasCameraRunning = false;
+    }
+    if (stopAudio && _wasAudioRunning) {
+      await _sdk.audio.start(
+        enableFFT: _audioFFT,
+        streamBytes: _audioStreamBytes,
+        updateIntervalMs: _audioInterval,
+      );
+      _wasAudioRunning = false;
+    }
+    if (stopLocation && _wasLocationRunning) {
+      await _sdk.location.start();
+      _wasLocationRunning = false;
+    }
+    if (stopSensors && _wasSensorsRunning) {
+      await _sdk.sensors.start(frequencyHz: _sensorFrequency);
+      _wasSensorsRunning = false;
+    }
   }
 
   /// Creates and starts a lifecycle controller.

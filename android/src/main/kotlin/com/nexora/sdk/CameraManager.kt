@@ -176,11 +176,11 @@ class HardwareCameraManager(private val context: Context) {
         } catch (e: Exception) {}
     }
 
-    fun takePhoto(fileName: String?): String? {
-        val camera = cameraDevice ?: return null
-        val session = captureSession ?: return null
-        val reader = photoReader ?: return null
-        val handler = backgroundHandler ?: return null
+    fun takePhoto(fileName: String?, callback: (String?) -> Unit) {
+        val camera = cameraDevice ?: run { callback(null); return }
+        val session = captureSession ?: run { callback(null); return }
+        val reader = photoReader ?: run { callback(null); return }
+        val handler = backgroundHandler ?: run { callback(null); return }
         val outputFile = File(
             context.cacheDir,
             fileName?.takeIf { it.isNotBlank() } ?: "nexora_photo_${System.currentTimeMillis()}.jpg"
@@ -193,21 +193,22 @@ class HardwareCameraManager(private val context: Context) {
                 val bytes = ByteArray(buffer.remaining())
                 buffer.get(bytes)
                 FileOutputStream(outputFile).use { it.write(bytes) }
-            } catch (_: Exception) {
+                Handler(context.mainLooper).post { callback(outputFile.absolutePath) }
+            } catch (e: Exception) {
+                Handler(context.mainLooper).post { callback(null) }
             } finally {
                 image.close()
             }
         }, handler)
 
-        return try {
+        try {
             val request = camera.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE)
             request.addTarget(reader.surface)
             request.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE)
             request.set(CaptureRequest.FLASH_MODE, if (isFlashOn) CaptureRequest.FLASH_MODE_SINGLE else CaptureRequest.FLASH_MODE_OFF)
             session.capture(request.build(), null, handler)
-            outputFile.absolutePath
-        } catch (_: Exception) {
-            null
+        } catch (e: Exception) {
+            callback(null)
         }
     }
 

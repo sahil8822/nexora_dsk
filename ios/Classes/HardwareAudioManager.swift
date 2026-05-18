@@ -87,4 +87,10 @@ public class HardwareAudioManager {
         audioEngine.inputNode.removeTap(onBus: 0)
         audioEngine.stop()
     }
+    
+    deinit {
+        if let setup = fftSetup {
+            vDSP_destroy_fftsetup(setup)
+        }
+    }
 }

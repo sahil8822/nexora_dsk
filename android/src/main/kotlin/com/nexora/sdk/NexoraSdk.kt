@@ -135,11 +135,12 @@ class NexoraSdk: FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry
                 result.success(true)
             }
             "takePhoto" -> {
-                val path = camera.takePhoto(call.argument<String>("fileName"))
-                if (path == null) {
-                    result.error("CAMERA_UNAVAILABLE", "Camera is not running or photo capture failed.", null)
-                } else {
-                    result.success(path)
+                camera.takePhoto(call.argument<String>("fileName")) { path ->
+                    if (path == null) {
+                        result.error("CAMERA_UNAVAILABLE", "Camera is not running or photo capture failed.", null)
+                    } else {
+                        result.success(path)
+                    }
                 }
             }
             "startVideoRecording" -> result.error("NOT_SUPPORTED", "Video recording is not implemented on Android yet.", null)

@@ -3,11 +3,24 @@ import '../../models/hardware_models.dart';
 
 /// Module for high-accuracy GPS tracking and Geofencing.
 class LocationModule {
+  bool _isRunning = false;
+
+  /// Returns whether location updates are active.
+  bool get isRunning => _isRunning;
+
   /// Starts real-time location updates. Coordinates are delivered via the [stream].
-  Future<bool> start() => NexoraSdkPlatform.instance.startLocation();
+  Future<bool> start() async {
+    final success = await NexoraSdkPlatform.instance.startLocation();
+    if (success) _isRunning = true;
+    return success;
+  }
 
   /// Stops all location updates and releases the GPS hardware.
-  Future<bool> stop() => NexoraSdkPlatform.instance.stopLocation();
+  Future<bool> stop() async {
+    final success = await NexoraSdkPlatform.instance.stopLocation();
+    if (success) _isRunning = false;
+    return success;
+  }
 
   /// Enables or disables background location support where the platform allows it.
   ///

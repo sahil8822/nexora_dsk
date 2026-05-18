@@ -85,7 +85,7 @@ class HardwareHealthManager(private val context: Context) {
         val battery = getBatteryInfo()
         val wifi = getWifiInfo()
         val timestamp = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
-        val entry = "$timestamp,${battery["level"]},${battery["isCharging"]},${wifi?.get("ssid") ?: "N/A"},${wifi?.get("rssi") ?: "N/A"}\n"
+        val entry = "$timestamp,${battery["level"]},${battery["isCharging"]},${wifi?.get("ssid") ?: "N/A"},${wifi?.get("signalStrength") ?: "N/A"}\n"
         
         try {
             FileOutputStream(logFile, true).use { it.write(entry.toByteArray()) }
