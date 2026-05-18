@@ -12,7 +12,7 @@ A premium hardware engine for Flutter supporting Camera (Vision AI), Bluetooth L
   s.license          = { :file => '../LICENSE' }
   s.author           = { 'Sahil' => 'email@example.com' }
   s.source           = { :path => '.' }
-  s.source_files = 'nexora_sdk/Sources/nexora_sdk/**/*.swift'
+  s.source_files = 'Classes/**/*.swift'
   s.dependency 'Flutter'
   s.platform = :ios, '13.0'
 
@@ -23,5 +23,5 @@ A premium hardware engine for Flutter supporting Camera (Vision AI), Bluetooth L
   s.frameworks = 'AVFoundation', 'CoreBluetooth', 'CoreLocation', 'CoreMotion', 'LocalAuthentication', 'AudioToolbox', 'Vision', 'Accelerate'
 
   # Required for App Store Privacy Compliance
-  s.resource_bundles = {'nexora_sdk_privacy' => ['nexora_sdk/Sources/nexora_sdk/PrivacyInfo.xcprivacy']}
+  s.resource_bundles = {'nexora_sdk_privacy' => ['Resources/PrivacyInfo.xcprivacy']}
 end

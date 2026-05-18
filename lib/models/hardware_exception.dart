@@ -42,6 +42,17 @@ class HardwareException implements Exception {
   final String message;
   final Object? details;
 
+  bool get isUnsupported => code == HardwareErrorCode.notSupported;
+
+  bool get isPermissionDenied => code == HardwareErrorCode.permissionDenied;
+
+  factory HardwareException.unsupported(String feature) {
+    return HardwareException(
+      code: HardwareErrorCode.notSupported,
+      message: '$feature is not supported on this platform.',
+    );
+  }
+
   factory HardwareException.fromPlatformException(PlatformException error) {
     return HardwareException(
       code: HardwareErrorCode.fromPlatformCode(error.code),

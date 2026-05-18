@@ -11,7 +11,27 @@ Nexora SDK is a cross-platform Flutter plugin for hardware features. It provides
 | Web | Supported with safe Dart fallbacks |
 | macOS, Windows, Linux | Supported with safe Dart fallbacks |
 
-Android and iOS use native hardware implementations. Web and desktop register lightweight Dart implementations so apps compile and run on every Flutter platform; hardware APIs that need platform-native integrations return safe unsupported values such as `false`, `null`, or an empty list. Desktop storage uses local files, and web storage uses an in-memory fallback.
+Android and iOS use native hardware implementations. Web and desktop register lightweight Dart implementations so apps compile and run on every Flutter platform; hardware APIs that need platform-native integrations return safe unsupported values such as `false`, `null`, or an empty list. Desktop storage uses local files, and web storage uses browser `localStorage`.
+
+The web fallback uses `package:web` instead of `dart:html`, so it is ready for
+Flutter WebAssembly builds.
+
+Feature status is also available at runtime:
+
+```dart
+final support = NexoraSdk.instance.supportFor(HardwareFeature.camera);
+
+if (!support.isAvailable) {
+  debugPrint('${support.feature.name}: ${support.reason}');
+}
+```
+
+| Feature group | Android/iOS | Web | Desktop |
+| --- | --- | --- | --- |
+| Camera, audio, BLE, GPS, biometrics, sensors, haptics, health | Native | Unsupported fallback | Unsupported fallback |
+| Storage | Native | Browser `localStorage` fallback | Local file fallback |
+| Clipboard, open URL, share text | Native | Best-effort browser fallback | Best-effort OS fallback |
+| Video, Smart Sync, camera filters, BLE L2CAP, Dead Reckoning | Experimental / guarded | Experimental / guarded | Experimental / guarded |
 
 ## Permissions
 
@@ -184,7 +204,7 @@ sdk.errors.listen((event) {
 });
 ```
 
-Camera Pro adds native still-photo capture and forward-compatible video APIs:
+Camera Pro adds native still-photo capture and forward-compatible video APIs. Video recording is exposed for API stability, but currently reports `NOT_SUPPORTED` on native platforms until the camera recorder backends are added:
 
 ```dart
 final photoPath = await sdk.camera.takePhoto();
@@ -204,6 +224,8 @@ final pasted = await sdk.native.pasteText();
 await sdk.native.openUrl('https://flutter.dev');
 await sdk.native.shareText('Shared from Nexora SDK');
 ```
+
+Some experimental Pro APIs, including Smart Sync, camera shader filters, BLE L2CAP, and Dead Reckoning, are intentionally guarded. Platforms without a real implementation return `false` or a `NOT_SUPPORTED` error instead of reporting fake success.
 
 Connectivity can be watched with a lightweight polling stream:
 

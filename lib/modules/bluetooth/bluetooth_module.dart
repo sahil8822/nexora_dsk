@@ -14,7 +14,8 @@ class BluetoothModule {
     bool autoRequestPermission = true,
   }) async {
     if (autoRequestPermission) {
-      final granted = await NexoraSdkPlatform.instance.requestBluetoothPermission();
+      final granted = await NexoraSdkPlatform.instance
+          .requestBluetoothPermission();
       if (!granted) return false;
     }
     return NexoraSdkPlatform.instance.startBluetoothScanWithOptions(options);
@@ -60,7 +61,11 @@ class BluetoothModule {
   /// Returns a stream of [Uint8List] bytes.
   Stream<Uint8List> openL2capStream(String deviceId, int psm) {
     if (deviceId.trim().isEmpty) {
-      throw ArgumentError.value(deviceId, 'deviceId', 'Device ID cannot be empty.');
+      throw ArgumentError.value(
+        deviceId,
+        'deviceId',
+        'Device ID cannot be empty.',
+      );
     }
     if (psm <= 0) {
       throw ArgumentError.value(psm, 'psm', 'PSM must be greater than zero.');

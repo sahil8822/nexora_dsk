@@ -84,11 +84,12 @@ public class NexoraSdk: NSObject, FlutterPlugin, CLLocationManagerDelegate {
 
         case "startCameraWithOptions":
             textureId = registrar?.textures().register(camera) ?? -1
-            camera.start(width: 1280, height: 720)
+            let size = cameraSize(for: args?["resolution"] as? String)
+            camera.start(width: size.width, height: size.height)
             result(textureId)
 
         case "startAudioWithOptions":
-            let success = audio.start(enableFFT: true, streamBytes: false, interval: 80.0)
+            let success = audio.start(enableFFT: false, streamBytes: false, interval: 80.0)
             result(success)
 
         case "enableSmartSync":
@@ -99,18 +100,18 @@ public class NexoraSdk: NSObject, FlutterPlugin, CLLocationManagerDelegate {
             let headers = args?["headers"] as? [String: String] ?? [:]
             let rollLimitBytes = args?["rollLimitBytes"] as? Int ?? (2 * 1024 * 1024)
             let requireWifi = args?["requireWifi"] as? Bool ?? true
-            result(true)
+            result(FlutterError(code: "NOT_SUPPORTED", message: "Smart sync is not implemented by the native iOS plugin yet.", details: nil))
 
         case "applyCameraFilterShader":
             guard let shaderType = args?["shaderType"] as? String else {
                 result(FlutterError(code: "INVALID_ARGUMENT", message: "applyCameraFilterShader requires shaderType.", details: nil))
                 return
             }
-            result(true)
+            result(FlutterError(code: "NOT_SUPPORTED", message: "Camera filter shaders are not implemented by the native iOS plugin yet.", details: nil))
 
         case "enableDeadReckoning":
             let enabled = args?["enabled"] as? Bool ?? false
-            result(true)
+            result(FlutterError(code: "NOT_SUPPORTED", message: "Dead reckoning is not implemented by the native iOS plugin yet.", details: nil))
 
         case "setFlash":
             camera.setFlash(on: args?["on"] as? Bool ?? false)
@@ -317,7 +318,7 @@ public class NexoraSdk: NSObject, FlutterPlugin, CLLocationManagerDelegate {
             result(true)
 
         case "startSensorWithOptions":
-            sensors.start(frequencyHz: 60)
+            sensors.start(frequencyHz: sensorFrequency(for: args?["accuracy"] as? String))
             result(true)
 
         case "stopSensor":
@@ -782,6 +783,32 @@ public class NexoraSdk: NSObject, FlutterPlugin, CLLocationManagerDelegate {
             "screenRefreshRate": Double(UIScreen.main.maximumFramesPerSecond),
             "thermalState": thermalState
         ]
+    }
+
+    private func cameraSize(for resolution: String?) -> (width: Int, height: Int) {
+        switch resolution {
+        case "low":
+            return (640, 480)
+        case "medium":
+            return (960, 540)
+        case "fullHd":
+            return (1920, 1080)
+        default:
+            return (1280, 720)
+        }
+    }
+
+    private func sensorFrequency(for accuracy: String?) -> Int {
+        switch accuracy {
+        case "fastest":
+            return 120
+        case "game":
+            return 100
+        case "ui":
+            return 60
+        default:
+            return 30
+        }
     }
 
     private func getConnectivityInfo(result: @escaping FlutterResult) {

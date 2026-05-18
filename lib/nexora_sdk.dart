@@ -147,6 +147,16 @@ class NexoraSdk {
   /// Returns whether [feature] is expected to work on this Flutter target.
   bool supports(HardwareFeature feature) => capabilities.supports(feature);
 
+  /// Returns detailed implementation status for [feature] on this target.
+  HardwareFeatureSupport supportFor(HardwareFeature feature) {
+    return capabilities.supportFor(feature);
+  }
+
+  /// Detailed support matrix for every SDK feature on this target.
+  Map<HardwareFeature, HardwareFeatureSupport> get featureMatrix {
+    return capabilities.featureMatrix;
+  }
+
   /// Requests all necessary hardware permissions at once.
   ///
   /// Native Android/iOS code shows system prompts for Camera, Microphone,

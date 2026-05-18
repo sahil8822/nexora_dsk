@@ -10,6 +10,7 @@ public class HardwareBluetoothManager: NSObject, CBCentralManagerDelegate {
     private var eventSink: FlutterEventSink?
     private var connectedPeripheral: CBPeripheral?
     private var serviceDiscoveryCallback: (([String]) -> Void)?
+    private var pendingServiceDiscoveries = 0
     
     public override init() {
         super.init()
@@ -114,14 +115,27 @@ public class HardwareBluetoothManager: NSObject, CBCentralManagerDelegate {
 
 extension HardwareBluetoothManager: CBPeripheralDelegate {
     public func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
-        let uuids = peripheral.services?.map { $0.uuid.uuidString } ?? []
-        DispatchQueue.main.async {
-            self.serviceDiscoveryCallback?(uuids)
-            self.serviceDiscoveryCallback = nil
+        guard error == nil, let services = peripheral.services, !services.isEmpty else {
+            DispatchQueue.main.async {
+                self.serviceDiscoveryCallback?([])
+                self.serviceDiscoveryCallback = nil
+            }
+            return
+        }
+        pendingServiceDiscoveries = services.count
+        for service in services {
+            peripheral.discoverCharacteristics(nil, for: service)
         }
     }
 
     public func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
-        // Handle characteristics discovery if needed
+        pendingServiceDiscoveries -= 1
+        if pendingServiceDiscoveries <= 0 {
+            let uuids = peripheral.services?.map { $0.uuid.uuidString } ?? []
+            DispatchQueue.main.async {
+                self.serviceDiscoveryCallback?(uuids)
+                self.serviceDiscoveryCallback = nil
+            }
+        }
     }
 }

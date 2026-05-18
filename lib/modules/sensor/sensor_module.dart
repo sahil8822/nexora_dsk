@@ -21,7 +21,9 @@ class SensorModule {
         'Must be greater than zero.',
       );
     }
-    final success = await NexoraSdkPlatform.instance.startSensor(frequencyHz: frequencyHz);
+    final success = await NexoraSdkPlatform.instance.startSensor(
+      frequencyHz: frequencyHz,
+    );
     if (success) {
       _isRunning = true;
       _lastFrequencyHz = frequencyHz;
@@ -31,7 +33,9 @@ class SensorModule {
 
   /// Starts accelerometer/gyroscope tracking with granular native customizations.
   Future<bool> startWithOptions(SensorOptions options) async {
-    final success = await NexoraSdkPlatform.instance.startSensorWithOptions(options);
+    final success = await NexoraSdkPlatform.instance.startSensorWithOptions(
+      options,
+    );
     if (success) {
       _isRunning = true;
     }

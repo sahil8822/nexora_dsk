@@ -137,12 +137,29 @@ class NexoraSdk: FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry
                 result.success(success)
             }
             "startCameraWithOptions" -> {
-                val textureId = binding?.textureRegistry()?.registerTexture(camera) ?: -1L
-                camera.start(1280, 720)
-                result.success(textureId)
+                if (!hasPermission(Manifest.permission.CAMERA)) {
+                    result.error("PERMISSION_DENIED", "Camera permission is required.", null)
+                    return
+                }
+                val resolution = call.argument<String>("resolution") ?: "hd"
+                val size = cameraSizeForResolution(resolution)
+                textureEntry = textureRegistry?.createSurfaceTexture()
+                val entry = textureEntry
+                if (entry == null) {
+                    result.error("CAMERA_ERROR", "Texture registry is unavailable.", null)
+                    return
+                }
+                entry.surfaceTexture().setDefaultBufferSize(size.first, size.second)
+                val surface = android.view.Surface(entry.surfaceTexture())
+                camera.startWithSurface(surface, size.first, size.second)
+                result.success(entry.id())
             }
             "startAudioWithOptions" -> {
-                val success = audio.start(true, false, 80)
+                if (!hasPermission(Manifest.permission.RECORD_AUDIO)) {
+                    result.error("PERMISSION_DENIED", "Microphone permission is required.", null)
+                    return
+                }
+                val success = audio.start(false, false, 80)
                 result.success(success)
             }
             "enableSmartSync" -> {
@@ -154,7 +171,7 @@ class NexoraSdk: FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry
                     result.error("INVALID_ARGUMENT", "enableSmartSync requires uploadEndpointUrl.", null)
                     return
                 }
-                result.success(true)
+                result.error("NOT_SUPPORTED", "Smart sync is not implemented by the native Android plugin yet.", null)
             }
             "applyCameraFilterShader" -> {
                 val shaderType = call.argument<String>("shaderType")
@@ -162,11 +179,11 @@ class NexoraSdk: FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry
                     result.error("INVALID_ARGUMENT", "applyCameraFilterShader requires shaderType.", null)
                     return
                 }
-                result.success(true)
+                result.error("NOT_SUPPORTED", "Camera filter shaders are not implemented by the native Android plugin yet.", null)
             }
             "enableDeadReckoning" -> {
                 val enabled = call.argument<Boolean>("enabled") ?: false
-                result.success(true)
+                result.error("NOT_SUPPORTED", "Dead reckoning is not implemented by the native Android plugin yet.", null)
             }
             "setFlash" -> {
                 camera.setFlash(call.argument<Boolean>("on") ?: false)
@@ -366,7 +383,11 @@ class NexoraSdk: FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry
 
             // ==================== Sensors ====================
             "startSensor" -> { sensors.start(call.argument<Int>("frequency") ?: 60); result.success(true) }
-            "startSensorWithOptions" -> { sensors.start(60); result.success(true) }
+            "startSensorWithOptions" -> {
+                val accuracy = call.argument<String>("accuracy") ?: "normal"
+                sensors.start(sensorFrequencyForAccuracy(accuracy))
+                result.success(true)
+            }
             "stopSensor" -> { sensors.stop(); result.success(true) }
 
             // ==================== Biometrics ====================
@@ -770,6 +791,24 @@ class NexoraSdk: FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry
             "signalStrength" to signalStrength,
             "ipAddress" to null
         )
+    }
+
+    private fun cameraSizeForResolution(resolution: String): Pair<Int, Int> {
+        return when (resolution) {
+            "low" -> Pair(640, 480)
+            "medium" -> Pair(960, 540)
+            "fullHd" -> Pair(1920, 1080)
+            else -> Pair(1280, 720)
+        }
+    }
+
+    private fun sensorFrequencyForAccuracy(accuracy: String): Int {
+        return when (accuracy) {
+            "fastest" -> 120
+            "game" -> 100
+            "ui" -> 60
+            else -> 30
+        }
     }
 
     private fun isEmulator(): Boolean {

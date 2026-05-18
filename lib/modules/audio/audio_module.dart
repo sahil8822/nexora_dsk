@@ -65,7 +65,9 @@ class AudioModule {
       final granted = await NexoraSdkPlatform.instance.requestAudioPermission();
       if (!granted) return false;
     }
-    final success = await NexoraSdkPlatform.instance.startAudioWithOptions(options);
+    final success = await NexoraSdkPlatform.instance.startAudioWithOptions(
+      options,
+    );
     if (success) {
       _isRunning = true;
     }
@@ -98,7 +100,11 @@ class AudioOutputController {
   /// Sets the system audio playback volume level (0.0 to 1.0).
   Future<bool> setVolume(double level) {
     if (level < 0.0 || level > 1.0) {
-      throw ArgumentError.value(level, 'level', 'Volume level must be between 0.0 and 1.0.');
+      throw ArgumentError.value(
+        level,
+        'level',
+        'Volume level must be between 0.0 and 1.0.',
+      );
     }
     return NexoraSdkPlatform.instance.setAudioVolume(level);
   }
@@ -114,7 +120,11 @@ class AudioInputController {
   /// Sets the input recording gain (sensitivity) (0.0 to 1.0).
   Future<bool> setGain(double gain) {
     if (gain < 0.0 || gain > 1.0) {
-      throw ArgumentError.value(gain, 'gain', 'Gain must be between 0.0 and 1.0.');
+      throw ArgumentError.value(
+        gain,
+        'gain',
+        'Gain must be between 0.0 and 1.0.',
+      );
     }
     return NexoraSdkPlatform.instance.setAudioGain(gain);
   }

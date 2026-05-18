@@ -15,6 +15,7 @@ public class HardwareCameraManager: NSObject, FlutterTexture, AVCaptureVideoData
     private var eventSink: FlutterEventSink?
     private let videoOutputQueue = DispatchQueue(label: "camera.video.output.queue", qos: .userInteractive)
     
+    private let bufferLock = NSLock()
     private var latestPixelBuffer: CVPixelBuffer?
     private var faceEnabled = false
     private var barcodeEnabled = false
@@ -22,6 +23,19 @@ public class HardwareCameraManager: NSObject, FlutterTexture, AVCaptureVideoData
     private var lastWidth: Int = 640
     private var lastHeight: Int = 480
     private var lastVisionFrameTime = CACurrentMediaTime()
+
+    private var customModelAssetPath: String?
+    private var customLabels: [String]?
+    private var customThreshold: Float = 0.5
+    private var isCustomClassifierRegistered = false
+
+    public func registerCustomClassifier(modelAssetPath: String, labels: [String], threshold: Float) -> Bool {
+        self.customModelAssetPath = modelAssetPath
+        self.customLabels = labels
+        self.customThreshold = threshold
+        self.isCustomClassifierRegistered = true
+        return true
+    }
 
     public func setEventSink(_ sink: FlutterEventSink?) { self.eventSink = sink }
     
@@ -111,6 +125,8 @@ public class HardwareCameraManager: NSObject, FlutterTexture, AVCaptureVideoData
     // MARK: - FlutterTexture
 
     public func copyPixelBuffer() -> Unmanaged<CVPixelBuffer>? {
+        bufferLock.lock()
+        defer { bufferLock.unlock() }
         guard let buffer = latestPixelBuffer else { return nil }
         return Unmanaged.passRetained(buffer)
     }
@@ -119,7 +135,9 @@ public class HardwareCameraManager: NSObject, FlutterTexture, AVCaptureVideoData
 
     public func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
         guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }
+        bufferLock.lock()
         latestPixelBuffer = pixelBuffer
+        bufferLock.unlock()
         
         let now = CACurrentMediaTime()
         if (faceEnabled || barcodeEnabled) && now - lastVisionFrameTime >= 0.12 {

@@ -11,6 +11,54 @@ enum HardwareFeature {
   haptics,
   storage,
   health,
+  nativeUtilities,
+  smartSync,
+  cameraFilters,
+  videoRecording,
+  bleL2cap,
+  deadReckoning,
+}
+
+/// Coarse-grained implementation status for one feature on one platform.
+enum HardwareFeatureSupportLevel {
+  /// Backed by a native or platform API intended for production use.
+  supported,
+
+  /// Available through a lighter Dart/platform fallback with reduced behavior.
+  fallback,
+
+  /// API is present but the implementation is intentionally guarded.
+  experimental,
+
+  /// Not implemented on the current platform.
+  unsupported,
+}
+
+/// Detailed feature support metadata for the current runtime.
+class HardwareFeatureSupport {
+  const HardwareFeatureSupport({
+    required this.feature,
+    required this.level,
+    required this.reason,
+  });
+
+  final HardwareFeature feature;
+  final HardwareFeatureSupportLevel level;
+  final String reason;
+
+  bool get isAvailable =>
+      level == HardwareFeatureSupportLevel.supported ||
+      level == HardwareFeatureSupportLevel.fallback;
+
+  bool get isNative => level == HardwareFeatureSupportLevel.supported;
+
+  Map<String, Object> toMap() => <String, Object>{
+    'feature': feature.name,
+    'level': level.name,
+    'reason': reason,
+    'isAvailable': isAvailable,
+    'isNative': isNative,
+  };
 }
 
 /// Describes which SDK features are expected to be available on this runtime.
@@ -140,7 +188,140 @@ class HardwareCapabilities {
       HardwareFeature.haptics => haptics,
       HardwareFeature.storage => storage,
       HardwareFeature.health => health,
+      HardwareFeature.nativeUtilities => isMobile || isDesktop || isWeb,
+      HardwareFeature.smartSync => false,
+      HardwareFeature.cameraFilters => false,
+      HardwareFeature.videoRecording => false,
+      HardwareFeature.bleL2cap => false,
+      HardwareFeature.deadReckoning => false,
     };
+  }
+
+  HardwareFeatureSupport supportFor(HardwareFeature feature) {
+    final nativeMobile = isMobile;
+
+    return switch (feature) {
+      HardwareFeature.camera => _status(
+        feature,
+        nativeMobile,
+        fallbackRuntime: false,
+        supportedReason: 'Native camera texture preview is available.',
+        unsupportedReason: 'Camera preview needs a native platform backend.',
+      ),
+      HardwareFeature.audio => _status(
+        feature,
+        nativeMobile,
+        fallbackRuntime: false,
+        supportedReason: 'Native microphone capture is available.',
+        unsupportedReason: 'Audio capture needs a native platform backend.',
+      ),
+      HardwareFeature.bluetooth => _status(
+        feature,
+        nativeMobile,
+        fallbackRuntime: false,
+        supportedReason: 'Native BLE scanning and GATT APIs are available.',
+        unsupportedReason: 'Bluetooth needs a native platform backend.',
+      ),
+      HardwareFeature.location => _status(
+        feature,
+        nativeMobile,
+        fallbackRuntime: false,
+        supportedReason: 'Native location updates are available.',
+        unsupportedReason: 'Location needs a native platform backend.',
+      ),
+      HardwareFeature.biometrics => _status(
+        feature,
+        nativeMobile,
+        fallbackRuntime: false,
+        supportedReason: 'Native biometric prompts are available.',
+        unsupportedReason: 'Biometrics need a native platform backend.',
+      ),
+      HardwareFeature.sensors => _status(
+        feature,
+        nativeMobile,
+        fallbackRuntime: false,
+        supportedReason: 'Native motion sensors are available.',
+        unsupportedReason: 'Motion sensors need a native platform backend.',
+      ),
+      HardwareFeature.haptics => _status(
+        feature,
+        nativeMobile,
+        fallbackRuntime: false,
+        supportedReason: 'Native haptics are available.',
+        unsupportedReason: 'Haptics need a native platform backend.',
+      ),
+      HardwareFeature.storage => HardwareFeatureSupport(
+        feature: feature,
+        level: nativeMobile
+            ? HardwareFeatureSupportLevel.supported
+            : HardwareFeatureSupportLevel.fallback,
+        reason: nativeMobile
+            ? 'Native app-private storage is available.'
+            : 'Dart fallback storage is available with platform limits.',
+      ),
+      HardwareFeature.health => _status(
+        feature,
+        nativeMobile,
+        fallbackRuntime: false,
+        supportedReason:
+            'Native battery, WiFi, and telemetry APIs are available.',
+        unsupportedReason: 'Health diagnostics need a native platform backend.',
+      ),
+      HardwareFeature.nativeUtilities => HardwareFeatureSupport(
+        feature: feature,
+        level: nativeMobile
+            ? HardwareFeatureSupportLevel.supported
+            : HardwareFeatureSupportLevel.fallback,
+        reason: nativeMobile
+            ? 'Native clipboard, URL, and share utilities are available.'
+            : 'Best-effort Dart fallback utilities are available.',
+      ),
+      HardwareFeature.smartSync ||
+      HardwareFeature.cameraFilters ||
+      HardwareFeature.videoRecording ||
+      HardwareFeature.bleL2cap ||
+      HardwareFeature.deadReckoning => HardwareFeatureSupport(
+        feature: feature,
+        level: HardwareFeatureSupportLevel.experimental,
+        reason:
+            'The API is reserved but no production backend is available yet.',
+      ),
+    };
+  }
+
+  Map<HardwareFeature, HardwareFeatureSupport> get featureMatrix {
+    return <HardwareFeature, HardwareFeatureSupport>{
+      for (final feature in HardwareFeature.values)
+        feature: supportFor(feature),
+    };
+  }
+
+  HardwareFeatureSupport _status(
+    HardwareFeature feature,
+    bool supported, {
+    required bool fallbackRuntime,
+    required String supportedReason,
+    required String unsupportedReason,
+  }) {
+    if (supported) {
+      return HardwareFeatureSupport(
+        feature: feature,
+        level: HardwareFeatureSupportLevel.supported,
+        reason: supportedReason,
+      );
+    }
+    if (fallbackRuntime) {
+      return HardwareFeatureSupport(
+        feature: feature,
+        level: HardwareFeatureSupportLevel.fallback,
+        reason: 'A reduced Dart fallback is available.',
+      );
+    }
+    return HardwareFeatureSupport(
+      feature: feature,
+      level: HardwareFeatureSupportLevel.unsupported,
+      reason: unsupportedReason,
+    );
   }
 
   Map<String, Object> toMap() => <String, Object>{
@@ -158,6 +339,9 @@ class HardwareCapabilities {
     'storage': storage,
     'health': health,
     'nativeCameraPreview': nativeCameraPreview,
+    'featureMatrix': featureMatrix.map(
+      (feature, support) => MapEntry(feature.name, support.toMap()),
+    ),
   };
 }
 

@@ -25,7 +25,8 @@ class CameraModule {
       throw ArgumentError.value(height, 'height', 'Must be greater than zero.');
     }
     if (autoRequestPermission) {
-      final granted = await NexoraSdkPlatform.instance.requestCameraPermission();
+      final granted = await NexoraSdkPlatform.instance
+          .requestCameraPermission();
       if (!granted) return null;
     }
     return NexoraSdkPlatform.instance
@@ -48,18 +49,19 @@ class CameraModule {
     bool autoRequestPermission = true,
   }) async {
     if (autoRequestPermission) {
-      final granted = await NexoraSdkPlatform.instance.requestCameraPermission();
+      final granted = await NexoraSdkPlatform.instance
+          .requestCameraPermission();
       if (!granted) return null;
     }
-    return NexoraSdkPlatform.instance
-        .startCameraWithOptions(options)
-        .then((result) {
-          if (result is int) {
-            _isRunning = true;
-            return result;
-          }
-          return null;
-        });
+    return NexoraSdkPlatform.instance.startCameraWithOptions(options).then((
+      result,
+    ) {
+      if (result is int) {
+        _isRunning = true;
+        return result;
+      }
+      return null;
+    });
   }
 
   /// Stops the camera and releases all native resources.

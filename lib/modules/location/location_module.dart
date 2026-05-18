@@ -11,7 +11,8 @@ class LocationModule {
   /// Starts real-time location updates. Coordinates are delivered via the [stream].
   Future<bool> start({bool autoRequestPermission = true}) async {
     if (autoRequestPermission) {
-      final granted = await NexoraSdkPlatform.instance.requestLocationPermission();
+      final granted = await NexoraSdkPlatform.instance
+          .requestLocationPermission();
       if (!granted) return false;
     }
     final success = await NexoraSdkPlatform.instance.startLocation();
@@ -25,10 +26,13 @@ class LocationModule {
     bool autoRequestPermission = true,
   }) async {
     if (autoRequestPermission) {
-      final granted = await NexoraSdkPlatform.instance.requestLocationPermission();
+      final granted = await NexoraSdkPlatform.instance
+          .requestLocationPermission();
       if (!granted) return false;
     }
-    final success = await NexoraSdkPlatform.instance.startLocationWithOptions(options);
+    final success = await NexoraSdkPlatform.instance.startLocationWithOptions(
+      options,
+    );
     if (success) _isRunning = true;
     return success;
   }

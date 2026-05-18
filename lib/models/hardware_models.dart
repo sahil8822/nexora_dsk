@@ -367,18 +367,10 @@ class FileInfo {
 }
 
 /// Focus modes supported by the custom camera engine.
-enum CameraFocusMode {
-  auto,
-  continuous,
-  macro,
-  locked,
-}
+enum CameraFocusMode { auto, continuous, macro, locked }
 
 /// Exposure modes supported by the custom camera engine.
-enum CameraExposureMode {
-  auto,
-  locked,
-}
+enum CameraExposureMode { auto, locked }
 
 /// Customizable camera rendering configurations.
 class CameraOptions {
@@ -397,19 +389,16 @@ class CameraOptions {
   });
 
   Map<String, dynamic> toMap() => {
-        'resolution': resolution.name,
-        'focusMode': focusMode.name,
-        'exposureMode': exposureMode.name,
-        'exposureCompensation': exposureCompensation,
-        'mirrorFrontCamera': mirrorFrontCamera,
-      };
+    'resolution': resolution.name,
+    'focusMode': focusMode.name,
+    'exposureMode': exposureMode.name,
+    'exposureCompensation': exposureCompensation,
+    'mirrorFrontCamera': mirrorFrontCamera,
+  };
 }
 
 /// Format specifying number of audio channels.
-enum AudioChannelFormat {
-  mono,
-  stereo,
-}
+enum AudioChannelFormat { mono, stereo }
 
 /// Customizable audio capture configurations.
 class AudioOptions {
@@ -426,20 +415,15 @@ class AudioOptions {
   });
 
   Map<String, dynamic> toMap() => {
-        'sampleRate': sampleRate,
-        'channels': channels.name,
-        'enableEchoCancellation': enableEchoCancellation,
-        'enableNoiseSuppression': enableNoiseSuppression,
-      };
+    'sampleRate': sampleRate,
+    'channels': channels.name,
+    'enableEchoCancellation': enableEchoCancellation,
+    'enableNoiseSuppression': enableNoiseSuppression,
+  };
 }
 
 /// Sampling frequencies supported by native motion sensors.
-enum SensorAccuracy {
-  normal,
-  ui,
-  game,
-  fastest,
-}
+enum SensorAccuracy { normal, ui, game, fastest }
 
 /// Customization options for motion sensors (accelerometer/gyroscope).
 class SensorOptions {
@@ -454,18 +438,14 @@ class SensorOptions {
   });
 
   Map<String, dynamic> toMap() => {
-        'accuracy': accuracy.name,
-        'enableLowPassFilter': enableLowPassFilter,
-        'lowPassAlpha': lowPassAlpha,
-      };
+    'accuracy': accuracy.name,
+    'enableLowPassFilter': enableLowPassFilter,
+    'lowPassAlpha': lowPassAlpha,
+  };
 }
 
 /// Scanning modes for Bluetooth Low Energy.
-enum BluetoothScanMode {
-  balanced,
-  lowPower,
-  lowLatency,
-}
+enum BluetoothScanMode { balanced, lowPower, lowLatency }
 
 /// Customization options for BLE scanning.
 class BluetoothScanOptions {
@@ -480,19 +460,14 @@ class BluetoothScanOptions {
   });
 
   Map<String, dynamic> toMap() => {
-        'scanMode': scanMode.name,
-        'serviceUuids': serviceUuids,
-        'allowDuplicates': allowDuplicates,
-      };
+    'scanMode': scanMode.name,
+    'serviceUuids': serviceUuids,
+    'allowDuplicates': allowDuplicates,
+  };
 }
 
 /// Native coordinate accuracies for location services.
-enum LocationAccuracy {
-  powerSaving,
-  balanced,
-  highAccuracy,
-  navigation,
-}
+enum LocationAccuracy { powerSaving, balanced, highAccuracy, navigation }
 
 /// Customization options for GPS and Inertial Sensor Fusion positioning.
 class LocationOptions {
@@ -509,11 +484,11 @@ class LocationOptions {
   });
 
   Map<String, dynamic> toMap() => {
-        'accuracy': accuracy.name,
-        'distanceFilterMeters': distanceFilterMeters,
-        'enableBackgroundUpdates': enableBackgroundUpdates,
-        'showsBackgroundLocationIndicator': showsBackgroundLocationIndicator,
-      };
+    'accuracy': accuracy.name,
+    'distanceFilterMeters': distanceFilterMeters,
+    'enableBackgroundUpdates': enableBackgroundUpdates,
+    'showsBackgroundLocationIndicator': showsBackgroundLocationIndicator,
+  };
 }
 
 /// Customization options for native Biometric Prompt overlays (Face ID / Touch ID / Fingerprint).
@@ -533,12 +508,12 @@ class BiometricPromptOptions {
   });
 
   Map<String, dynamic> toMap() => {
-        'title': title,
-        'subtitle': subtitle,
-        'description': description,
-        'negativeButtonText': negativeButtonText,
-        'confirmationRequired': confirmationRequired,
-      };
+    'title': title,
+    'subtitle': subtitle,
+    'description': description,
+    'negativeButtonText': negativeButtonText,
+    'confirmationRequired': confirmationRequired,
+  };
 }
 
 /// Vibration intensities and pattern types for haptic actuators.
@@ -565,10 +540,10 @@ class HapticOptions {
   });
 
   Map<String, dynamic> toMap() => {
-        'type': type.name,
-        'intensityPercent': intensityPercent,
-        'durationMs': durationMs,
-      };
+    'type': type.name,
+    'intensityPercent': intensityPercent,
+    'durationMs': durationMs,
+  };
 }
 
 /// Target output channels for routing audio playback.
@@ -587,13 +562,8 @@ enum AudioInputDevice {
   backMic,
   bottomMic,
   bluetoothMic,
-  wiredHeadsetMic;
+  wiredHeadsetMic,
 }
 
 /// Device thermal warning status states.
-enum DeviceThermalState {
-  normal,
-  fair,
-  serious,
-  critical,
-}
+enum DeviceThermalState { normal, fair, serious, critical }

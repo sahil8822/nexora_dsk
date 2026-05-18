@@ -30,19 +30,19 @@ class NexoraSdkDesktop extends NexoraSdkPlatform {
   }
 
   @override
-  Future<bool> requestPermissions() async => true;
+  Future<bool> requestPermissions() async => false;
 
   @override
-  Future<bool> requestCameraPermission() async => true;
+  Future<bool> requestCameraPermission() async => false;
 
   @override
-  Future<bool> requestAudioPermission() async => true;
+  Future<bool> requestAudioPermission() async => false;
 
   @override
-  Future<bool> requestLocationPermission() async => true;
+  Future<bool> requestLocationPermission() async => false;
 
   @override
-  Future<bool> requestBluetoothPermission() async => true;
+  Future<bool> requestBluetoothPermission() async => false;
 
   @override
   Future<HardwarePermissionStatus> getPermissionStatus(
@@ -50,7 +50,7 @@ class NexoraSdkDesktop extends NexoraSdkPlatform {
   ) async {
     return HardwarePermissionStatus(
       permission: permission,
-      state: HardwarePermissionState.granted,
+      state: HardwarePermissionState.unsupported,
       canRequest: false,
     );
   }
@@ -184,7 +184,9 @@ class NexoraSdkDesktop extends NexoraSdkPlatform {
   Future<bool> startBluetoothScan() async => false;
 
   @override
-  Future<bool> startBluetoothScanWithOptions(BluetoothScanOptions options) async => false;
+  Future<bool> startBluetoothScanWithOptions(
+    BluetoothScanOptions options,
+  ) async => false;
 
   @override
   Future<bool> stopBluetoothScan() async => true;
@@ -209,7 +211,8 @@ class NexoraSdkDesktop extends NexoraSdkPlatform {
   Future<bool> authenticate(String reason) async => false;
 
   @override
-  Future<bool> authenticateWithOptions(BiometricPromptOptions options) async => false;
+  Future<bool> authenticateWithOptions(BiometricPromptOptions options) async =>
+      false;
 
   @override
   Future<bool> canAuthenticate() async => false;
@@ -363,16 +366,65 @@ class NexoraSdkDesktop extends NexoraSdkPlatform {
   Future<String?> getExternalDirectory() async => null;
 
   @override
-  Future<bool> copyText(String text) async => false;
+  Future<bool> copyText(String text) async {
+    try {
+      if (Platform.isMacOS) {
+        final process = await Process.start('pbcopy', const []);
+        process.stdin.write(text);
+        await process.stdin.close();
+        return await process.exitCode == 0;
+      }
+      if (Platform.isWindows) {
+        final process = await Process.start('clip', const []);
+        process.stdin.write(text);
+        await process.stdin.close();
+        return await process.exitCode == 0;
+      }
+      return await _runClipboardWriteLinux(text);
+    } catch (_) {
+      return false;
+    }
+  }
 
   @override
-  Future<String?> pasteText() async => null;
+  Future<String?> pasteText() async {
+    try {
+      if (Platform.isMacOS) {
+        return await _readProcessText('pbpaste', const []);
+      }
+      if (Platform.isWindows) {
+        return await _readProcessText('powershell', const [
+          '-NoProfile',
+          '-Command',
+          'Get-Clipboard',
+        ]);
+      }
+      return await _readClipboardLinux();
+    } catch (_) {
+      return null;
+    }
+  }
 
   @override
-  Future<bool> openUrl(String url) async => false;
+  Future<bool> openUrl(String url) async {
+    try {
+      final command = Platform.isMacOS
+          ? 'open'
+          : Platform.isWindows
+          ? 'rundll32'
+          : 'xdg-open';
+      final args = Platform.isWindows
+          ? <String>['url.dll,FileProtocolHandler', url]
+          : <String>[url];
+      final result = await Process.run(command, args);
+      return result.exitCode == 0;
+    } catch (_) {
+      return false;
+    }
+  }
 
   @override
-  Future<bool> shareText(String text, {String? subject}) async => false;
+  Future<bool> shareText(String text, {String? subject}) => copyText(text);
 
   @override
   Future<bool> enableSmartSync({
@@ -386,7 +438,8 @@ class NexoraSdkDesktop extends NexoraSdkPlatform {
   Future<bool> applyCameraFilterShader(String shaderType) async => false;
 
   @override
-  Stream<Uint8List> openL2capStream(String deviceId, int psm) => const Stream.empty();
+  Stream<Uint8List> openL2capStream(String deviceId, int psm) =>
+      const Stream.empty();
 
   @override
   Future<bool> enableDeadReckoning(bool enabled) async => false;
@@ -398,7 +451,8 @@ class NexoraSdkDesktop extends NexoraSdkPlatform {
   Future<bool> isEcoModeActive() async => false;
 
   @override
-  Future<DeviceThermalState> getThermalState() async => DeviceThermalState.normal;
+  Future<DeviceThermalState> getThermalState() async =>
+      DeviceThermalState.normal;
 
   Future<File> _file(String fileName) async {
     final safeName = fileName.replaceAll(
@@ -455,5 +509,44 @@ class NexoraSdkDesktop extends NexoraSdkPlatform {
       }
     }
     return total;
+  }
+
+  Future<bool> _runClipboardWriteLinux(String text) async {
+    for (final command in const ['wl-copy', 'xclip', 'xsel']) {
+      try {
+        final args = switch (command) {
+          'xclip' => const ['-selection', 'clipboard'],
+          'xsel' => const ['--clipboard', '--input'],
+          _ => const <String>[],
+        };
+        final process = await Process.start(command, args);
+        process.stdin.write(text);
+        await process.stdin.close();
+        if (await process.exitCode == 0) return true;
+      } catch (_) {}
+    }
+    return false;
+  }
+
+  Future<String?> _readClipboardLinux() async {
+    for (final command in const ['wl-paste', 'xclip', 'xsel']) {
+      try {
+        final args = switch (command) {
+          'xclip' => const ['-selection', 'clipboard', '-o'],
+          'xsel' => const ['--clipboard', '--output'],
+          _ => const <String>[],
+        };
+        final text = await _readProcessText(command, args);
+        if (text != null) return text;
+      } catch (_) {}
+    }
+    return null;
+  }
+
+  Future<String?> _readProcessText(String command, List<String> args) async {
+    final result = await Process.run(command, args);
+    if (result.exitCode != 0) return null;
+    final output = result.stdout?.toString();
+    return output?.isEmpty == true ? null : output;
   }
 }

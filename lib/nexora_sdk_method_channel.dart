@@ -178,7 +178,8 @@ class MethodChannelNexoraSdk extends NexoraSdkPlatform {
 
   @override
   Future<bool> startAudioWithOptions(AudioOptions options) async {
-    return await _invoke<bool>('startAudioWithOptions', options.toMap()) ?? false;
+    return await _invoke<bool>('startAudioWithOptions', options.toMap()) ??
+        false;
   }
 
   @override
@@ -262,8 +263,14 @@ class MethodChannelNexoraSdk extends NexoraSdkPlatform {
   }
 
   @override
-  Future<bool> startBluetoothScanWithOptions(BluetoothScanOptions options) async {
-    return await _invoke<bool>('startBluetoothScanWithOptions', options.toMap()) ?? false;
+  Future<bool> startBluetoothScanWithOptions(
+    BluetoothScanOptions options,
+  ) async {
+    return await _invoke<bool>(
+          'startBluetoothScanWithOptions',
+          options.toMap(),
+        ) ??
+        false;
   }
 
   @override
@@ -315,7 +322,8 @@ class MethodChannelNexoraSdk extends NexoraSdkPlatform {
 
   @override
   Future<bool> authenticateWithOptions(BiometricPromptOptions options) async {
-    return await _invoke<bool>('authenticateWithOptions', options.toMap()) ?? false;
+    return await _invoke<bool>('authenticateWithOptions', options.toMap()) ??
+        false;
   }
 
   @override
@@ -360,7 +368,8 @@ class MethodChannelNexoraSdk extends NexoraSdkPlatform {
 
   @override
   Future<bool> startLocationWithOptions(LocationOptions options) async {
-    return await _invoke<bool>('startLocationWithOptions', options.toMap()) ?? false;
+    return await _invoke<bool>('startLocationWithOptions', options.toMap()) ??
+        false;
   }
 
   @override
@@ -387,7 +396,8 @@ class MethodChannelNexoraSdk extends NexoraSdkPlatform {
 
   @override
   Future<bool> startSensorWithOptions(SensorOptions options) async {
-    return await _invoke<bool>('startSensorWithOptions', options.toMap()) ?? false;
+    return await _invoke<bool>('startSensorWithOptions', options.toMap()) ??
+        false;
   }
 
   @override
@@ -535,28 +545,29 @@ class MethodChannelNexoraSdk extends NexoraSdkPlatform {
   @override
   Stream<Uint8List> openL2capStream(String deviceId, int psm) {
     return unifiedStream
-        .where((e) =>
-            e.module == 'bluetooth' &&
-            e.type == 'l2cap' &&
-            (e.data as Map?)?['deviceId'] == deviceId &&
-            (e.data as Map?)?['psm'] == psm)
-        .map((e) => Uint8List.fromList(
-            List<int>.from((e.data as Map?)?['bytes'] as List? ?? [])));
+        .where(
+          (e) =>
+              e.module == 'bluetooth' &&
+              e.type == 'l2cap' &&
+              (e.data as Map?)?['deviceId'] == deviceId &&
+              (e.data as Map?)?['psm'] == psm,
+        )
+        .map(
+          (e) => Uint8List.fromList(
+            List<int>.from((e.data as Map?)?['bytes'] as List? ?? []),
+          ),
+        );
   }
 
   @override
   Future<bool> enableDeadReckoning(bool enabled) async {
-    return await _invoke<bool>('enableDeadReckoning', {
-          'enabled': enabled,
-        }) ??
+    return await _invoke<bool>('enableDeadReckoning', {'enabled': enabled}) ??
         false;
   }
 
   @override
   Future<void> setEcoModeEnabled(bool enabled) async {
-    await methodChannel.invokeMethod('setEcoModeEnabled', {
-      'enabled': enabled,
-    });
+    await methodChannel.invokeMethod('setEcoModeEnabled', {'enabled': enabled});
   }
 
   @override
@@ -566,7 +577,8 @@ class MethodChannelNexoraSdk extends NexoraSdkPlatform {
 
   @override
   Future<DeviceThermalState> getThermalState() async {
-    final stateStr = await methodChannel.invokeMethod<String>('getThermalState') ?? 'normal';
+    final stateStr =
+        await methodChannel.invokeMethod<String>('getThermalState') ?? 'normal';
     return DeviceThermalState.values.firstWhere(
       (s) => s.name == stateStr,
       orElse: () => DeviceThermalState.normal,
