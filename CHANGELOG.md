@@ -1,6 +1,6 @@
 # Changelog
 
-## 2.2.1
+## 3.2.1
 
 * **Smart Sync**: Built offline telemetry database/queueing on native Android and iOS, featuring rolled file rotation, internet connectivity detection, and automated background upload with exponential retry backoff.
 * **NFC Module**: Implemented Near Field Communication (NFC) scan and NDEF tag writer on both platforms with foreground dispatch on Android and reader sessions on iOS.
