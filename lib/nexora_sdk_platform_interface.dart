@@ -3,6 +3,7 @@ import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 import 'models/device_models.dart';
 import 'models/hardware_models.dart';
 import 'models/permission_models.dart';
+import 'models/sensor_data.dart';
 import 'core/hardware_core.dart';
 import 'nexora_sdk_method_channel.dart';
 
@@ -72,12 +73,18 @@ abstract class NexoraSdkPlatform extends PlatformInterface {
   Future<bool> startBluetoothScanWithOptions(BluetoothScanOptions options);
   Future<bool> stopBluetoothScan();
   Future<bool> connectDevice(String id);
+  Future<bool> disconnectDevice(String id);
   Future<List<String>> discoverServices(String deviceId);
   Future<bool> sendData(
     String deviceId,
     String serviceId,
     String charId,
     List<int> data,
+  );
+  Future<Uint8List?> readData(
+    String deviceId,
+    String serviceId,
+    String charId,
   );
 
   // --- Biometrics & Security ---
@@ -159,6 +166,10 @@ abstract class NexoraSdkPlatform extends PlatformInterface {
       .where((e) => e.module == 'gps')
       .map((e) => LocationData.fromMap(e.data));
 
-  Stream<HardwareEvent> get sensorStream =>
-      unifiedStream.where((e) => e.module == 'sensor');
+  Stream<SensorData> get sensorStream => unifiedStream
+      .where((e) => e.module == 'sensor')
+      .map((e) => SensorData.fromMap({
+            ...(e.data as Map? ?? {}),
+            'timestamp': e.timestamp.millisecondsSinceEpoch,
+          }));
 }

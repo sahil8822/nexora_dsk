@@ -2,36 +2,6 @@ import 'device_models.dart';
 import 'hardware_capabilities.dart';
 import 'hardware_models.dart';
 
-/// Detailed result for requesting the core runtime permissions.
-class HardwarePermissionReport {
-  const HardwarePermissionReport({
-    required this.camera,
-    required this.audio,
-    required this.location,
-    required this.bluetooth,
-  });
-
-  final bool camera;
-  final bool audio;
-  final bool location;
-  final bool bluetooth;
-
-  bool get allGranted => camera && audio && location && bluetooth;
-
-  List<String> get deniedPermissions => <String>[
-    if (!camera) 'camera',
-    if (!audio) 'audio',
-    if (!location) 'location',
-    if (!bluetooth) 'bluetooth',
-  ];
-
-  Map<String, bool> toMap() => <String, bool>{
-    'camera': camera,
-    'audio': audio,
-    'location': location,
-    'bluetooth': bluetooth,
-  };
-}
 
 /// A point-in-time device and SDK diagnostics snapshot.
 class HardwareDiagnostics {

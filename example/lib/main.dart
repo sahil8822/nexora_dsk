@@ -194,6 +194,8 @@ class _IntelligenceDashboardState extends State<IntelligenceDashboard> {
                   const SizedBox(height: 20),
                   _buildProCard(),
                   const SizedBox(height: 20),
+                  _buildAdvancedFeaturesCard(),
+                  const SizedBox(height: 20),
                   _buildLoggingCard(),
                   const SizedBox(height: 40),
                 ],
@@ -618,6 +620,81 @@ class _IntelligenceDashboardState extends State<IntelligenceDashboard> {
               }),
               _buildToggleButton("OPEN WEB", false, () async {
                 await _sdk.native.openUrl("https://flutter.dev");
+              }),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAdvancedFeaturesCard() {
+    return _buildDashboardCard(
+      title: "Advanced Pro Capabilities",
+      icon: Icons.offline_bolt,
+      child: Column(
+        children: [
+          const Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              "Demonstrates the new stream buffering/throttling utilities, exponential backoff hardware retries, and versioned storage migration engines.",
+              style: TextStyle(color: Colors.white70, fontSize: 12),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildToggleButton("RUN STORAGE MIGRATION", false, () async {
+                setState(() => _lastNativeAction = "Migrating Storage...");
+                try {
+                  await _sdk.storage.migrateStorage(
+                    1,
+                    2,
+                    (newVer) async {
+                      // Perform dummy storage migration logic
+                      await _sdk.storage.writeFile("migrated_config.json", '{"migrated": true, "version": $newVer}');
+                    },
+                  );
+                  setState(() => _lastNativeAction = "Migration finished successfully");
+                  _loadStorageInfo();
+                } catch (e) {
+                  setState(() => _lastNativeAction = "Migration error: $e");
+                }
+              }),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildToggleButton("DEMO STREAM UTILS", false, () async {
+                setState(() => _lastNativeAction = "Simulating stream buffer/throttle...");
+                // Stream throttle example: throttle standard Stream
+                final stream = Stream.periodic(const Duration(milliseconds: 100), (i) => i).take(10);
+                final throttled = stream.throttle(const Duration(milliseconds: 500));
+                // Just log to verify the stream utility exists and operates
+                final values = await throttled.toList();
+                setState(() => _lastNativeAction = "Stream throttled: $values");
+              }),
+              _buildToggleButton("DEMO RETRY HELPER", false, () async {
+                setState(() => _lastNativeAction = "Simulating retry connection...");
+                int attempts = 0;
+                final result = await withRetry(
+                  () async {
+                    attempts++;
+                    if (attempts < 3) {
+                      throw const HardwareException(
+                        code: HardwareErrorCode.deviceBusy,
+                        message: "Simulating busy device connection",
+                      );
+                    }
+                    return "Success after $attempts attempts";
+                  },
+                  maxAttempts: 3,
+                  initialDelay: const Duration(milliseconds: 200),
+                );
+                setState(() => _lastNativeAction = result);
               }),
             ],
           ),

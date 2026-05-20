@@ -1,6 +1,6 @@
 import '../../nexora_sdk_platform_interface.dart';
-import '../../core/hardware_core.dart';
 import '../../models/hardware_models.dart';
+import '../../models/sensor_data.dart';
 
 /// Module for motion and environmental hardware sensors.
 class SensorModule {
@@ -49,6 +49,6 @@ class SensorModule {
     return success;
   }
 
-  /// A stream of raw [HardwareEvent] data from the motion sensors.
-  Stream<HardwareEvent> get stream => NexoraSdkPlatform.instance.sensorStream;
+  /// A stream of [SensorData] objects captured in real-time from the motion sensors.
+  Stream<SensorData> get stream => NexoraSdkPlatform.instance.sensorStream;
 }

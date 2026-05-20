@@ -14,9 +14,27 @@ class MethodChannelNexoraSdk extends NexoraSdkPlatform {
   @visibleForTesting
   final eventChannel = const EventChannel('nexora_sdk/events');
 
+  Stream<HardwareEvent>? _cachedUnifiedStream;
+
   Future<T?> _invoke<T>(String method, [Object? arguments]) async {
     try {
       return await methodChannel.invokeMethod<T>(method, arguments);
+    } on PlatformException catch (error) {
+      throw HardwareException.fromPlatformException(error);
+    }
+  }
+
+  Future<List<T>?> _invokeList<T>(String method, [Object? arguments]) async {
+    try {
+      return await methodChannel.invokeListMethod<T>(method, arguments);
+    } on PlatformException catch (error) {
+      throw HardwareException.fromPlatformException(error);
+    }
+  }
+
+  Future<Map<K, V>?> _invokeMap<K, V>(String method, [Object? arguments]) async {
+    try {
+      return await methodChannel.invokeMapMethod<K, V>(method, arguments);
     } on PlatformException catch (error) {
       throw HardwareException.fromPlatformException(error);
     }
@@ -59,7 +77,7 @@ class MethodChannelNexoraSdk extends NexoraSdkPlatform {
   Future<HardwarePermissionStatus> getPermissionStatus(
     HardwarePermission permission,
   ) async {
-    final map = await methodChannel.invokeMapMethod('getPermissionStatus', {
+    final map = await _invokeMap<String, Object>('getPermissionStatus', {
       'type': permission.value,
     });
     return HardwarePermissionStatus.fromMap(
@@ -79,13 +97,13 @@ class MethodChannelNexoraSdk extends NexoraSdkPlatform {
 
   @override
   Future<DeviceInfo> getDeviceInfo() async {
-    final map = await methodChannel.invokeMapMethod('getDeviceInfo');
+    final map = await _invokeMap<String, Object>('getDeviceInfo');
     return DeviceInfo.fromMap(map ?? const <String, Object>{});
   }
 
   @override
   Future<ConnectivityInfo> getConnectivityInfo() async {
-    final map = await methodChannel.invokeMapMethod('getConnectivityInfo');
+    final map = await _invokeMap<String, Object>('getConnectivityInfo');
     return ConnectivityInfo.fromMap(map ?? const <String, Object>{});
   }
 
@@ -168,7 +186,7 @@ class MethodChannelNexoraSdk extends NexoraSdkPlatform {
     bool streamBytes = false,
     int updateIntervalMs = 80,
   }) async {
-    return await methodChannel.invokeMethod<bool>('startAudio', {
+    return await _invoke<bool>('startAudio', {
           'enableFFT': enableFFT,
           'streamBytes': streamBytes,
           'updateIntervalMs': updateIntervalMs,
@@ -184,12 +202,12 @@ class MethodChannelNexoraSdk extends NexoraSdkPlatform {
 
   @override
   Future<bool> stopAudio() async {
-    return await methodChannel.invokeMethod<bool>('stopAudio') ?? false;
+    return await _invoke<bool>('stopAudio') ?? false;
   }
 
   @override
   Future<bool> routeAudioOutput(AudioOutputRoute route) async {
-    return await methodChannel.invokeMethod<bool>('routeAudioOutput', {
+    return await _invoke<bool>('routeAudioOutput', {
           'route': route.name,
         }) ??
         false;
@@ -197,12 +215,12 @@ class MethodChannelNexoraSdk extends NexoraSdkPlatform {
 
   @override
   Future<double> getAudioVolume() async {
-    return await methodChannel.invokeMethod<double>('getAudioVolume') ?? 0.5;
+    return await _invoke<double>('getAudioVolume') ?? 0.5;
   }
 
   @override
   Future<bool> setAudioVolume(double level) async {
-    return await methodChannel.invokeMethod<bool>('setAudioVolume', {
+    return await _invoke<bool>('setAudioVolume', {
           'level': level,
         }) ??
         false;
@@ -210,7 +228,7 @@ class MethodChannelNexoraSdk extends NexoraSdkPlatform {
 
   @override
   Future<bool> selectAudioInput(AudioInputDevice device) async {
-    return await methodChannel.invokeMethod<bool>('selectAudioInput', {
+    return await _invoke<bool>('selectAudioInput', {
           'device': device.name,
         }) ??
         false;
@@ -218,7 +236,7 @@ class MethodChannelNexoraSdk extends NexoraSdkPlatform {
 
   @override
   Future<bool> setAudioGain(double gain) async {
-    return await methodChannel.invokeMethod<bool>('setAudioGain', {
+    return await _invoke<bool>('setAudioGain', {
           'gain': gain,
         }) ??
         false;
@@ -227,7 +245,7 @@ class MethodChannelNexoraSdk extends NexoraSdkPlatform {
   // --- Intelligence & Logging ---
   @override
   Future<bool> startHardwareLogging(LogConfig config) async {
-    return await methodChannel.invokeMethod<bool>('startLogging', {
+    return await _invoke<bool>('startLogging', {
           'fileName': config.fileName,
           'interval': config.intervalMs,
         }) ??
@@ -236,7 +254,7 @@ class MethodChannelNexoraSdk extends NexoraSdkPlatform {
 
   @override
   Future<bool> stopHardwareLogging() async {
-    return await methodChannel.invokeMethod<bool>('stopLogging') ?? false;
+    return await _invoke<bool>('stopLogging') ?? false;
   }
 
   @override
@@ -246,7 +264,7 @@ class MethodChannelNexoraSdk extends NexoraSdkPlatform {
     double lon,
     double radius,
   ) async {
-    return await methodChannel.invokeMethod<bool>('addGeofence', {
+    return await _invoke<bool>('addGeofence', {
           'id': id,
           'lat': lat,
           'lon': lon,
@@ -258,8 +276,7 @@ class MethodChannelNexoraSdk extends NexoraSdkPlatform {
   // --- Bluetooth ---
   @override
   Future<bool> startBluetoothScan() async {
-    return await methodChannel.invokeMethod<bool>('startBluetoothScan') ??
-        false;
+    return await _invoke<bool>('startBluetoothScan') ?? false;
   }
 
   @override
@@ -275,12 +292,20 @@ class MethodChannelNexoraSdk extends NexoraSdkPlatform {
 
   @override
   Future<bool> stopBluetoothScan() async {
-    return await methodChannel.invokeMethod<bool>('stopBluetoothScan') ?? false;
+    return await _invoke<bool>('stopBluetoothScan') ?? false;
   }
 
   @override
   Future<bool> connectDevice(String id) async {
-    return await methodChannel.invokeMethod<bool>('connectDevice', {
+    return await _invoke<bool>('connectDevice', {
+          'id': id,
+        }) ??
+        false;
+  }
+
+  @override
+  Future<bool> disconnectDevice(String id) async {
+    return await _invoke<bool>('disconnectDevice', {
           'id': id,
         }) ??
         false;
@@ -288,7 +313,7 @@ class MethodChannelNexoraSdk extends NexoraSdkPlatform {
 
   @override
   Future<List<String>> discoverServices(String deviceId) async {
-    final services = await methodChannel.invokeListMethod<String>(
+    final services = await _invokeList<String>(
       'discoverServices',
       {'id': deviceId},
     );
@@ -302,7 +327,7 @@ class MethodChannelNexoraSdk extends NexoraSdkPlatform {
     String charId,
     List<int> data,
   ) async {
-    return await methodChannel.invokeMethod<bool>('sendData', {
+    return await _invoke<bool>('sendData', {
           'deviceId': deviceId,
           'serviceId': serviceId,
           'charId': charId,
@@ -311,10 +336,23 @@ class MethodChannelNexoraSdk extends NexoraSdkPlatform {
         false;
   }
 
+  @override
+  Future<Uint8List?> readData(
+    String deviceId,
+    String serviceId,
+    String charId,
+  ) async {
+    return await _invoke<Uint8List>('readData', {
+      'deviceId': deviceId,
+      'serviceId': serviceId,
+      'charId': charId,
+    });
+  }
+
   // --- Biometrics ---
   @override
   Future<bool> authenticate(String reason) async {
-    return await methodChannel.invokeMethod<bool>('authenticate', {
+    return await _invoke<bool>('authenticate', {
           'reason': reason,
         }) ??
         false;
@@ -328,18 +366,18 @@ class MethodChannelNexoraSdk extends NexoraSdkPlatform {
 
   @override
   Future<bool> canAuthenticate() async {
-    return await methodChannel.invokeMethod<bool>('canAuthenticate') ?? false;
+    return await _invoke<bool>('canAuthenticate') ?? false;
   }
 
   // --- Feedback ---
   @override
   Future<void> vibrate(int durationMs) async {
-    await methodChannel.invokeMethod('vibrate', {'duration': durationMs});
+    await _invoke<void>('vibrate', {'duration': durationMs});
   }
 
   @override
   Future<void> hapticFeedback(String type) async {
-    await methodChannel.invokeMethod('hapticFeedback', {'type': type});
+    await _invoke<void>('hapticFeedback', {'type': type});
   }
 
   @override
@@ -350,20 +388,20 @@ class MethodChannelNexoraSdk extends NexoraSdkPlatform {
   // --- Health ---
   @override
   Future<BatteryInfo?> getBatteryInfo() async {
-    final map = await methodChannel.invokeMapMethod('getBatteryInfo');
+    final map = await _invokeMap<String, dynamic>('getBatteryInfo');
     return map != null ? BatteryInfo.fromMap(map) : null;
   }
 
   @override
   Future<WifiInfo?> getWifiInfo() async {
-    final map = await methodChannel.invokeMapMethod('getWifiInfo');
+    final map = await _invokeMap<String, dynamic>('getWifiInfo');
     return map != null ? WifiInfo.fromMap(map) : null;
   }
 
   // --- Location & Sensors ---
   @override
   Future<bool> startLocation() async {
-    return await methodChannel.invokeMethod<bool>('startLocation') ?? false;
+    return await _invoke<bool>('startLocation') ?? false;
   }
 
   @override
@@ -374,12 +412,12 @@ class MethodChannelNexoraSdk extends NexoraSdkPlatform {
 
   @override
   Future<bool> stopLocation() async {
-    return await methodChannel.invokeMethod<bool>('stopLocation') ?? false;
+    return await _invoke<bool>('stopLocation') ?? false;
   }
 
   @override
   Future<bool> setBackgroundLocationEnabled(bool enabled) async {
-    return await methodChannel.invokeMethod<bool>(
+    return await _invoke<bool>(
           'setBackgroundLocationEnabled',
           {'enabled': enabled},
         ) ??
@@ -388,7 +426,7 @@ class MethodChannelNexoraSdk extends NexoraSdkPlatform {
 
   @override
   Future<bool> startSensor({int frequencyHz = 60}) async {
-    return await methodChannel.invokeMethod<bool>('startSensor', {
+    return await _invoke<bool>('startSensor', {
           'frequency': frequencyHz,
         }) ??
         false;
@@ -402,20 +440,20 @@ class MethodChannelNexoraSdk extends NexoraSdkPlatform {
 
   @override
   Future<bool> stopSensor() async {
-    return await methodChannel.invokeMethod<bool>('stopSensor') ?? false;
+    return await _invoke<bool>('stopSensor') ?? false;
   }
 
   // ==================== Storage ====================
 
   @override
   Future<StorageInfo?> getStorageInfo() async {
-    final map = await methodChannel.invokeMapMethod('getStorageInfo');
+    final map = await _invokeMap<String, dynamic>('getStorageInfo');
     return map != null ? StorageInfo.fromMap(map) : null;
   }
 
   @override
   Future<String?> writeFile(String fileName, String content) async {
-    return await methodChannel.invokeMethod<String>('writeFile', {
+    return await _invoke<String>('writeFile', {
       'fileName': fileName,
       'content': content,
     });
@@ -423,7 +461,7 @@ class MethodChannelNexoraSdk extends NexoraSdkPlatform {
 
   @override
   Future<String?> appendFile(String fileName, String content) async {
-    return await methodChannel.invokeMethod<String>('appendFile', {
+    return await _invoke<String>('appendFile', {
       'fileName': fileName,
       'content': content,
     });
@@ -431,14 +469,14 @@ class MethodChannelNexoraSdk extends NexoraSdkPlatform {
 
   @override
   Future<String?> readFile(String fileName) async {
-    return await methodChannel.invokeMethod<String>('readFile', {
+    return await _invoke<String>('readFile', {
       'fileName': fileName,
     });
   }
 
   @override
   Future<bool> deleteFile(String fileName) async {
-    return await methodChannel.invokeMethod<bool>('deleteFile', {
+    return await _invoke<bool>('deleteFile', {
           'fileName': fileName,
         }) ??
         false;
@@ -446,7 +484,7 @@ class MethodChannelNexoraSdk extends NexoraSdkPlatform {
 
   @override
   Future<bool> fileExists(String fileName) async {
-    return await methodChannel.invokeMethod<bool>('fileExists', {
+    return await _invoke<bool>('fileExists', {
           'fileName': fileName,
         }) ??
         false;
@@ -454,14 +492,14 @@ class MethodChannelNexoraSdk extends NexoraSdkPlatform {
 
   @override
   Future<List<FileInfo>> listFiles() async {
-    final list = await methodChannel.invokeListMethod('listFiles');
+    final list = await _invokeList<dynamic>('listFiles');
     if (list == null) return [];
     return list.map((item) => FileInfo.fromMap(item as Map)).toList();
   }
 
   @override
   Future<String?> writeBytes(String fileName, Uint8List bytes) async {
-    return await methodChannel.invokeMethod<String>('writeBytes', {
+    return await _invoke<String>('writeBytes', {
       'fileName': fileName,
       'bytes': bytes,
     });
@@ -469,29 +507,29 @@ class MethodChannelNexoraSdk extends NexoraSdkPlatform {
 
   @override
   Future<Uint8List?> readBytes(String fileName) async {
-    return await methodChannel.invokeMethod<Uint8List>('readBytes', {
+    return await _invoke<Uint8List>('readBytes', {
       'fileName': fileName,
     });
   }
 
   @override
   Future<bool> clearCache() async {
-    return await methodChannel.invokeMethod<bool>('clearCache') ?? false;
+    return await _invoke<bool>('clearCache') ?? false;
   }
 
   @override
   Future<String?> getAppDirectory() async {
-    return await methodChannel.invokeMethod<String>('getAppDirectory');
+    return await _invoke<String>('getAppDirectory');
   }
 
   @override
   Future<String?> getCacheDirectory() async {
-    return await methodChannel.invokeMethod<String>('getCacheDirectory');
+    return await _invoke<String>('getCacheDirectory');
   }
 
   @override
   Future<String?> getExternalDirectory() async {
-    return await methodChannel.invokeMethod<String>('getExternalDirectory');
+    return await _invoke<String>('getExternalDirectory');
   }
 
   @override
@@ -567,18 +605,17 @@ class MethodChannelNexoraSdk extends NexoraSdkPlatform {
 
   @override
   Future<void> setEcoModeEnabled(bool enabled) async {
-    await methodChannel.invokeMethod('setEcoModeEnabled', {'enabled': enabled});
+    await _invoke<void>('setEcoModeEnabled', {'enabled': enabled});
   }
 
   @override
   Future<bool> isEcoModeActive() async {
-    return await methodChannel.invokeMethod<bool>('isEcoModeActive') ?? false;
+    return await _invoke<bool>('isEcoModeActive') ?? false;
   }
 
   @override
   Future<DeviceThermalState> getThermalState() async {
-    final stateStr =
-        await methodChannel.invokeMethod<String>('getThermalState') ?? 'normal';
+    final stateStr = await _invoke<String>('getThermalState') ?? 'normal';
     return DeviceThermalState.values.firstWhere(
       (s) => s.name == stateStr,
       orElse: () => DeviceThermalState.normal,
@@ -588,7 +625,7 @@ class MethodChannelNexoraSdk extends NexoraSdkPlatform {
   // --- Unified Stream ---
   @override
   Stream<HardwareEvent> get unifiedStream =>
-      eventChannel.receiveBroadcastStream().map((data) {
+      _cachedUnifiedStream ??= eventChannel.receiveBroadcastStream().map((data) {
         final map = data as Map;
         return HardwareEvent(
           module: map['module'] as String,
@@ -596,5 +633,5 @@ class MethodChannelNexoraSdk extends NexoraSdkPlatform {
           data: map['data'],
           timestamp: DateTime.now(),
         );
-      });
+      }).asBroadcastStream();
 }

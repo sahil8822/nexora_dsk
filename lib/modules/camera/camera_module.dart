@@ -72,10 +72,14 @@ class CameraModule {
   }
 
   /// Toggles the device flash/torch.
-  Future<bool> setFlash(bool on) => NexoraSdkPlatform.instance.setFlash(on);
+  Future<bool> setFlash(bool on) {
+    if (!_isRunning) throw StateError('Camera is not running.');
+    return NexoraSdkPlatform.instance.setFlash(on);
+  }
 
   /// Sets the digital zoom level (e.g., 1.0 to 10.0).
   Future<bool> setZoom(double level) {
+    if (!_isRunning) throw StateError('Camera is not running.');
     if (level <= 0) {
       throw ArgumentError.value(level, 'level', 'Must be greater than zero.');
     }
@@ -83,10 +87,14 @@ class CameraModule {
   }
 
   /// Flips between front and back cameras.
-  Future<bool> flip() => NexoraSdkPlatform.instance.flipCamera();
+  Future<bool> flip() {
+    if (!_isRunning) throw StateError('Camera is not running.');
+    return NexoraSdkPlatform.instance.flipCamera();
+  }
 
   /// Captures a still photo and returns the saved file path when supported.
   Future<String?> takePhoto({String? fileName}) {
+    if (!_isRunning) throw StateError('Camera is not running.');
     if (fileName != null && fileName.trim().isEmpty) {
       throw ArgumentError.value(fileName, 'fileName', 'File name is empty.');
     }
@@ -95,6 +103,7 @@ class CameraModule {
 
   /// Starts native video recording and returns the output file path.
   Future<String?> startVideoRecording({String? fileName}) {
+    if (!_isRunning) throw StateError('Camera is not running.');
     if (fileName != null && fileName.trim().isEmpty) {
       throw ArgumentError.value(fileName, 'fileName', 'File name is empty.');
     }
@@ -103,6 +112,7 @@ class CameraModule {
 
   /// Stops native video recording and returns the saved file path.
   Future<String?> stopVideoRecording() {
+    if (!_isRunning) throw StateError('Camera is not running.');
     return NexoraSdkPlatform.instance.stopVideoRecording();
   }
 
@@ -112,6 +122,7 @@ class CameraModule {
     required List<String> labels,
     double threshold = 0.5,
   }) {
+    if (!_isRunning) throw StateError('Camera is not running.');
     if (modelAssetPath.trim().isEmpty) {
       throw ArgumentError.value(
         modelAssetPath,
@@ -136,6 +147,7 @@ class CameraModule {
   /// Applies a real-time GPU fragment shader filter to the camera preview.
   /// Supported types: 'none', 'chromaKey', 'monochrome', 'sepia'
   Future<bool> applyFilterShader(String shaderType) {
+    if (!_isRunning) throw StateError('Camera is not running.');
     if (shaderType.trim().isEmpty) {
       throw ArgumentError.value(
         shaderType,

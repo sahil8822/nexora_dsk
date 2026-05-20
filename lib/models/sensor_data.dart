@@ -15,10 +15,12 @@ class SensorData {
   /// Factory constructor to create a [SensorData] from a map.
   factory SensorData.fromMap(Map<dynamic, dynamic> map) {
     return SensorData(
-      x: (map['x'] as num).toDouble(),
-      y: (map['y'] as num).toDouble(),
-      z: (map['z'] as num).toDouble(),
-      timestamp: DateTime.fromMillisecondsSinceEpoch(map['timestamp'] as int),
+      x: (map['x'] as num?)?.toDouble() ?? 0.0,
+      y: (map['y'] as num?)?.toDouble() ?? 0.0,
+      z: (map['z'] as num?)?.toDouble() ?? 0.0,
+      timestamp: map['timestamp'] != null
+          ? DateTime.fromMillisecondsSinceEpoch((map['timestamp'] as num).toInt())
+          : DateTime.now(),
     );
   }
 

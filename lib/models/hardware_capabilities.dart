@@ -40,11 +40,13 @@ class HardwareFeatureSupport {
     required this.feature,
     required this.level,
     required this.reason,
+    this.requiresMinSdkVersion,
   });
 
   final HardwareFeature feature;
   final HardwareFeatureSupportLevel level;
   final String reason;
+  final String? requiresMinSdkVersion;
 
   bool get isAvailable =>
       level == HardwareFeatureSupportLevel.supported ||
@@ -52,12 +54,13 @@ class HardwareFeatureSupport {
 
   bool get isNative => level == HardwareFeatureSupportLevel.supported;
 
-  Map<String, Object> toMap() => <String, Object>{
+  Map<String, Object?> toMap() => <String, Object?>{
     'feature': feature.name,
     'level': level.name,
     'reason': reason,
     'isAvailable': isAvailable,
     'isNative': isNative,
+    'requiresMinSdkVersion': requiresMinSdkVersion,
   };
 }
 
@@ -86,6 +89,12 @@ class HardwareCapabilities {
 
   /// A readable platform name such as `android`, `ios`, `web`, or `macos`.
   final String platform;
+
+  bool get isIos => platform == 'ios';
+  bool get isAndroid => platform == 'android';
+  bool get isMacos => platform == 'macos';
+  bool get isWindows => platform == 'windows';
+  bool get isLinux => platform == 'linux';
 
   final bool isWeb;
   final bool isDesktop;
@@ -278,13 +287,23 @@ class HardwareCapabilities {
       ),
       HardwareFeature.smartSync ||
       HardwareFeature.cameraFilters ||
-      HardwareFeature.videoRecording ||
-      HardwareFeature.bleL2cap ||
-      HardwareFeature.deadReckoning => HardwareFeatureSupport(
+      HardwareFeature.videoRecording => HardwareFeatureSupport(
         feature: feature,
         level: HardwareFeatureSupportLevel.experimental,
         reason:
             'The API is reserved but no production backend is available yet.',
+      ),
+      HardwareFeature.bleL2cap => HardwareFeatureSupport(
+        feature: feature,
+        level: HardwareFeatureSupportLevel.experimental,
+        reason: 'Reserved for BLE L2CAP Connection Oriented Channels.',
+        requiresMinSdkVersion: 'Android 10 / iOS 13',
+      ),
+      HardwareFeature.deadReckoning => HardwareFeatureSupport(
+        feature: feature,
+        level: HardwareFeatureSupportLevel.experimental,
+        reason: 'Reserved for Dead Reckoning inertial positioning.',
+        requiresMinSdkVersion: 'Android 12 / iOS 16',
       ),
     };
   }
@@ -343,6 +362,9 @@ class HardwareCapabilities {
       (feature, support) => MapEntry(feature.name, support.toMap()),
     ),
   };
+
+  @override
+  String toString() => 'HardwareCapabilities(web: $isWeb, ios: $isIos, android: $isAndroid, macos: $isMacos, windows: $isWindows, linux: $isLinux)';
 }
 
 /// Result returned by [NexoraSdk.stopAll].
@@ -357,4 +379,7 @@ class HardwareShutdownResult {
       .where((entry) => !entry.value)
       .map((entry) => entry.key)
       .toList(growable: false);
+
+  @override
+  String toString() => 'HardwareShutdownResult(success: $success, failed: $failedModules)';
 }

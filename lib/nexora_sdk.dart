@@ -31,7 +31,10 @@ export 'models/hardware_models.dart';
 export 'models/hardware_exception.dart';
 export 'models/device_models.dart';
 export 'models/permission_models.dart';
+export 'models/sensor_data.dart';
 export 'core/hardware_core.dart';
+export 'core/stream_utils.dart';
+export 'core/hardware_retry.dart';
 export 'core/hardware_lifecycle.dart';
 export 'modules/audio/audio_module.dart';
 export 'modules/biometric/biometric_module.dart';
@@ -48,7 +51,7 @@ export 'modules/native/native_module.dart';
 export 'modules/permissions/permissions_module.dart';
 export 'modules/utility/utility_module.dart';
 
-/// Nexora SDK (v3.1.2) - Intelligence + Storage Edition.
+/// Nexora SDK (v3.3.0) - Intelligence + Storage Edition.
 ///
 /// A world-class, lightweight hardware toolkit for Flutter.
 /// Provides unified access to Camera, Audio, GPS, Bluetooth, Biometrics,
@@ -56,6 +59,22 @@ export 'modules/utility/utility_module.dart';
 class NexoraSdk {
   NexoraSdk._();
   static final NexoraSdk instance = NexoraSdk._();
+
+  /// The current SDK version.
+  static const String version = '3.3.0';
+
+  /// Initializes the SDK by pre-warming capabilities/platform channel.
+  Future<void> initialize({bool logCapabilities = false}) async {
+    final platform = await NexoraSdkPlatform.instance.getPlatformVersion();
+    if (logCapabilities) {
+      // ignore: avoid_print
+      print('Nexora SDK $version on $platform');
+      for (final entry in featureMatrix.entries) {
+        // ignore: avoid_print
+        print('  ${entry.key.name}: ${entry.value.level.name}');
+      }
+    }
+  }
 
   CameraModule? _camera;
   AudioModule? _audio;

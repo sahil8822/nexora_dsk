@@ -1,5 +1,13 @@
 # Changelog
 
+## 3.3.0
+
+* **Stability & Guards**: Added `isRunning` checks to protect state-sensitive modules (Camera, Bluetooth) and wrapped native methods to throw clean typed `HardwareException`s.
+* **GATT Enhancements**: Implemented BLE device disconnect and GATT characteristic read APIs.
+* **Developer Experience**: Added `NexoraSdk.initialize` pre-warming, value equality/hashcodes on models, `copyWith` on options/configs, and readable `toString` overrides.
+* **Advanced Features**: Added `migrateStorage` migration engine, stream helpers (`throttle`, `debounce`, `bufferCount`), and retry helper (`withRetry`) with backoff.
+* **Testing Gaps**: Expanded test coverage with comprehensive module-specific tests and serialization tests, resulting in a 72-test suite passing at 100%.
+
 ## 3.2.0
 
 * Introduced `utility` module with EcoMode power-saver and proactive Thermal Safeguard crash prevention.

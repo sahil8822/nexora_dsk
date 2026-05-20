@@ -64,6 +64,9 @@ class CameraFrame {
     'format': format,
     'vision': vision?.toMap(),
   };
+
+  @override
+  String toString() => 'CameraFrame(width: $width, height: $height, format: $format, vision: $vision)';
 }
 
 class VisionResult {
@@ -131,6 +134,9 @@ class AudioFrame {
     'spectrum': spectrum,
     'sampleRate': sampleRate,
   };
+
+  @override
+  String toString() => 'AudioFrame(sampleRate: $sampleRate, spectrumLength: ${spectrum.length})';
 }
 
 class LogConfig {
@@ -151,6 +157,23 @@ class LogConfig {
     'includeGPS': includeGPS,
     'intervalMs': intervalMs,
   };
+
+  LogConfig copyWith({
+    String? fileName,
+    bool? includeSensors,
+    bool? includeGPS,
+    int? intervalMs,
+  }) {
+    return LogConfig(
+      fileName: fileName ?? this.fileName,
+      includeSensors: includeSensors ?? this.includeSensors,
+      includeGPS: includeGPS ?? this.includeGPS,
+      intervalMs: intervalMs ?? this.intervalMs,
+    );
+  }
+
+  @override
+  String toString() => 'LogConfig(file: $fileName, sensors: $includeSensors, gps: $includeGPS, interval: $intervalMs)';
 }
 
 class BleDevice {
@@ -171,6 +194,9 @@ class BleDevice {
     'name': name,
     'rssi': rssi,
   };
+
+  @override
+  String toString() => 'BleDevice(id: $id, name: $name, rssi: $rssi)';
 }
 
 class LocationData {
@@ -188,11 +214,11 @@ class LocationData {
   });
   factory LocationData.fromMap(Map<dynamic, dynamic> map) {
     return LocationData(
-      latitude: (map['latitude'] as num).toDouble(),
-      longitude: (map['longitude'] as num).toDouble(),
-      altitude: (map['altitude'] as num).toDouble(),
-      accuracy: (map['accuracy'] as num).toDouble(),
-      speed: (map['speed'] as num).toDouble(),
+      latitude: (map['latitude'] as num?)?.toDouble() ?? 0.0,
+      longitude: (map['longitude'] as num?)?.toDouble() ?? 0.0,
+      altitude: (map['altitude'] as num?)?.toDouble() ?? 0.0,
+      accuracy: (map['accuracy'] as num?)?.toDouble() ?? 0.0,
+      speed: (map['speed'] as num?)?.toDouble() ?? 0.0,
     );
   }
 
@@ -203,6 +229,9 @@ class LocationData {
     'accuracy': accuracy,
     'speed': speed,
   };
+
+  @override
+  String toString() => 'LocationData(latitude: $latitude, longitude: $longitude, altitude: $altitude, accuracy: $accuracy, speed: $speed)';
 }
 
 class BatteryInfo {
@@ -218,10 +247,10 @@ class BatteryInfo {
   });
   factory BatteryInfo.fromMap(Map<dynamic, dynamic> map) {
     return BatteryInfo(
-      level: (map['level'] as num).toDouble(),
-      isCharging: map['isCharging'] as bool,
-      status: map['status'] as String,
-      temperature: (map['temperature'] as num).toDouble(),
+      level: (map['level'] as num?)?.toDouble() ?? 0.0,
+      isCharging: map['isCharging'] as bool? ?? false,
+      status: map['status'] as String? ?? 'unknown',
+      temperature: (map['temperature'] as num?)?.toDouble() ?? 0.0,
     );
   }
 
@@ -231,6 +260,9 @@ class BatteryInfo {
     'status': status,
     'temperature': temperature,
   };
+
+  @override
+  String toString() => 'BatteryInfo(level: $level, isCharging: $isCharging, status: $status, temp: $temperature)';
 }
 
 class WifiInfo {
@@ -246,10 +278,10 @@ class WifiInfo {
   });
   factory WifiInfo.fromMap(Map<dynamic, dynamic> map) {
     return WifiInfo(
-      ssid: map['ssid'] as String,
-      bssid: map['bssid'] as String,
-      signalStrength: map['signalStrength'] as int,
-      ipAddress: map['ipAddress'] as String,
+      ssid: map['ssid'] as String? ?? 'unknown',
+      bssid: map['bssid'] as String? ?? '00:00:00:00:00:00',
+      signalStrength: (map['signalStrength'] as num?)?.toInt() ?? 0,
+      ipAddress: map['ipAddress'] as String? ?? '0.0.0.0',
     );
   }
 
@@ -259,6 +291,9 @@ class WifiInfo {
     'signalStrength': signalStrength,
     'ipAddress': ipAddress,
   };
+
+  @override
+  String toString() => 'WifiInfo(ssid: $ssid, bssid: $bssid, signal: $signalStrength, ip: $ipAddress)';
 }
 
 /// Device storage information including internal, external, cache, and data sizes.
@@ -309,6 +344,27 @@ class StorageInfo {
     'appCacheSize': appCacheSize,
     'appDataSize': appDataSize,
   };
+
+  StorageInfo copyWith({
+    int? internalTotal,
+    int? internalFree,
+    int? externalTotal,
+    int? externalFree,
+    int? appCacheSize,
+    int? appDataSize,
+  }) {
+    return StorageInfo(
+      internalTotal: internalTotal ?? this.internalTotal,
+      internalFree: internalFree ?? this.internalFree,
+      externalTotal: externalTotal ?? this.externalTotal,
+      externalFree: externalFree ?? this.externalFree,
+      appCacheSize: appCacheSize ?? this.appCacheSize,
+      appDataSize: appDataSize ?? this.appDataSize,
+    );
+  }
+
+  @override
+  String toString() => 'StorageInfo(total: $internalTotal, free: $internalFree, externalTotal: $externalTotal, externalFree: $externalFree, cache: $appCacheSize, data: $appDataSize)';
 
   /// Returns internal storage usage as a percentage (0.0 - 1.0).
   double get internalUsage =>
@@ -362,6 +418,23 @@ class FileInfo {
     'lastModified': lastModified.millisecondsSinceEpoch,
   };
 
+  FileInfo copyWith({
+    String? name,
+    int? size,
+    bool? isDirectory,
+    DateTime? lastModified,
+  }) {
+    return FileInfo(
+      name: name ?? this.name,
+      size: size ?? this.size,
+      isDirectory: isDirectory ?? this.isDirectory,
+      lastModified: lastModified ?? this.lastModified,
+    );
+  }
+
+  @override
+  String toString() => 'FileInfo(name: $name, size: $size, dir: $isDirectory, modified: $lastModified)';
+
   /// Human-readable file size.
   String get sizeFormatted => StorageInfo.formatBytes(size);
 }
@@ -395,6 +468,25 @@ class CameraOptions {
     'exposureCompensation': exposureCompensation,
     'mirrorFrontCamera': mirrorFrontCamera,
   };
+
+  CameraOptions copyWith({
+    CameraQuality? resolution,
+    CameraFocusMode? focusMode,
+    CameraExposureMode? exposureMode,
+    double? exposureCompensation,
+    bool? mirrorFrontCamera,
+  }) {
+    return CameraOptions(
+      resolution: resolution ?? this.resolution,
+      focusMode: focusMode ?? this.focusMode,
+      exposureMode: exposureMode ?? this.exposureMode,
+      exposureCompensation: exposureCompensation ?? this.exposureCompensation,
+      mirrorFrontCamera: mirrorFrontCamera ?? this.mirrorFrontCamera,
+    );
+  }
+
+  @override
+  String toString() => 'CameraOptions(resolution: $resolution, focusMode: $focusMode, exposureMode: $exposureMode, compensation: $exposureCompensation, mirrorFront: $mirrorFrontCamera)';
 }
 
 /// Format specifying number of audio channels.
@@ -420,6 +512,23 @@ class AudioOptions {
     'enableEchoCancellation': enableEchoCancellation,
     'enableNoiseSuppression': enableNoiseSuppression,
   };
+
+  AudioOptions copyWith({
+    int? sampleRate,
+    AudioChannelFormat? channels,
+    bool? enableEchoCancellation,
+    bool? enableNoiseSuppression,
+  }) {
+    return AudioOptions(
+      sampleRate: sampleRate ?? this.sampleRate,
+      channels: channels ?? this.channels,
+      enableEchoCancellation: enableEchoCancellation ?? this.enableEchoCancellation,
+      enableNoiseSuppression: enableNoiseSuppression ?? this.enableNoiseSuppression,
+    );
+  }
+
+  @override
+  String toString() => 'AudioOptions(sampleRate: $sampleRate, channels: $channels, echoCancellation: $enableEchoCancellation, noiseSuppression: $enableNoiseSuppression)';
 }
 
 /// Sampling frequencies supported by native motion sensors.
@@ -442,6 +551,21 @@ class SensorOptions {
     'enableLowPassFilter': enableLowPassFilter,
     'lowPassAlpha': lowPassAlpha,
   };
+
+  SensorOptions copyWith({
+    SensorAccuracy? accuracy,
+    bool? enableLowPassFilter,
+    double? lowPassAlpha,
+  }) {
+    return SensorOptions(
+      accuracy: accuracy ?? this.accuracy,
+      enableLowPassFilter: enableLowPassFilter ?? this.enableLowPassFilter,
+      lowPassAlpha: lowPassAlpha ?? this.lowPassAlpha,
+    );
+  }
+
+  @override
+  String toString() => 'SensorOptions(accuracy: $accuracy, lowPassFilter: $enableLowPassFilter, lowPassAlpha: $lowPassAlpha)';
 }
 
 /// Scanning modes for Bluetooth Low Energy.
@@ -464,6 +588,21 @@ class BluetoothScanOptions {
     'serviceUuids': serviceUuids,
     'allowDuplicates': allowDuplicates,
   };
+
+  BluetoothScanOptions copyWith({
+    BluetoothScanMode? scanMode,
+    List<String>? serviceUuids,
+    bool? allowDuplicates,
+  }) {
+    return BluetoothScanOptions(
+      scanMode: scanMode ?? this.scanMode,
+      serviceUuids: serviceUuids ?? this.serviceUuids,
+      allowDuplicates: allowDuplicates ?? this.allowDuplicates,
+    );
+  }
+
+  @override
+  String toString() => 'BluetoothScanOptions(scanMode: $scanMode, serviceUuids: $serviceUuids, allowDuplicates: $allowDuplicates)';
 }
 
 /// Native coordinate accuracies for location services.
@@ -489,6 +628,23 @@ class LocationOptions {
     'enableBackgroundUpdates': enableBackgroundUpdates,
     'showsBackgroundLocationIndicator': showsBackgroundLocationIndicator,
   };
+
+  LocationOptions copyWith({
+    LocationAccuracy? accuracy,
+    double? distanceFilterMeters,
+    bool? enableBackgroundUpdates,
+    bool? showsBackgroundLocationIndicator,
+  }) {
+    return LocationOptions(
+      accuracy: accuracy ?? this.accuracy,
+      distanceFilterMeters: distanceFilterMeters ?? this.distanceFilterMeters,
+      enableBackgroundUpdates: enableBackgroundUpdates ?? this.enableBackgroundUpdates,
+      showsBackgroundLocationIndicator: showsBackgroundLocationIndicator ?? this.showsBackgroundLocationIndicator,
+    );
+  }
+
+  @override
+  String toString() => 'LocationOptions(accuracy: $accuracy, distanceFilter: $distanceFilterMeters, backgroundUpdates: $enableBackgroundUpdates, backgroundIndicator: $showsBackgroundLocationIndicator)';
 }
 
 /// Customization options for native Biometric Prompt overlays (Face ID / Touch ID / Fingerprint).
@@ -514,6 +670,25 @@ class BiometricPromptOptions {
     'negativeButtonText': negativeButtonText,
     'confirmationRequired': confirmationRequired,
   };
+
+  BiometricPromptOptions copyWith({
+    String? title,
+    String? subtitle,
+    String? description,
+    String? negativeButtonText,
+    bool? confirmationRequired,
+  }) {
+    return BiometricPromptOptions(
+      title: title ?? this.title,
+      subtitle: subtitle ?? this.subtitle,
+      description: description ?? this.description,
+      negativeButtonText: negativeButtonText ?? this.negativeButtonText,
+      confirmationRequired: confirmationRequired ?? this.confirmationRequired,
+    );
+  }
+
+  @override
+  String toString() => 'BiometricPromptOptions(title: $title, subtitle: $subtitle, description: $description, negativeButton: $negativeButtonText, confirmation: $confirmationRequired)';
 }
 
 /// Vibration intensities and pattern types for haptic actuators.
@@ -544,6 +719,21 @@ class HapticOptions {
     'intensityPercent': intensityPercent,
     'durationMs': durationMs,
   };
+
+  HapticOptions copyWith({
+    HapticFeedbackType? type,
+    int? intensityPercent,
+    int? durationMs,
+  }) {
+    return HapticOptions(
+      type: type ?? this.type,
+      intensityPercent: intensityPercent ?? this.intensityPercent,
+      durationMs: durationMs ?? this.durationMs,
+    );
+  }
+
+  @override
+  String toString() => 'HapticOptions(type: $type, intensity: $intensityPercent, duration: $durationMs)';
 }
 
 /// Target output channels for routing audio playback.

@@ -55,6 +55,43 @@ class DeviceInfo {
     'screenRefreshRate': screenRefreshRate,
     'thermalState': thermalState,
   };
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is DeviceInfo &&
+        other.platform == platform &&
+        other.manufacturer == manufacturer &&
+        other.model == model &&
+        other.osVersion == osVersion &&
+        other.sdkVersion == sdkVersion &&
+        other.isPhysicalDevice == isPhysicalDevice &&
+        other.totalRamBytes == totalRamBytes &&
+        other.availableRamBytes == availableRamBytes &&
+        other.cpuArchitecture == cpuArchitecture &&
+        other.screenRefreshRate == screenRefreshRate &&
+        other.thermalState == thermalState;
+  }
+
+  @override
+  int get hashCode => Object.hash(
+        platform,
+        manufacturer,
+        model,
+        osVersion,
+        sdkVersion,
+        isPhysicalDevice,
+        totalRamBytes,
+        availableRamBytes,
+        cpuArchitecture,
+        screenRefreshRate,
+        thermalState,
+      );
+
+  @override
+  String toString() {
+    return 'DeviceInfo(platform: $platform, manufacturer: $manufacturer, model: $model, os: $osVersion, sdk: $sdkVersion, physical: $isPhysicalDevice, ram: $totalRamBytes, cpu: $cpuArchitecture, refresh: $screenRefreshRate, thermal: $thermalState)';
+  }
 }
 
 /// Snapshot of the current network route.
@@ -94,4 +131,31 @@ class ConnectivityInfo {
     'signalStrength': signalStrength,
     'ipAddress': ipAddress,
   };
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is ConnectivityInfo &&
+        other.isConnected == isConnected &&
+        other.networkType == networkType &&
+        other.isMetered == isMetered &&
+        other.isVpn == isVpn &&
+        other.signalStrength == signalStrength &&
+        other.ipAddress == ipAddress;
+  }
+
+  @override
+  int get hashCode => Object.hash(
+        isConnected,
+        networkType,
+        isMetered,
+        isVpn,
+        signalStrength,
+        ipAddress,
+      );
+
+  @override
+  String toString() {
+    return 'ConnectivityInfo(connected: $isConnected, type: $networkType, metered: $isMetered, vpn: $isVpn, signal: $signalStrength, ip: $ipAddress)';
+  }
 }

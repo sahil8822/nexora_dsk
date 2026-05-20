@@ -195,6 +195,9 @@ class NexoraSdkDesktop extends NexoraSdkPlatform {
   Future<bool> connectDevice(String id) async => false;
 
   @override
+  Future<bool> disconnectDevice(String id) async => false;
+
+  @override
   Future<List<String>> discoverServices(String deviceId) async => [];
 
   @override
@@ -205,6 +208,15 @@ class NexoraSdkDesktop extends NexoraSdkPlatform {
     List<int> data,
   ) async {
     return false;
+  }
+
+  @override
+  Future<Uint8List?> readData(
+    String deviceId,
+    String serviceId,
+    String charId,
+  ) async {
+    return null;
   }
 
   @override

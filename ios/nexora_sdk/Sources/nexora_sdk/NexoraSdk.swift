@@ -254,6 +254,10 @@ public class NexoraSdk: NSObject, FlutterPlugin, CLLocationManagerDelegate {
             }
             result(true)
 
+        case "disconnectDevice":
+            bluetooth.disconnect()
+            result(true)
+
         case "discoverServices":
             bluetooth.discoverServices(deviceId: args?["id"] as? String ?? "") { services in
                 result(services)
@@ -270,6 +274,21 @@ public class NexoraSdk: NSObject, FlutterPlugin, CLLocationManagerDelegate {
                 return
             }
             result(true)
+
+        case "readData":
+            let deviceId = args?["deviceId"] as? String ?? ""
+            let serviceId = args?["serviceId"] as? String ?? ""
+            let charId = args?["charId"] as? String ?? ""
+            guard bluetooth.readData(deviceId: deviceId, serviceId: serviceId, charId: charId, callback: { data in
+                if let data = data {
+                    result(FlutterStandardTypedData(bytes: data))
+                } else {
+                    result(nil)
+                }
+            }) else {
+                result(FlutterError(code: "BLUETOOTH_READ_FAILED", message: "Unable to read from the requested BLE characteristic.", details: nil))
+                return
+            }
 
         // ==================== Location & Geofencing ====================
         case "startLocation":

@@ -4,9 +4,18 @@ import '../../models/hardware_models.dart';
 
 /// Module for high-performance Bluetooth Low Energy (BLE) management.
 class BluetoothModule {
+  bool _isScanning = false;
+
+  /// Returns true if a BLE scan is currently active.
+  bool get isScanning => _isScanning;
+
   /// Starts scanning for nearby BLE devices. Discovered devices are
   /// delivered via the [scanStream].
-  Future<bool> startScan() => NexoraSdkPlatform.instance.startBluetoothScan();
+  Future<bool> startScan() async {
+    final result = await NexoraSdkPlatform.instance.startBluetoothScan();
+    if (result) _isScanning = true;
+    return result;
+  }
 
   /// Starts scanning with granular native Bluetooth scanning options.
   Future<bool> startScanWithOptions(
@@ -18,16 +27,28 @@ class BluetoothModule {
           .requestBluetoothPermission();
       if (!granted) return false;
     }
-    return NexoraSdkPlatform.instance.startBluetoothScanWithOptions(options);
+    final result = await NexoraSdkPlatform.instance.startBluetoothScanWithOptions(options);
+    if (result) _isScanning = true;
+    return result;
   }
 
   /// Stops the active BLE scan.
-  Future<bool> stopScan() => NexoraSdkPlatform.instance.stopBluetoothScan();
+  Future<bool> stopScan() async {
+    final result = await NexoraSdkPlatform.instance.stopBluetoothScan();
+    if (result) _isScanning = false;
+    return result;
+  }
 
   /// Attempts to connect to a specific BLE device by its [id].
   Future<bool> connect(String id) {
     _validateId(id, 'id');
     return NexoraSdkPlatform.instance.connectDevice(id);
+  }
+
+  /// Disconnects from the BLE device with the given [id].
+  Future<bool> disconnect(String id) {
+    _validateId(id, 'id');
+    return NexoraSdkPlatform.instance.disconnectDevice(id);
   }
 
   /// Discovers GATT services for a connected device.
@@ -55,6 +76,18 @@ class BluetoothModule {
       charId,
       data,
     );
+  }
+
+  /// Reads raw byte data from a specific GATT characteristic.
+  Future<Uint8List?> readData(
+    String deviceId,
+    String serviceId,
+    String charId,
+  ) {
+    _validateId(deviceId, 'deviceId');
+    _validateId(serviceId, 'serviceId');
+    _validateId(charId, 'charId');
+    return NexoraSdkPlatform.instance.readData(deviceId, serviceId, charId);
   }
 
   /// Opens a raw binary socket directly to a BLE device over L2CAP.

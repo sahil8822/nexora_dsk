@@ -323,6 +323,10 @@ class NexoraSdk: FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry
                 }
                 result.success(bluetooth.connect(call.argument<String>("id") ?: ""))
             }
+            "disconnectDevice" -> {
+                bluetooth.disconnect()
+                result.success(true)
+            }
             "discoverServices" -> {
                 bluetooth.discoverServices(call.argument<String>("id") ?: "") { services ->
                     result.success(services)
@@ -335,6 +339,14 @@ class NexoraSdk: FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry
                     call.argument<String>("charId") ?: "",
                     (call.argument<List<Int>>("data") ?: emptyList()).map { it.toByte() }.toByteArray()
                 ))
+            }
+            "readData" -> {
+                val deviceId = call.argument<String>("deviceId") ?: ""
+                val serviceId = call.argument<String>("serviceId") ?: ""
+                val charId = call.argument<String>("charId") ?: ""
+                bluetooth.readData(deviceId, serviceId, charId) { data ->
+                    result.success(data)
+                }
             }
 
             // ==================== Location & Geofencing ====================

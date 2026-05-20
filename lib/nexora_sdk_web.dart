@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
+import 'dart:js_interop';
 
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 import 'package:web/web.dart' as web;
@@ -194,6 +195,9 @@ class NexoraSdkWeb extends NexoraSdkPlatform {
   Future<bool> connectDevice(String id) async => false;
 
   @override
+  Future<bool> disconnectDevice(String id) async => false;
+
+  @override
   Future<List<String>> discoverServices(String deviceId) async => [];
 
   @override
@@ -204,6 +208,15 @@ class NexoraSdkWeb extends NexoraSdkPlatform {
     List<int> data,
   ) async {
     return false;
+  }
+
+  @override
+  Future<Uint8List?> readData(
+    String deviceId,
+    String serviceId,
+    String charId,
+  ) async {
+    return null;
   }
 
   @override
@@ -373,17 +386,23 @@ class NexoraSdkWeb extends NexoraSdkPlatform {
   @override
   Future<bool> copyText(String text) async {
     try {
-      final textArea = web.HTMLTextAreaElement()
-        ..value = text
-        ..style.position = 'fixed'
-        ..style.left = '-9999px';
-      web.document.body?.appendChild(textArea);
-      textArea.select();
-      final success = web.document.execCommand('copy');
-      textArea.remove();
-      return success;
+      final clipboard = web.window.navigator.clipboard;
+      await clipboard.writeText(text).toDart;
+      return true;
     } catch (_) {
-      return false;
+      try {
+        final textArea = web.HTMLTextAreaElement()
+          ..value = text
+          ..style.position = 'fixed'
+          ..style.left = '-9999px';
+        web.document.body?.appendChild(textArea);
+        textArea.select();
+        final success = web.document.execCommand('copy');
+        textArea.remove();
+        return success;
+      } catch (_) {
+        return false;
+      }
     }
   }
 

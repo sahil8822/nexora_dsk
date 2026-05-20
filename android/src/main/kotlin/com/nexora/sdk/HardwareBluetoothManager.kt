@@ -12,13 +12,14 @@ import java.util.*
 
 /**
  * Production-ready Bluetooth LE Manager.
- * Supports Nexora Pro: GATT Service Discovery and Characteristic Write operations.
+ * Supports Nexora Pro: GATT Service Discovery and Characteristic Read/Write operations.
  */
 class HardwareBluetoothManager(private val context: Context) {
     private var bluetoothAdapter: BluetoothAdapter? = null
     private var eventSink: EventChannel.EventSink? = null
     private var bluetoothGatt: BluetoothGatt? = null
     private var discoveredServicesCallback: ((List<String>) -> Unit)? = null
+    private var readCallback: ((ByteArray?) -> Unit)? = null
 
     init {
         val manager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
@@ -86,6 +87,22 @@ class HardwareBluetoothManager(private val context: Context) {
     }
 
     @SuppressLint("MissingPermission")
+    fun readData(deviceId: String, serviceId: String, charId: String, callback: (ByteArray?) -> Unit): Boolean {
+        val gatt = bluetoothGatt ?: return false
+        val serviceUuid = parseUuid(serviceId) ?: return false
+        val charUuid = parseUuid(charId) ?: return false
+        val service = gatt.getService(serviceUuid) ?: return false
+        val char = service.getCharacteristic(charUuid) ?: return false
+        
+        readCallback = callback
+        val success = gatt.readCharacteristic(char)
+        if (!success) {
+            readCallback = null
+        }
+        return success
+    }
+
+    @SuppressLint("MissingPermission")
     fun disconnect() {
         bluetoothGatt?.disconnect()
         bluetoothGatt?.close()
@@ -128,6 +145,23 @@ class HardwareBluetoothManager(private val context: Context) {
                     discoveredServicesCallback?.invoke(serviceUuids)
                     discoveredServicesCallback = null
                 }
+            }
+        }
+
+        @Suppress("DEPRECATION")
+        override fun onCharacteristicRead(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic, status: Int) {
+            val data = if (status == BluetoothGatt.GATT_SUCCESS) characteristic.value else null
+            Handler(context.mainLooper).post {
+                readCallback?.invoke(data)
+                readCallback = null
+            }
+        }
+
+        override fun onCharacteristicRead(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic, value: ByteArray, status: Int) {
+            val data = if (status == BluetoothGatt.GATT_SUCCESS) value else null
+            Handler(context.mainLooper).post {
+                readCallback?.invoke(data)
+                readCallback = null
             }
         }
     }

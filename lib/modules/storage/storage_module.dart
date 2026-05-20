@@ -104,6 +104,36 @@ class StorageModule {
   Future<String?> getExternalDirectory() =>
       NexoraSdkPlatform.instance.getExternalDirectory();
 
+  /// Safely migrates app data across version updates.
+  ///
+  /// Reads schema version from `_schema_version.json`. If less than [toVersion],
+  /// executes [migrator] sequentially for each missing version and updates the schema version.
+  Future<void> migrateStorage(
+    int fromVersion, // ignore: avoid_unused_parameters
+    int toVersion,
+    Future<void> Function(int version) migrator,
+  ) async {
+    if (toVersion <= 0) {
+      throw ArgumentError.value(toVersion, 'toVersion', 'Must be greater than zero.');
+    }
+    const versionFile = '_schema_version.json';
+    int currentVersion = 0;
+    try {
+      final stored = await readJson<Map<String, dynamic>>(versionFile);
+      if (stored != null && stored['version'] is int) {
+        currentVersion = stored['version'] as int;
+      }
+    } catch (_) {
+      // Ignore reading error, treat as version 0
+    }
+
+    while (currentVersion < toVersion) {
+      currentVersion++;
+      await migrator(currentVersion);
+      await writeJson(versionFile, {'version': currentVersion});
+    }
+  }
+
   void _validateFileName(String fileName) {
     if (fileName.trim().isEmpty ||
         fileName.length > 120 ||

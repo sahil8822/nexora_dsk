@@ -3,13 +3,14 @@ import Flutter
 
 /**
  * CoreBluetooth implementation for iOS.
- * Supports Nexora Pro: GATT Service Discovery and Characteristic Write operations.
+ * Supports Nexora Pro: GATT Service Discovery and Characteristic Read/Write operations.
  */
 public class HardwareBluetoothManager: NSObject, CBCentralManagerDelegate {
     private var centralManager: CBCentralManager?
     private var eventSink: FlutterEventSink?
     private var connectedPeripheral: CBPeripheral?
     private var serviceDiscoveryCallback: (([String]) -> Void)?
+    private var readCharacteristicCallback: ((Data?) -> Void)?
     private var pendingServiceDiscoveries = 0
     
     public override init() {
@@ -65,6 +66,18 @@ public class HardwareBluetoothManager: NSObject, CBCentralManagerDelegate {
               let char = service.characteristics?.first(where: { $0.uuid.uuidString == charId }) else { return false }
         
         peripheral.writeValue(data, for: char, type: .withResponse)
+        return true
+    }
+
+    public func readData(deviceId: String, serviceId: String, charId: String, callback: @escaping (Data?) -> Void) -> Bool {
+        guard isReady() else { return false }
+        guard let peripheral = connectedPeripheral, peripheral.identifier.uuidString == deviceId else { return false }
+        
+        guard let service = peripheral.services?.first(where: { $0.uuid.uuidString == serviceId }),
+              let char = service.characteristics?.first(where: { $0.uuid.uuidString == charId }) else { return false }
+        
+        self.readCharacteristicCallback = callback
+        peripheral.readValue(for: char)
         return true
     }
 
@@ -136,6 +149,14 @@ extension HardwareBluetoothManager: CBPeripheralDelegate {
                 self.serviceDiscoveryCallback?(uuids)
                 self.serviceDiscoveryCallback = nil
             }
+        }
+    }
+
+    public func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
+        let data = (error == nil) ? characteristic.value : nil
+        DispatchQueue.main.async {
+            self.readCharacteristicCallback?(data)
+            self.readCharacteristicCallback = nil
         }
     }
 }
