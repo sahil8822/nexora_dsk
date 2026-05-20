@@ -21,6 +21,8 @@ import 'models/hardware_diagnostics.dart';
 import 'models/hardware_models.dart';
 import 'models/permission_models.dart';
 import 'core/hardware_core.dart';
+import 'modules/nfc/nfc_module.dart';
+import 'modules/storage/secure_storage_module.dart';
 
 export 'nexora_sdk_desktop_stub.dart'
     if (dart.library.io) 'nexora_sdk_desktop.dart';
@@ -50,8 +52,11 @@ export 'modules/connectivity/connectivity_module.dart';
 export 'modules/native/native_module.dart';
 export 'modules/permissions/permissions_module.dart';
 export 'modules/utility/utility_module.dart';
+export 'modules/nfc/nfc_module.dart';
+export 'modules/storage/secure_storage_module.dart';
+export 'core/background_isolates.dart';
 
-/// Nexora SDK (v3.3.0) - Intelligence + Storage Edition.
+/// Nexora SDK (v2.2.1) - Intelligence + Storage Edition.
 ///
 /// A world-class, lightweight hardware toolkit for Flutter.
 /// Provides unified access to Camera, Audio, GPS, Bluetooth, Biometrics,
@@ -61,7 +66,7 @@ class NexoraSdk {
   static final NexoraSdk instance = NexoraSdk._();
 
   /// The current SDK version.
-  static const String version = '3.3.0';
+  static const String version = '2.2.1';
 
   /// Initializes the SDK by pre-warming capabilities/platform channel.
   Future<void> initialize({bool logCapabilities = false}) async {
@@ -90,6 +95,14 @@ class NexoraSdk {
   PermissionsModule? _permissions;
   NativeModule? _native;
   UtilityModule? _utility;
+  NfcModule? _nfc;
+  SecureStorageModule? _secureStorage;
+
+  /// NFC read/write support module.
+  NfcModule get nfc => _nfc ??= NfcModule();
+
+  /// AES-256 secure storage module.
+  SecureStorageModule get secureStorage => _secureStorage ??= SecureStorageModule();
 
   /// Vision AI camera module with face/barcode detection.
   CameraModule get camera => _camera ??= CameraModule();

@@ -5,6 +5,11 @@ public class HardwareHealthManager {
     private var isLogging = false
     private var logTimer: Timer?
     private var logFileURL: URL?
+    private var smartSync: SmartSyncManager?
+
+    public func setSmartSyncManager(_ sync: SmartSyncManager) {
+        self.smartSync = sync
+    }
 
     public func getBatteryInfo() -> [String: Any] {
         UIDevice.current.isBatteryMonitoringEnabled = true
@@ -70,6 +75,7 @@ public class HardwareHealthManager {
             } else {
                 try? entry.write(to: url, atomically: true, encoding: .utf8)
             }
+            smartSync?.queueData(data: entry.trimmingCharacters(in: .whitespacesAndNewlines))
         }
     }
 

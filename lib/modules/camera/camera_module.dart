@@ -1,8 +1,10 @@
 import '../../nexora_sdk_platform_interface.dart';
 import '../../models/hardware_models.dart';
+import '../../core/concurrency.dart';
 
 /// Module for controlling device cameras and receiving frame streams.
 class CameraModule {
+  final Mutex _mutex = Mutex();
   bool _isRunning = false;
 
   /// Returns whether the camera is currently active.
@@ -24,23 +26,25 @@ class CameraModule {
     if (height != null && height <= 0) {
       throw ArgumentError.value(height, 'height', 'Must be greater than zero.');
     }
-    if (autoRequestPermission) {
-      final granted = await NexoraSdkPlatform.instance
-          .requestCameraPermission();
-      if (!granted) return null;
-    }
-    return NexoraSdkPlatform.instance
-        .startCamera(
-          width: width ?? quality.width,
-          height: height ?? quality.height,
-        )
-        .then((result) {
-          if (result is int) {
-            _isRunning = true;
-            return result;
-          }
-          return null;
-        });
+    return _mutex.protect(() async {
+      if (autoRequestPermission) {
+        final granted = await NexoraSdkPlatform.instance
+            .requestCameraPermission();
+        if (!granted) return null;
+      }
+      return NexoraSdkPlatform.instance
+          .startCamera(
+            width: width ?? quality.width,
+            height: height ?? quality.height,
+          )
+          .then((result) {
+            if (result is int) {
+              _isRunning = true;
+              return result;
+            }
+            return null;
+          });
+    });
   }
 
   /// Starts the camera with granular, fully-customized native options.
@@ -48,27 +52,31 @@ class CameraModule {
     CameraOptions options, {
     bool autoRequestPermission = true,
   }) async {
-    if (autoRequestPermission) {
-      final granted = await NexoraSdkPlatform.instance
-          .requestCameraPermission();
-      if (!granted) return null;
-    }
-    return NexoraSdkPlatform.instance.startCameraWithOptions(options).then((
-      result,
-    ) {
-      if (result is int) {
-        _isRunning = true;
-        return result;
+    return _mutex.protect(() async {
+      if (autoRequestPermission) {
+        final granted = await NexoraSdkPlatform.instance
+            .requestCameraPermission();
+        if (!granted) return null;
       }
-      return null;
+      return NexoraSdkPlatform.instance.startCameraWithOptions(options).then((
+        result,
+      ) {
+        if (result is int) {
+          _isRunning = true;
+          return result;
+        }
+        return null;
+      });
     });
   }
 
   /// Stops the camera and releases all native resources.
   Future<bool> stop() async {
-    final success = await NexoraSdkPlatform.instance.stopCamera();
-    if (success) _isRunning = false;
-    return success;
+    return _mutex.protect(() async {
+      final success = await NexoraSdkPlatform.instance.stopCamera();
+      if (success) _isRunning = false;
+      return success;
+    });
   }
 
   /// Toggles the device flash/torch.

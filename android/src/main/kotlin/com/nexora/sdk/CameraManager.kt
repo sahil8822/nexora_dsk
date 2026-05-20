@@ -25,6 +25,11 @@ class HardwareCameraManager(private val context: Context) {
     private var captureSession: CameraCaptureSession? = null
     private var previewRequestBuilder: CaptureRequest.Builder? = null
     
+    private var mediaRecorder: android.media.MediaRecorder? = null
+    private var isRecordingVideo: Boolean = false
+    private var videoFile: File? = null
+    private var activeShader: String = "none"
+    
     private var imageReader: ImageReader? = null
     private var photoReader: ImageReader? = null
     private var previewSurface: Surface? = null
@@ -143,6 +148,7 @@ class HardwareCameraManager(private val context: Context) {
             val builder = previewRequestBuilder ?: return
             builder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE)
             builder.set(CaptureRequest.FLASH_MODE, if (isFlashOn) CaptureRequest.FLASH_MODE_TORCH else CaptureRequest.FLASH_MODE_OFF)
+            applyActiveShaderToRequest(builder)
             captureSession?.setRepeatingRequest(builder.build(), null, backgroundHandler)
         } catch (e: Exception) {}
     }
@@ -234,6 +240,128 @@ class HardwareCameraManager(private val context: Context) {
         if (surface != null) {
             startWithSurface(surface, lastWidth, lastHeight)
         }
+    }
+
+    @SuppressLint("MissingPermission")
+    fun startVideoRecording(fileName: String?, callback: (String?) -> Unit) {
+        if (cameraDevice == null || isRecordingVideo) {
+            callback(null)
+            return
+        }
+
+        val handler = backgroundHandler ?: run { callback(null); return }
+        videoFile = File(
+            context.cacheDir,
+            fileName?.takeIf { it.isNotBlank() } ?: "nexora_video_${System.currentTimeMillis()}.mp4"
+        )
+
+        captureSession?.close()
+        captureSession = null
+
+        val recorder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            android.media.MediaRecorder(context)
+        } else {
+            @Suppress("DEPRECATION")
+            android.media.MediaRecorder()
+        }
+        mediaRecorder = recorder
+
+        try {
+            recorder.setAudioSource(android.media.MediaRecorder.AudioSource.MIC)
+            recorder.setVideoSource(android.media.MediaRecorder.VideoSource.SURFACE)
+            recorder.setOutputFormat(android.media.MediaRecorder.OutputFormat.MPEG_4)
+            recorder.setOutputFile(videoFile!!.absolutePath)
+            recorder.setVideoEncoder(android.media.MediaRecorder.VideoEncoder.H264)
+            recorder.setAudioEncoder(android.media.MediaRecorder.AudioEncoder.AAC)
+            recorder.setVideoSize(lastWidth, lastHeight)
+            recorder.setVideoFrameRate(30)
+            recorder.setVideoEncodingBitRate(5_000_000)
+            recorder.setAudioEncodingBitRate(128_000)
+            recorder.setAudioSamplingRate(44100)
+            
+            recorder.prepare()
+        } catch (e: Exception) {
+            recorder.release()
+            mediaRecorder = null
+            callback(null)
+            startPreview()
+            return
+        }
+
+        val targets = mutableListOf<Surface>()
+        previewSurface?.let { targets.add(it) }
+        imageReader?.surface?.let { targets.add(it) }
+        targets.add(recorder.surface)
+
+        try {
+            previewRequestBuilder = cameraDevice!!.createCaptureRequest(CameraDevice.TEMPLATE_RECORD)
+            targets.forEach { previewRequestBuilder?.addTarget(it) }
+
+            cameraDevice!!.createCaptureSession(targets, object : CameraCaptureSession.StateCallback() {
+                override fun onConfigured(session: CameraCaptureSession) {
+                    captureSession = session
+                    try {
+                        val builder = previewRequestBuilder ?: return
+                        builder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE)
+                        builder.set(CaptureRequest.FLASH_MODE, if (isFlashOn) CaptureRequest.FLASH_MODE_TORCH else CaptureRequest.FLASH_MODE_OFF)
+                        applyActiveShaderToRequest(builder)
+                        session.setRepeatingRequest(builder.build(), null, backgroundHandler)
+                        
+                        recorder.start()
+                        isRecordingVideo = true
+                        Handler(context.mainLooper).post { callback(videoFile!!.absolutePath) }
+                    } catch (e: Exception) {
+                        Handler(context.mainLooper).post { callback(null) }
+                    }
+                }
+                override fun onConfigureFailed(session: CameraCaptureSession) {
+                    Handler(context.mainLooper).post { callback(null) }
+                }
+            }, backgroundHandler)
+        } catch (e: Exception) {
+            callback(null)
+        }
+    }
+
+    fun stopVideoRecording(callback: (String?) -> Unit) {
+        if (!isRecordingVideo || mediaRecorder == null) {
+            callback(null)
+            return
+        }
+
+        try {
+            mediaRecorder?.stop()
+        } catch (e: Exception) {}
+        mediaRecorder?.reset()
+        mediaRecorder?.release()
+        mediaRecorder = null
+        isRecordingVideo = false
+
+        val path = videoFile?.absolutePath
+        videoFile = null
+
+        captureSession?.close()
+        captureSession = null
+        startPreview()
+
+        callback(path)
+    }
+
+    fun applyCameraFilterShader(shaderType: String): Boolean {
+        activeShader = shaderType.lowercase()
+        updatePreview()
+        return true
+    }
+
+    private fun applyActiveShaderToRequest(builder: CaptureRequest.Builder) {
+        val effectMode = when (activeShader) {
+            "sepia" -> CaptureRequest.CONTROL_EFFECT_MODE_SEPIA
+            "monochrome", "mono" -> CaptureRequest.CONTROL_EFFECT_MODE_MONO
+            "negative" -> CaptureRequest.CONTROL_EFFECT_MODE_NEGATIVE
+            "blackboard" -> CaptureRequest.CONTROL_EFFECT_MODE_BLACKBOARD
+            else -> CaptureRequest.CONTROL_EFFECT_MODE_OFF
+        }
+        builder.set(CaptureRequest.CONTROL_EFFECT_MODE, effectMode)
     }
 
     @Synchronized

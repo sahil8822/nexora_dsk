@@ -1,9 +1,58 @@
 import Foundation
 import Flutter
+import Security
 
-/// Lightweight iOS Storage Manager.
-/// Provides safe file I/O, storage diagnostics, and cache management.
+/// Lightweight iOS Storage Manager with Keychain-backed Secure Storage.
 public class HardwareStorageManager {
+
+    /// Writes content securely to iOS Keychain.
+    public func writeSecureFile(fileName: String, content: String) -> Bool {
+        guard let data = content.data(using: .utf8) else { return false }
+        
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrAccount as String: fileName,
+            kSecAttrService as String: "com.nexora.sdk.secure"
+        ]
+        SecItemDelete(query as CFDictionary)
+        
+        var attributes = query
+        attributes[kSecValueData as String] = data
+        attributes[kSecAttrAccessible as String] = kSecAttrAccessibleAfterFirstUnlock
+        
+        let status = SecItemAdd(attributes as CFDictionary, nil)
+        return status == errSecSuccess
+    }
+
+    /// Reads secure content from iOS Keychain.
+    public func readSecureFile(fileName: String) -> String? {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrAccount as String: fileName,
+            kSecAttrService as String: "com.nexora.sdk.secure",
+            kSecReturnData as String: kCFBooleanTrue!,
+            kSecMatchLimit as String: kSecMatchLimitOne
+        ]
+        
+        var dataTypeRef: AnyObject?
+        let status = SecItemCopyMatching(query as CFDictionary, &dataTypeRef)
+        
+        if status == errSecSuccess, let data = dataTypeRef as? Data {
+            return String(data: data, encoding: .utf8)
+        }
+        return nil
+    }
+
+    /// Deletes secure content from iOS Keychain.
+    public func deleteSecureFile(fileName: String) -> Bool {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrAccount as String: fileName,
+            kSecAttrService as String: "com.nexora.sdk.secure"
+        ]
+        let status = SecItemDelete(query as CFDictionary)
+        return status == errSecSuccess || status == errSecItemNotFound
+    }
 
     /// Returns storage information for the device.
     public func getStorageInfo() -> [String: Any] {
@@ -19,7 +68,7 @@ public class HardwareStorageManager {
         return [
             "internalTotal": internalTotal,
             "internalFree": internalFree,
-            "externalTotal": 0,  // iOS has no external storage
+            "externalTotal": 0,
             "externalFree": 0,
             "appCacheSize": getDirSize(getCacheDir()),
             "appDataSize": getDirSize(getAppDir())

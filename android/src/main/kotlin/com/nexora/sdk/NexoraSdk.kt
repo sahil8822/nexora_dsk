@@ -33,7 +33,7 @@ import android.media.AudioManager
 /**
  * Nexora SDK v3.1.2 — Complete Native Plugin with Storage.
  */
-class NexoraSdk: FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry.RequestPermissionsResultListener {
+class NexoraSdk: FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry.RequestPermissionsResultListener, PluginRegistry.NewIntentListener, android.content.ComponentCallbacks2 {
     companion object {
         private const val PERMISSION_REQUEST_CODE = 7310
         private const val PREFS_NAME = "nexora_sdk_permissions"
@@ -59,6 +59,12 @@ class NexoraSdk: FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry
     private lateinit var feedback: HardwareFeedbackManager
     private lateinit var health: HardwareHealthManager
     private lateinit var storage: HardwareStorageManager
+    private lateinit var nfc: HardwareNfcManager
+    private lateinit var smartSync: SmartSyncManager
+
+    private val executor = java.util.concurrent.Executors.newCachedThreadPool()
+    private val mainHandler = android.os.Handler(android.os.Looper.getMainLooper())
+    private var eventSink: EventChannel.EventSink? = null
 
     override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         context = flutterPluginBinding.applicationContext
@@ -78,16 +84,51 @@ class NexoraSdk: FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry
         feedback = HardwareFeedbackManager(context)
         health = HardwareHealthManager(context)
         storage = HardwareStorageManager(context)
+        nfc = HardwareNfcManager(context)
+        smartSync = SmartSyncManager(context)
+        
+        health.setSmartSyncManager(smartSync)
 
-        val handler = HardwareStreamHandler(context, sensors, camera, bluetooth, location, audio)
+        val handler = object : EventChannel.StreamHandler {
+            override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
+                eventSink = events
+                sensors.setEventSink(events)
+                camera.setEventSink(events)
+                bluetooth.setEventSink(events)
+                location.setEventSink(events)
+                audio.setEventSink(events)
+                nfc.setEventSink(events)
+            }
+            override fun onCancel(arguments: Any?) {
+                eventSink = null
+                sensors.setEventSink(null)
+                camera.setEventSink(null)
+                bluetooth.setEventSink(null)
+                location.setEventSink(null)
+                audio.setEventSink(null)
+                nfc.setEventSink(null)
+            }
+        }
         eventChannel.setStreamHandler(handler)
+        context.registerComponentCallbacks(this)
     }
 
     override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
-        try {
-            handleMethodCallSafe(call, result)
-        } catch (e: Exception) {
-            result.error("NEXORA_ERROR", e.message ?: "Unknown error", e.stackTraceToString())
+        val uiResult = UIThreadResult(result, mainHandler)
+        if (shouldRunInBackground(call.method)) {
+            executor.execute {
+                try {
+                    handleMethodCallSafe(call, uiResult)
+                } catch (e: Exception) {
+                    uiResult.error("NEXORA_ERROR", e.message ?: "Unknown error", e.stackTraceToString())
+                }
+            }
+        } else {
+            try {
+                handleMethodCallSafe(call, uiResult)
+            } catch (e: Exception) {
+                uiResult.error("NEXORA_ERROR", e.message ?: "Unknown error", e.stackTraceToString())
+            }
         }
     }
 
@@ -171,7 +212,8 @@ class NexoraSdk: FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry
                     result.error("INVALID_ARGUMENT", "enableSmartSync requires uploadEndpointUrl.", null)
                     return
                 }
-                result.error("NOT_SUPPORTED", "Smart sync is not implemented by the native Android plugin yet.", null)
+                smartSync.enable(uploadEndpointUrl, headers, rollLimitBytes, requireWifi)
+                result.success(true)
             }
             "applyCameraFilterShader" -> {
                 val shaderType = call.argument<String>("shaderType")
@@ -179,11 +221,12 @@ class NexoraSdk: FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry
                     result.error("INVALID_ARGUMENT", "applyCameraFilterShader requires shaderType.", null)
                     return
                 }
-                result.error("NOT_SUPPORTED", "Camera filter shaders are not implemented by the native Android plugin yet.", null)
+                result.success(camera.applyCameraFilterShader(shaderType))
             }
             "enableDeadReckoning" -> {
                 val enabled = call.argument<Boolean>("enabled") ?: false
-                result.error("NOT_SUPPORTED", "Dead reckoning is not implemented by the native Android plugin yet.", null)
+                location.enableDeadReckoning(enabled)
+                result.success(true)
             }
             "setFlash" -> {
                 camera.setFlash(call.argument<Boolean>("on") ?: false)
@@ -206,8 +249,24 @@ class NexoraSdk: FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry
                     }
                 }
             }
-            "startVideoRecording" -> result.error("NOT_SUPPORTED", "Video recording is not implemented on Android yet.", null)
-            "stopVideoRecording" -> result.error("NOT_SUPPORTED", "Video recording is not implemented on Android yet.", null)
+            "startVideoRecording" -> {
+                camera.startVideoRecording(call.argument<String>("fileName")) { path ->
+                    if (path == null) {
+                        result.error("CAMERA_ERROR", "Failed to start video recording.", null)
+                    } else {
+                        result.success(path)
+                    }
+                }
+            }
+            "stopVideoRecording" -> {
+                camera.stopVideoRecording { path ->
+                    if (path == null) {
+                        result.error("CAMERA_ERROR", "Failed to stop video recording.", null)
+                    } else {
+                        result.success(path)
+                    }
+                }
+            }
 
             // ==================== Audio & FFT ====================
             "startAudio" -> {
@@ -518,6 +577,62 @@ class NexoraSdk: FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry
             "getCacheDirectory" -> result.success(storage.getCacheDirectory())
             "getExternalDirectory" -> result.success(storage.getExternalDirectory())
 
+            // ==================== NFC ====================
+            "startNfcScan" -> {
+                val act = activity
+                if (act == null) {
+                    result.error("NO_ACTIVITY", "NFC scanning requires a running activity.", null)
+                    return
+                }
+                result.success(nfc.startScan(act))
+            }
+            "stopNfcScan" -> {
+                val act = activity
+                if (act == null) {
+                    result.error("NO_ACTIVITY", "NFC scanning requires a running activity.", null)
+                    return
+                }
+                result.success(nfc.stopScan(act))
+            }
+            "writeNdefRecord" -> {
+                val type = call.argument<String>("type")
+                val payload = call.argument<String>("payload")
+                if (type == null || payload == null) {
+                    result.error("INVALID_ARGUMENT", "writeNdefRecord requires type and payload.", null)
+                    return
+                }
+                nfc.writeNdef(type, payload) { success ->
+                    result.success(success)
+                }
+            }
+
+            // ==================== Secure Storage ====================
+            "writeSecureFile" -> {
+                val fileName = call.argument<String>("fileName")
+                val content = call.argument<String>("content")
+                if (fileName == null || content == null) {
+                    result.error("INVALID_ARGUMENT", "writeSecureFile requires fileName and content.", null)
+                    return
+                }
+                result.success(storage.writeSecureFile(fileName, content))
+            }
+            "readSecureFile" -> {
+                val fileName = call.argument<String>("fileName")
+                if (fileName == null) {
+                    result.error("INVALID_ARGUMENT", "readSecureFile requires fileName.", null)
+                    return
+                }
+                result.success(storage.readSecureFile(fileName))
+            }
+            "deleteSecureFile" -> {
+                val fileName = call.argument<String>("fileName")
+                if (fileName == null) {
+                    result.error("INVALID_ARGUMENT", "deleteSecureFile requires fileName.", null)
+                    return
+                }
+                result.success(storage.deleteSecureFile(fileName))
+            }
+
             // ==================== Base ====================
             "getPlatformVersion" -> result.success("Android ${android.os.Build.VERSION.RELEASE}")
             "getDeviceInfo" -> result.success(getDeviceInfo())
@@ -539,6 +654,70 @@ class NexoraSdk: FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry
         releaseHardware()
         channel.setMethodCallHandler(null)
         eventChannel.setStreamHandler(null)
+        context.unregisterComponentCallbacks(this)
+        executor.shutdown()
+    }
+
+    override fun onTrimMemory(level: Int) {
+        if (level >= android.content.ComponentCallbacks2.TRIM_MEMORY_RUNNING_LOW) {
+            try {
+                storage.clearCache()
+            } catch (_: Exception) {}
+            val warningData = mapOf(
+                "module" to "system",
+                "type" to "memoryWarning",
+                "data" to mapOf(
+                    "level" to level,
+                    "warning" to "TRIM_MEMORY_RUNNING_LOW"
+                )
+            )
+            mainHandler.post {
+                try { eventSink?.success(warningData) } catch (_: Exception) {}
+            }
+        }
+    }
+
+    override fun onConfigurationChanged(newConfig: android.content.res.Configuration) {}
+
+    override fun onLowMemory() {
+        try {
+            storage.clearCache()
+        } catch (_: Exception) {}
+        val warningData = mapOf(
+            "module" to "system",
+            "type" to "memoryWarning",
+            "data" to mapOf(
+                "warning" to "LOW_MEMORY"
+            )
+        )
+        mainHandler.post {
+            try { eventSink?.success(warningData) } catch (_: Exception) {}
+        }
+    }
+
+    class UIThreadResult(private val baseResult: Result, private val handler: android.os.Handler) : Result {
+        override fun success(result: Any?) {
+            handler.post { baseResult.success(result) }
+        }
+        override fun error(errorCode: String, errorMessage: String?, errorDetails: Any?) {
+            handler.post { baseResult.error(errorCode, errorMessage, errorDetails) }
+        }
+        override fun notImplemented() {
+            handler.post { baseResult.notImplemented() }
+        }
+    }
+
+    private fun shouldRunInBackground(method: String): Boolean {
+        return when (method) {
+            "getStorageInfo", "writeFile", "appendFile", "readFile", "deleteFile", "fileExists", 
+            "listFiles", "writeBytes", "readBytes", "clearCache", "getAppDirectory", "getCacheDirectory", "getExternalDirectory",
+            "startBluetoothScan", "startBluetoothScanWithOptions", "stopBluetoothScan", "connectDevice", 
+            "disconnectDevice", "discoverServices", "sendData", "readData",
+            "startHardwareLogging", "stopHardwareLogging", "addGeofence",
+            "enableSmartSync", "enableDeadReckoning",
+            "getBatteryInfo", "getWifiInfo", "getDeviceInfo", "getConnectivityInfo" -> true
+            else -> false
+        }
     }
 
     private fun releaseHardware() {
@@ -838,10 +1017,12 @@ class NexoraSdk: FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry
         activity = binding.activity
         activityBinding = binding
         binding.addRequestPermissionsResultListener(this)
+        binding.addNewIntentListener(this)
     }
 
     override fun onDetachedFromActivityForConfigChanges() {
         activityBinding?.removeRequestPermissionsResultListener(this)
+        activityBinding?.removeNewIntentListener(this)
         activityBinding = null
         activity = null
     }
@@ -850,11 +1031,17 @@ class NexoraSdk: FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry
         activity = binding.activity
         activityBinding = binding
         binding.addRequestPermissionsResultListener(this)
+        binding.addNewIntentListener(this)
     }
 
     override fun onDetachedFromActivity() {
         activityBinding?.removeRequestPermissionsResultListener(this)
+        activityBinding?.removeNewIntentListener(this)
         activityBinding = null
         activity = null
+    }
+
+    override fun onNewIntent(intent: Intent): Boolean {
+        return nfc.handleIntent(intent)
     }
 }

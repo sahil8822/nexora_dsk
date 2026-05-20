@@ -1,6 +1,12 @@
 # Changelog
 
-## 3.3.0
+## 2.2.1
+
+* **Smart Sync**: Built offline telemetry database/queueing on native Android and iOS, featuring rolled file rotation, internet connectivity detection, and automated background upload with exponential retry backoff.
+* **NFC Module**: Implemented Near Field Communication (NFC) scan and NDEF tag writer on both platforms with foreground dispatch on Android and reader sessions on iOS.
+* **Secure Storage**: Developed AES-256 encrypted file and JSON storage using Android KeyStore and iOS Keychain.
+* **Background Isolates**: Added `BackgroundIsolateWrapper` to spawn low-priority background isolates for heavy CPU/computation operations.
+* **Integration & Testing**: Integrated all native and Dart parts of Phase 5, passing all 78 unit tests successfully.
 
 * **Stability & Guards**: Added `isRunning` checks to protect state-sensitive modules (Camera, Bluetooth) and wrapped native methods to throw clean typed `HardwareException`s.
 * **GATT Enhancements**: Implemented BLE device disconnect and GATT characteristic read APIs.

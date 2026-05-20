@@ -12,6 +12,13 @@ public class HardwareCameraManager: NSObject, FlutterTexture, AVCaptureVideoData
     private var currentInput: AVCaptureDeviceInput?
     private var photoOutput: AVCapturePhotoOutput?
     private var photoDelegate: PhotoCaptureDelegate?
+    private var movieFileOutput: AVCaptureMovieFileOutput?
+    private var movieRecordingDelegate: MovieRecordingDelegate?
+    private var isRecordingVideo = false
+    
+    private let ciContext = CIContext(options: [CIContextOption.useSoftwareRenderer: false])
+    private var activeFilterName: String = "none"
+
     private var eventSink: FlutterEventSink?
     private let videoOutputQueue = DispatchQueue(label: "camera.video.output.queue", qos: .userInteractive)
     
@@ -135,8 +142,48 @@ public class HardwareCameraManager: NSObject, FlutterTexture, AVCaptureVideoData
 
     public func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
         guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }
+        
+        var outputBuffer = pixelBuffer
+        if activeFilterName != "none" {
+            let sourceImage = CIImage(cvPixelBuffer: pixelBuffer)
+            var filteredImage: CIImage? = nil
+            
+            switch activeFilterName {
+            case "sepia":
+                filteredImage = sourceImage.applyingFilter("CISepiaTone", parameters: [kCIInputIntensityKey: 1.0])
+            case "monochrome", "mono":
+                filteredImage = sourceImage.applyingFilter("CIColorMonochrome", parameters: [
+                    kCIInputColorKey: CIColor(red: 0.5, green: 0.5, blue: 0.5),
+                    kCIInputIntensityKey: 1.0
+                ])
+            case "negative":
+                filteredImage = sourceImage.applyingFilter("CIColorInvert")
+            default:
+                break
+            }
+            
+            if let filtered = filteredImage {
+                var newPixelBuffer: CVPixelBuffer? = nil
+                let attrs = [
+                    kCVPixelBufferCGImageCompatibilityKey: kCFBooleanTrue,
+                    kCVPixelBufferCGBitmapContextCompatibilityKey: kCFBooleanTrue,
+                    kCVPixelBufferPixelFormatTypeKey: kCVPixelFormatType_32BGRA
+                ] as CFDictionary
+                
+                let width = CVPixelBufferGetWidth(pixelBuffer)
+                let height = CVPixelBufferGetHeight(pixelBuffer)
+                let status = CVPixelBufferCreate(kCFAllocatorDefault, width, height, kCVPixelFormatType_32BGRA, attrs, &newPixelBuffer)
+                if status == kCVReturnSuccess, let destBuffer = newPixelBuffer {
+                    CVPixelBufferLockBaseAddress(destBuffer, CVPixelBufferLockFlags(rawValue: 0))
+                    ciContext.render(filtered, to: destBuffer)
+                    CVPixelBufferUnlockBaseAddress(destBuffer, CVPixelBufferLockFlags(rawValue: 0))
+                    outputBuffer = destBuffer
+                }
+            }
+        }
+
         bufferLock.lock()
-        latestPixelBuffer = pixelBuffer
+        latestPixelBuffer = outputBuffer
         bufferLock.unlock()
         
         let now = CACurrentMediaTime()
@@ -172,7 +219,65 @@ public class HardwareCameraManager: NSObject, FlutterTexture, AVCaptureVideoData
         return results.isEmpty ? nil : results
     }
 
+    public func startVideoRecording(fileName: String?, completion: @escaping (String?) -> Void) {
+        guard let session = captureSession, !isRecordingVideo else {
+            completion(nil)
+            return
+        }
+
+        let name = (fileName?.isEmpty == false ? fileName! : "nexora_video_\(Int(Date().timeIntervalSince1970 * 1000)).mp4")
+        let url = FileManager.default.temporaryDirectory.appendingPathComponent(name)
+
+        let movieOutput = AVCaptureMovieFileOutput()
+        self.movieFileOutput = movieOutput
+
+        session.beginConfiguration()
+        if session.canAddOutput(movieOutput) {
+            session.addOutput(movieOutput)
+        } else {
+            session.commitConfiguration()
+            completion(nil)
+            return
+        }
+        session.commitConfiguration()
+
+        let delegate = MovieRecordingDelegate { [weak self] path in
+            self?.movieRecordingDelegate = nil
+            completion(path)
+        }
+        self.movieRecordingDelegate = delegate
+        self.isRecordingVideo = true
+
+        movieOutput.startRecording(to: url, recordingDelegate: delegate)
+    }
+
+    public func stopVideoRecording(completion: @escaping (String?) -> Void) {
+        guard isRecordingVideo, let movieOutput = movieFileOutput else {
+            completion(nil)
+            return
+        }
+
+        movieOutput.stopRecording()
+        isRecordingVideo = false
+
+        if let session = captureSession {
+            session.beginConfiguration()
+            session.removeOutput(movieOutput)
+            session.commitConfiguration()
+        }
+        self.movieFileOutput = nil
+    }
+
+    public func applyCameraFilterShader(shaderType: String) -> Bool {
+        activeFilterName = shaderType.lowercased()
+        return true
+    }
+
     public func stop() {
+        if isRecordingVideo {
+            movieFileOutput?.stopRecording()
+            isRecordingVideo = false
+        }
         captureSession?.stopRunning()
         captureSession = nil
         latestPixelBuffer = nil
@@ -180,6 +285,34 @@ public class HardwareCameraManager: NSObject, FlutterTexture, AVCaptureVideoData
         currentInput = nil
         photoOutput = nil
         photoDelegate = nil
+        movieFileOutput = nil
+        movieRecordingDelegate = nil
+    }
+}
+
+private final class MovieRecordingDelegate: NSObject, AVCaptureFileOutputRecordingDelegate {
+    private let completion: (String?) -> Void
+
+    init(completion: @escaping (String?) -> Void) {
+        self.completion = completion
+    }
+
+    func fileOutput(
+        _ output: AVCaptureFileOutput,
+        didFinishRecordingTo outputFileURL: URL,
+        from connections: [AVCaptureConnection],
+        error: Error?
+    ) {
+        if let error = error {
+            let nsError = error as NSError
+            if let success = nsError.userInfo[AVErrorRecordingSuccessfullyFinishedKey] as? Bool, success {
+                completion(outputFileURL.path)
+                return
+            }
+            completion(nil)
+        } else {
+            completion(outputFileURL.path)
+        }
     }
 }
 

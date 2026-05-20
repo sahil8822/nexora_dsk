@@ -2,15 +2,93 @@ package com.nexora.sdk
 
 import android.content.Context
 import android.os.StatFs
+import android.security.keystore.KeyGenParameterSpec
+import android.security.keystore.KeyProperties
 import java.io.File
 import java.io.FileOutputStream
+import java.security.KeyStore
+import javax.crypto.Cipher
+import javax.crypto.KeyGenerator
+import javax.crypto.SecretKey
+import javax.crypto.spec.GCMParameterSpec
 
 /**
  * Lightweight Storage Manager.
- * Provides safe file I/O, storage info, and directory access
- * without heavy external dependencies.
+ * Provides safe file I/O, secure KeyStore encryption, storage info, and directory access.
  */
 class HardwareStorageManager(private val context: Context) {
+
+    private val KEY_ALIAS = "nexora_secure_storage_key"
+    private val ANDROID_KEYSTORE = "AndroidKeyStore"
+    private val TRANSFORMATION = "AES/GCM/NoPadding"
+
+    private fun getOrCreateKey(): SecretKey {
+        val keyStore = KeyStore.getInstance(ANDROID_KEYSTORE).apply { load(null) }
+        val existingKey = keyStore.getKey(KEY_ALIAS, null) as? SecretKey
+        if (existingKey != null) return existingKey
+
+        val keyGenerator = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, ANDROID_KEYSTORE)
+        val spec = KeyGenParameterSpec.Builder(
+            KEY_ALIAS,
+            KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT
+        )
+            .setBlockModes(KeyProperties.BLOCK_MODE_GCM)
+            .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
+            .build()
+        keyGenerator.init(spec)
+        return keyGenerator.generateKey()
+    }
+
+    fun writeSecureFile(fileName: String, content: String): Boolean {
+        return try {
+            val key = getOrCreateKey()
+            val cipher = Cipher.getInstance(TRANSFORMATION)
+            cipher.init(Cipher.ENCRYPT_MODE, key)
+            
+            val iv = cipher.iv
+            val encryptedBytes = cipher.doFinal(content.toByteArray(Charsets.UTF_8))
+            
+            val file = safeFile(fileName)
+            FileOutputStream(file).use { fos ->
+                fos.write(iv.size)
+                fos.write(iv)
+                fos.write(encryptedBytes)
+            }
+            true
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
+        }
+    }
+
+    fun readSecureFile(fileName: String): String? {
+        return try {
+            val file = safeFile(fileName)
+            if (!file.exists()) return null
+            
+            val bytes = file.readBytes()
+            if (bytes.isEmpty()) return null
+            
+            val ivSize = bytes[0].toInt()
+            val iv = bytes.sliceArray(1..ivSize)
+            val encryptedBytes = bytes.sliceArray((ivSize + 1) until bytes.size)
+            
+            val key = getOrCreateKey()
+            val cipher = Cipher.getInstance(TRANSFORMATION)
+            val spec = GCMParameterSpec(128, iv)
+            cipher.init(Cipher.DECRYPT_MODE, key, spec)
+            
+            val decryptedBytes = cipher.doFinal(encryptedBytes)
+            String(decryptedBytes, Charsets.UTF_8)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
+    }
+
+    fun deleteSecureFile(fileName: String): Boolean {
+        return deleteFile(fileName)
+    }
 
     /// Returns total & available storage in bytes for internal and external storage.
     fun getStorageInfo(): Map<String, Any> {

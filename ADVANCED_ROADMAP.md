@@ -5,12 +5,14 @@ implemented, explicitly experimental, or reported as unsupported at runtime.
 
 ## 1. Native Production Backends
 
-- Add video recording on Android with `MediaRecorder` or CameraX VideoCapture.
-- Add video recording on iOS with `AVCaptureMovieFileOutput`.
-- Add camera shader filters using Android GPU/CameraX effects and iOS Core Image.
-- Add Smart Sync with offline queueing, file rollovers, retries, backoff, and upload status events.
-- Add BLE L2CAP only where the OS exposes a stable API; otherwise keep returning unsupported.
-- Add dead reckoning with a documented sensor-fusion model and confidence score.
+- [x] Add video recording on Android with `MediaRecorder` or CameraX VideoCapture. (Completed in v2.2.1)
+- [x] Add video recording on iOS with `AVCaptureMovieFileOutput`. (Completed in v2.2.1)
+- [x] Add camera shader filters using Android GPU/CameraX effects and iOS Core Image. (Completed in v2.2.1)
+- [x] Add Smart Sync with offline queueing, file rollovers, retries, backoff, and upload status events. (Completed in v2.2.1)
+- [x] Add BLE L2CAP on Android and iOS. (Completed in v2.2.1)
+- [x] Add dead reckoning with a documented sensor-fusion model (Kalman filter) and confidence score. (Completed in v2.2.1)
+- [x] Add NFC (NDEF read/write) support on Android and iOS. (Completed in v2.2.1)
+- [x] Add Secure Storage (AES-256 file encryption with KeyStore/Keychain) on Android and iOS. (Completed in v2.2.1)
 
 ## 2. Web Backends
 

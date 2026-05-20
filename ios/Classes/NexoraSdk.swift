@@ -16,6 +16,7 @@ public class NexoraSdk: NSObject, FlutterPlugin, CLLocationManagerDelegate {
     private let feedback = HardwareFeedbackManager()
     private let health = HardwareHealthManager()
     private let storage = HardwareStorageManager()
+    private let nfc = HardwareNfcManager()
     private var ecoModeUserEnabled = false
     
     private var registrar: FlutterPluginRegistrar?
@@ -26,6 +27,11 @@ public class NexoraSdk: NSObject, FlutterPlugin, CLLocationManagerDelegate {
     private var pendingMicrophonePermission = false
     private var pendingPermissionType: String?
 
+    public override init() {
+        super.init()
+        health.setSmartSyncManager(SmartSyncManager.shared)
+    }
+
     public static func register(with registrar: FlutterPluginRegistrar) {
         let instance = NexoraSdk()
         instance.registrar = registrar
@@ -34,21 +40,92 @@ public class NexoraSdk: NSObject, FlutterPlugin, CLLocationManagerDelegate {
         registrar.addMethodCallDelegate(instance, channel: channel)
 
         let eventChannel = FlutterEventChannel(name: "nexora_sdk/events", binaryMessenger: registrar.messenger())
-        let streamHandler = HardwareStreamHandler(
-            camera: instance.camera,
-            bluetooth: instance.bluetooth,
-            location: instance.location,
-            sensor: instance.sensors,
-            audio: instance.audio
-        )
+        let streamHandler = InlineStreamHandler(sdk: instance)
         eventChannel.setStreamHandler(streamHandler)
+
+        NotificationCenter.default.addObserver(
+            instance,
+            selector: #selector(instance.didReceiveMemoryWarning),
+            name: UIApplication.didReceiveMemoryWarningNotification,
+            object: nil
+        )
     }
 
     deinit {
+        NotificationCenter.default.removeObserver(self)
         releaseHardware()
     }
 
+    class InlineStreamHandler: NSObject, FlutterStreamHandler {
+        private weak var sdk: NexoraSdk?
+        init(sdk: NexoraSdk) {
+            self.sdk = sdk
+        }
+        func onListen(withArguments arguments: Any?, eventSink events: @escaping FlutterEventSink) -> FlutterError? {
+            sdk?.eventSink = events
+            sdk?.camera.setEventSink(events)
+            sdk?.bluetooth.setEventSink(events)
+            sdk?.location.setEventSink(events)
+            sdk?.sensors.setEventSink(events)
+            sdk?.audio.setEventSink(events)
+            sdk?.nfc.setEventSink(events)
+            return nil
+        }
+        func onCancel(withArguments arguments: Any?) -> FlutterError? {
+            sdk?.eventSink = nil
+            sdk?.camera.setEventSink(nil)
+            sdk?.bluetooth.setEventSink(nil)
+            sdk?.location.setEventSink(nil)
+            sdk?.sensors.setEventSink(nil)
+            sdk?.audio.setEventSink(nil)
+            sdk?.nfc.setEventSink(nil)
+            return nil
+        }
+    }
+
+    private var eventSink: FlutterEventSink?
+
+    @objc private func didReceiveMemoryWarning() {
+        storage.clearCache()
+        let warningData: [String: Any] = [
+            "module": "system",
+            "type": "memoryWarning",
+            "data": [
+                "warning": "LOW_MEMORY"
+            ]
+        ]
+        DispatchQueue.main.async {
+            self.eventSink?(warningData)
+        }
+    }
+
+    private func shouldRunInBackground(_ method: String) -> Bool {
+        switch method {
+        case "getStorageInfo", "writeFile", "appendFile", "readFile", "deleteFile", "fileExists",
+             "listFiles", "writeBytes", "readBytes", "clearCache", "getAppDirectory", "getCacheDirectory", "getExternalDirectory",
+             "writeSecureFile", "readSecureFile", "deleteSecureFile",
+             "startBluetoothScan", "startBluetoothScanWithOptions", "stopBluetoothScan", "connectDevice",
+             "disconnectDevice", "discoverServices", "sendData", "readData",
+             "startLogging", "stopLogging", "addGeofence",
+             "enableSmartSync", "enableDeadReckoning",
+             "getBatteryInfo", "getWifiInfo", "getDeviceInfo", "getConnectivityInfo":
+            return true
+        default:
+            return false
+        }
+    }
+
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+        if shouldRunInBackground(call.method) {
+            DispatchQueue.global(qos: .userInitiated).async {
+                self.handleSafe(call, result: result)
+            }
+        } else {
+            self.handleSafe(call, result: result)
+        }
+    }
+
+    private func handleSafe(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         let args = call.arguments as? [String: Any]
 
         switch call.method {
@@ -100,18 +177,20 @@ public class NexoraSdk: NSObject, FlutterPlugin, CLLocationManagerDelegate {
             let headers = args?["headers"] as? [String: String] ?? [:]
             let rollLimitBytes = args?["rollLimitBytes"] as? Int ?? (2 * 1024 * 1024)
             let requireWifi = args?["requireWifi"] as? Bool ?? true
-            result(FlutterError(code: "NOT_SUPPORTED", message: "Smart sync is not implemented by the native iOS plugin yet.", details: nil))
+            SmartSyncManager.shared.enable(url: uploadEndpointUrl, headers: headers, limit: rollLimitBytes, wifiOnly: requireWifi)
+            result(true)
 
         case "applyCameraFilterShader":
             guard let shaderType = args?["shaderType"] as? String else {
                 result(FlutterError(code: "INVALID_ARGUMENT", message: "applyCameraFilterShader requires shaderType.", details: nil))
                 return
             }
-            result(FlutterError(code: "NOT_SUPPORTED", message: "Camera filter shaders are not implemented by the native iOS plugin yet.", details: nil))
+            result(camera.applyCameraFilterShader(shaderType: shaderType))
 
         case "enableDeadReckoning":
             let enabled = args?["enabled"] as? Bool ?? false
-            result(FlutterError(code: "NOT_SUPPORTED", message: "Dead reckoning is not implemented by the native iOS plugin yet.", details: nil))
+            location.enableDeadReckoning(enabled)
+            result(true)
 
         case "setFlash":
             camera.setFlash(on: args?["on"] as? Bool ?? false)
@@ -138,10 +217,22 @@ public class NexoraSdk: NSObject, FlutterPlugin, CLLocationManagerDelegate {
             }
 
         case "startVideoRecording":
-            result(FlutterError(code: "NOT_SUPPORTED", message: "Video recording is not implemented on iOS yet.", details: nil))
+            camera.startVideoRecording(fileName: args?["fileName"] as? String) { path in
+                if let path = path {
+                    result(path)
+                } else {
+                    result(FlutterError(code: "CAMERA_ERROR", message: "Failed to start video recording.", details: nil))
+                }
+            }
 
         case "stopVideoRecording":
-            result(FlutterError(code: "NOT_SUPPORTED", message: "Video recording is not implemented on iOS yet.", details: nil))
+            camera.stopVideoRecording { path in
+                if let path = path {
+                    result(path)
+                } else {
+                    result(FlutterError(code: "CAMERA_ERROR", message: "Failed to stop video recording.", details: nil))
+                }
+            }
 
         // ==================== Audio & FFT ====================
         case "startAudio":
@@ -435,6 +526,46 @@ public class NexoraSdk: NSObject, FlutterPlugin, CLLocationManagerDelegate {
 
         case "getExternalDirectory":
             result(storage.getExternalDirectory())
+
+        // ==================== NFC ====================
+        case "startNfcScan":
+            result(nfc.startScan())
+
+        case "stopNfcScan":
+            result(nfc.stopScan())
+
+        case "writeNdefRecord":
+            guard let type = args?["type"] as? String,
+                  let payload = args?["payload"] as? String else {
+                result(FlutterError(code: "INVALID_ARGUMENT", message: "writeNdefRecord requires type and payload.", details: nil))
+                return
+            }
+            nfc.writeNdef(type: type, payload: payload) { success in
+                result(success)
+            }
+
+        // ==================== Secure Storage ====================
+        case "writeSecureFile":
+            guard let fileName = args?["fileName"] as? String,
+                  let content = args?["content"] as? String else {
+                result(FlutterError(code: "INVALID_ARGUMENT", message: "writeSecureFile requires fileName and content.", details: nil))
+                return
+            }
+            result(storage.writeSecureFile(fileName: fileName, content: content))
+
+        case "readSecureFile":
+            guard let fileName = args?["fileName"] as? String else {
+                result(FlutterError(code: "INVALID_ARGUMENT", message: "readSecureFile requires fileName.", details: nil))
+                return
+            }
+            result(storage.readSecureFile(fileName: fileName))
+
+        case "deleteSecureFile":
+            guard let fileName = args?["fileName"] as? String else {
+                result(FlutterError(code: "INVALID_ARGUMENT", message: "deleteSecureFile requires fileName.", details: nil))
+                return
+            }
+            result(storage.deleteSecureFile(fileName: fileName))
 
         // ==================== Base ====================
         case "getPlatformVersion":

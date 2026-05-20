@@ -246,6 +246,48 @@ final settings = await sdk.storage.readJson<Map<String, dynamic>>(
 await sdk.storage.appendFile('session.log', 'Started\n');
 ```
 
+## Advanced Features (v2.2.1)
+
+### 1. Smart Sync & Telemetry Logging
+Enables background logging of battery, connectivity, and custom metrics into rolled files, with automatic upload retry and exponential backoff.
+```dart
+await sdk.health.startLogging('telemetry.csv', 1000);
+await sdk.health.enableSmartSync(
+  uploadEndpointUrl: 'https://api.nexora.com/telemetry',
+  rollLimitBytes: 1 * 1024 * 1024, // Roll file at 1MB
+  requireWifi: true,
+);
+```
+
+### 2. NFC (NDEF Reader & Writer)
+Scan and write NDEF data to NFC tags. Supports foreground dispatch on Android and custom NDEF sessions on iOS.
+```dart
+// Scan tag
+await sdk.nfc.startNfcScan();
+sdk.nfc.nfcTagStream.listen((tag) {
+  print('Tag payload: ${tag['payload']}');
+});
+
+// Write to tag
+await sdk.nfc.writeNdefRecord(type: 'text/plain', payload: 'Hello Nexora');
+```
+
+### 3. Secure Storage (AES-256)
+Enables reading and writing files and JSON payloads using hardware-backed AES encryption (Android KeyStore and iOS Keychain).
+```dart
+await sdk.secureStorage.writeSecureFile('credentials.enc', 'my_secret_token');
+final secret = await sdk.secureStorage.readSecureFile('credentials.enc');
+```
+
+### 4. Background Isolates
+Perform heavy CPU tasks (like cryptographic verification or parsing large logs) off the main UI thread using the background isolate runner.
+```dart
+final result = await BackgroundIsolateWrapper.compute((data) {
+  // Heavy computation here
+  return data.toUpperCase();
+}, 'heavy payload');
+```
+
 ## Notes
 
 Hardware APIs are permission-sensitive and device-sensitive. Methods that require permission now return a native `PERMISSION_DENIED` error instead of silently pretending to work.

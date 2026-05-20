@@ -29,6 +29,11 @@ class HardwareHealthManager(private val context: Context) {
         }
     }
     private var logInterval: Long = 1000
+    private var smartSync: SmartSyncManager? = null
+
+    fun setSmartSyncManager(sync: SmartSyncManager) {
+        this.smartSync = sync
+    }
 
     fun getBatteryInfo(): Map<String, Any> {
         val intent = context.registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
@@ -89,6 +94,7 @@ class HardwareHealthManager(private val context: Context) {
         
         try {
             FileOutputStream(logFile, true).use { it.write(entry.toByteArray()) }
+            smartSync?.queueData(entry.trim())
         } catch (e: Exception) {}
     }
 
