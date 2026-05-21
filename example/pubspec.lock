@@ -166,6 +166,41 @@ packages:
       relative: true
     source: path
     version: "3.2.1"
+  nexora_sdk_android:
+    dependency: transitive
+    description:
+      path: "../packages/nexora_sdk_android"
+      relative: true
+    source: path
+    version: "1.0.0"
+  nexora_sdk_desktop:
+    dependency: transitive
+    description:
+      path: "../packages/nexora_sdk_desktop"
+      relative: true
+    source: path
+    version: "1.0.0"
+  nexora_sdk_ios:
+    dependency: transitive
+    description:
+      path: "../packages/nexora_sdk_ios"
+      relative: true
+    source: path
+    version: "1.0.0"
+  nexora_sdk_platform_interface:
+    dependency: transitive
+    description:
+      path: "../packages/nexora_sdk_platform_interface"
+      relative: true
+    source: path
+    version: "1.0.0"
+  nexora_sdk_web:
+    dependency: transitive
+    description:
+      path: "../packages/nexora_sdk_web"
+      relative: true
+    source: path
+    version: "1.0.0"
   path:
     dependency: transitive
     description:

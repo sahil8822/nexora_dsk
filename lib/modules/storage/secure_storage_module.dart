@@ -10,10 +10,13 @@ class SecureStorageModule {
   Future<bool> writeSecureFile(String fileName, String content) async {
     _validateFileName(fileName);
     try {
-      final bool? success = await _channel.invokeMethod<bool>('writeSecureFile', {
-        'fileName': fileName,
-        'content': content,
-      });
+      final success = await _channel.invokeMethod<bool>(
+        'writeSecureFile',
+        {
+          'fileName': fileName,
+          'content': content,
+        },
+      );
       return success ?? false;
     } on PlatformException {
       return false;
@@ -24,9 +27,12 @@ class SecureStorageModule {
   Future<String?> readSecureFile(String fileName) async {
     _validateFileName(fileName);
     try {
-      final String? content = await _channel.invokeMethod<String>('readSecureFile', {
-        'fileName': fileName,
-      });
+      final content = await _channel.invokeMethod<String>(
+        'readSecureFile',
+        {
+          'fileName': fileName,
+        },
+      );
       return content;
     } on PlatformException {
       return null;
@@ -54,9 +60,12 @@ class SecureStorageModule {
   Future<bool> deleteSecureFile(String fileName) async {
     _validateFileName(fileName);
     try {
-      final bool? success = await _channel.invokeMethod<bool>('deleteSecureFile', {
-        'fileName': fileName,
-      });
+      final success = await _channel.invokeMethod<bool>(
+        'deleteSecureFile',
+        {
+          'fileName': fileName,
+        },
+      );
       return success ?? false;
     } on PlatformException {
       return false;

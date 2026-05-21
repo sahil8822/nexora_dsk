@@ -67,8 +67,8 @@ void main() {
       final loc = LocationData(
         latitude: 37.7749,
         longitude: -122.4194,
-        altitude: 10.0,
-        accuracy: 5.0,
+        altitude: 10,
+        accuracy: 5,
         speed: 1.2,
       );
 
@@ -187,18 +187,21 @@ void main() {
       expect(roundTrip.x, sensor.x);
       expect(roundTrip.y, sensor.y);
       expect(roundTrip.z, sensor.z);
-      expect(roundTrip.timestamp.millisecondsSinceEpoch, sensor.timestamp.millisecondsSinceEpoch);
+      expect(
+        roundTrip.timestamp.millisecondsSinceEpoch,
+        sensor.timestamp.millisecondsSinceEpoch,
+      );
 
       expect(sensor.toString(), contains('x: 0.1'));
     });
 
     test('HardwarePermissionSnapshot & Report tests', () {
-      final snapshot = HardwarePermissionSnapshot({
-        HardwarePermission.camera: const HardwarePermissionStatus(
+      const snapshot = HardwarePermissionSnapshot({
+        HardwarePermission.camera: HardwarePermissionStatus(
           permission: HardwarePermission.camera,
           state: HardwarePermissionState.granted,
         ),
-        HardwarePermission.audio: const HardwarePermissionStatus(
+        HardwarePermission.audio: HardwarePermissionStatus(
           permission: HardwarePermission.audio,
           state: HardwarePermissionState.denied,
         ),
@@ -233,7 +236,10 @@ void main() {
 
     test('Options classes copyWith & toString', () {
       const cam = CameraOptions(resolution: CameraQuality.fullHd);
-      expect(cam.copyWith(resolution: CameraQuality.hd).resolution, CameraQuality.hd);
+      expect(
+        cam.copyWith(resolution: CameraQuality.hd).resolution,
+        CameraQuality.hd,
+      );
       expect(cam.toString(), contains('resolution'));
 
       const aud = AudioOptions(sampleRate: 16000);
@@ -248,8 +254,8 @@ void main() {
       expect(ble.copyWith(allowDuplicates: false).allowDuplicates, false);
       expect(ble.toString(), contains('allowDuplicates'));
 
-      const loc = LocationOptions(distanceFilterMeters: 10.0);
-      expect(loc.copyWith(distanceFilterMeters: 5.0).distanceFilterMeters, 5.0);
+      const loc = LocationOptions(distanceFilterMeters: 10);
+      expect(loc.copyWith(distanceFilterMeters: 5).distanceFilterMeters, 5.0);
       expect(loc.toString(), contains('distanceFilter'));
 
       const bio = BiometricPromptOptions(title: 'Auth');

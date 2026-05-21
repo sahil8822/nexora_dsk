@@ -5,31 +5,31 @@ import 'package:nexora_sdk/nexora_sdk.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  const MethodChannel channel = MethodChannel('nexora_sdk/methods');
-  final List<MethodCall> log = <MethodCall>[];
-  final Map<String, String> secureStorage = {};
+  const channel = MethodChannel('nexora_sdk/methods');
+  final log = <MethodCall>[];
+  final secureStorage = <String, String>{};
 
   setUp(() {
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMethodCallHandler(channel, (MethodCall methodCall) async {
-      log.add(methodCall);
-      switch (methodCall.method) {
-        case 'writeSecureFile':
-          final name = methodCall.arguments['fileName'] as String;
-          final content = methodCall.arguments['content'] as String;
-          secureStorage[name] = content;
-          return true;
-        case 'readSecureFile':
-          final name = methodCall.arguments['fileName'] as String;
-          return secureStorage[name];
-        case 'deleteSecureFile':
-          final name = methodCall.arguments['fileName'] as String;
-          final removed = secureStorage.remove(name) != null;
-          return removed;
-        default:
-          return null;
-      }
-    });
+        .setMockMethodCallHandler(channel, (methodCall) async {
+          log.add(methodCall);
+          switch (methodCall.method) {
+            case 'writeSecureFile':
+              final name = methodCall.arguments['fileName'] as String;
+              final content = methodCall.arguments['content'] as String;
+              secureStorage[name] = content;
+              return true;
+            case 'readSecureFile':
+              final name = methodCall.arguments['fileName'] as String;
+              return secureStorage[name];
+            case 'deleteSecureFile':
+              final name = methodCall.arguments['fileName'] as String;
+              final removed = secureStorage.remove(name) != null;
+              return removed;
+            default:
+              return null;
+          }
+        });
   });
 
   tearDown(() {
@@ -42,7 +42,10 @@ void main() {
   group('SecureStorageModule Tests', () {
     test('write, read, delete success', () async {
       final ss = NexoraSdk.instance.secureStorage;
-      final success = await ss.writeSecureFile('secret.txt', 'super_secret_key');
+      final success = await ss.writeSecureFile(
+        'secret.txt',
+        'super_secret_key',
+      );
       expect(success, true);
 
       final exists = await ss.readSecureFile('secret.txt');
@@ -61,7 +64,9 @@ void main() {
       final success = await ss.writeSecureJson('token.json', mapData);
       expect(success, true);
 
-      final readData = await ss.readSecureJson<Map<dynamic, dynamic>>('token.json');
+      final readData = await ss.readSecureJson<Map<dynamic, dynamic>>(
+        'token.json',
+      );
       expect(readData, isNotNull);
       expect(readData!['token'], 'jwt_123');
       expect(readData['expires'], 3600);
@@ -73,8 +78,14 @@ void main() {
     test('filename validation checks', () {
       final ss = NexoraSdk.instance.secureStorage;
       expect(() => ss.writeSecureFile('', 'data'), throwsArgumentError);
-      expect(() => ss.writeSecureFile('dir/file.txt', 'data'), throwsArgumentError);
-      expect(() => ss.writeSecureFile('dir\\file.txt', 'data'), throwsArgumentError);
+      expect(
+        () => ss.writeSecureFile('dir/file.txt', 'data'),
+        throwsArgumentError,
+      );
+      expect(
+        () => ss.writeSecureFile(r'dir\file.txt', 'data'),
+        throwsArgumentError,
+      );
       expect(() => ss.writeSecureFile('.', 'data'), throwsArgumentError);
       expect(() => ss.writeSecureFile('..', 'data'), throwsArgumentError);
       expect(() => ss.writeSecureFile('a' * 121, 'data'), throwsArgumentError);

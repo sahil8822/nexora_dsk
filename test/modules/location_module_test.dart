@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nexora_sdk/nexora_sdk.dart';
-import 'package:nexora_sdk/nexora_sdk_platform_interface.dart';
+import 'package:nexora_sdk_platform_interface/nexora_sdk_platform_interface.dart';
 import '../mocks/mock_platform.dart';
 
 class MockLocationPlatform extends MockNexoraSdkPlatform {
@@ -9,9 +9,9 @@ class MockLocationPlatform extends MockNexoraSdkPlatform {
   bool backgroundEnabled = false;
   bool deadReckoningEnabled = false;
   String lastGeofenceId = '';
-  double lastLat = 0.0;
-  double lastLon = 0.0;
-  double lastRadius = 0.0;
+  double lastLat = 0;
+  double lastLon = 0;
+  double lastRadius = 0;
 
   @override
   Future<bool> requestLocationPermission() async => requestPermissionResult;
@@ -47,7 +47,12 @@ class MockLocationPlatform extends MockNexoraSdkPlatform {
   }
 
   @override
-  Future<bool> addGeofence(String id, double lat, double lon, double radius) async {
+  Future<bool> addGeofence(
+    String id,
+    double lat,
+    double lon,
+    double radius,
+  ) async {
     lastGeofenceId = id;
     lastLat = lat;
     lastLon = lon;
@@ -94,13 +99,28 @@ void main() {
     test('addGeofence() validation & success', () async {
       final location = LocationModule();
 
-      expect(() => location.addGeofence('', 45.0, 90.0, 100), throwsArgumentError);
-      expect(() => location.addGeofence('gf', -95.0, 90.0, 100), throwsArgumentError);
-      expect(() => location.addGeofence('gf', 45.0, 200.0, 100), throwsArgumentError);
-      expect(() => location.addGeofence('gf', 45.0, 90.0, 0), throwsArgumentError);
-      expect(() => location.addGeofence('gf', 45.0, 90.0, -10), throwsArgumentError);
+      expect(
+        () => location.addGeofence('', 45, 90, 100),
+        throwsArgumentError,
+      );
+      expect(
+        () => location.addGeofence('gf', -95, 90, 100),
+        throwsArgumentError,
+      );
+      expect(
+        () => location.addGeofence('gf', 45, 200, 100),
+        throwsArgumentError,
+      );
+      expect(
+        () => location.addGeofence('gf', 45, 90, 0),
+        throwsArgumentError,
+      );
+      expect(
+        () => location.addGeofence('gf', 45, 90, -10),
+        throwsArgumentError,
+      );
 
-      expect(await location.addGeofence('g-1', 12.34, 56.78, 250.0), true);
+      expect(await location.addGeofence('g-1', 12.34, 56.78, 250), true);
       expect(mockPlatform.lastGeofenceId, 'g-1');
       expect(mockPlatform.lastLat, 12.34);
       expect(mockPlatform.lastLon, 56.78);

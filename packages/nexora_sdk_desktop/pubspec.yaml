@@ -1,0 +1,33 @@
+name: nexora_sdk_desktop
+description: The desktop implementation of nexora_sdk.
+version: 1.0.0
+publish_to: 'none'
+
+environment:
+  sdk: '>=3.3.0 <4.0.0'
+  flutter: '>=3.3.0'
+
+flutter:
+  plugin:
+    implements: nexora_sdk
+    platforms:
+      macos:
+        dartPluginClass: NexoraSdkDesktop
+        fileName: nexora_sdk_desktop.dart
+      windows:
+        dartPluginClass: NexoraSdkDesktop
+        fileName: nexora_sdk_desktop.dart
+      linux:
+        dartPluginClass: NexoraSdkDesktop
+        fileName: nexora_sdk_desktop.dart
+
+dependencies:
+  flutter:
+    sdk: flutter
+  nexora_sdk_platform_interface:
+    path: ../nexora_sdk_platform_interface
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  very_good_analysis: ^6.0.0

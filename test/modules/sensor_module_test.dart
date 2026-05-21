@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nexora_sdk/nexora_sdk.dart';
-import 'package:nexora_sdk/nexora_sdk_platform_interface.dart';
+import 'package:nexora_sdk_platform_interface/nexora_sdk_platform_interface.dart';
 import '../mocks/mock_platform.dart';
 
 class MockSensorPlatform extends MockNexoraSdkPlatform {
@@ -56,7 +56,12 @@ void main() {
 
     test('startWithOptions() success', () async {
       final sensor = SensorModule();
-      expect(await sensor.startWithOptions(const SensorOptions(accuracy: SensorAccuracy.fastest)), true);
+      expect(
+        await sensor.startWithOptions(
+          const SensorOptions(accuracy: SensorAccuracy.fastest),
+        ),
+        true,
+      );
       expect(sensor.isRunning, true);
     });
   });

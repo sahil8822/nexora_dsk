@@ -1,7 +1,8 @@
 import 'dart:convert';
 import 'dart:typed_data';
-import '../../nexora_sdk_platform_interface.dart';
-import '../../models/hardware_models.dart';
+
+import 'package:nexora_sdk_platform_interface/models/hardware_models.dart';
+import 'package:nexora_sdk_platform_interface/nexora_sdk_platform_interface.dart';
 
 /// Lightweight storage access module.
 ///
@@ -114,10 +115,14 @@ class StorageModule {
     Future<void> Function(int version) migrator,
   ) async {
     if (toVersion <= 0) {
-      throw ArgumentError.value(toVersion, 'toVersion', 'Must be greater than zero.');
+      throw ArgumentError.value(
+        toVersion,
+        'toVersion',
+        'Must be greater than zero.',
+      );
     }
     const versionFile = '_schema_version.json';
-    int currentVersion = 0;
+    var currentVersion = 0;
     try {
       final stored = await readJson<Map<String, dynamic>>(versionFile);
       if (stored != null && stored['version'] is int) {

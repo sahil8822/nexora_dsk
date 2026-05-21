@@ -1,9 +1,10 @@
 import 'dart:async';
 import 'dart:math';
 import 'dart:typed_data';
-import '../../nexora_sdk_platform_interface.dart';
-import '../../models/hardware_models.dart';
-import '../../core/concurrency.dart';
+
+import 'package:nexora_sdk_platform_interface/core/concurrency.dart';
+import 'package:nexora_sdk_platform_interface/models/hardware_models.dart';
+import 'package:nexora_sdk_platform_interface/nexora_sdk_platform_interface.dart';
 
 /// Module for high-performance Bluetooth Low Energy (BLE) management.
 class BluetoothModule {
@@ -11,6 +12,7 @@ class BluetoothModule {
   bool _isScanning = false;
 
   final Set<String> _desiredConnectedDevices = {};
+  // ignore: strict_raw_type
   final Map<String, StreamSubscription> _statusSubscriptions = {};
   final Map<String, int> _reconnectAttempts = {};
 
@@ -38,7 +40,8 @@ class BluetoothModule {
             .requestBluetoothPermission();
         if (!granted) return false;
       }
-      final result = await NexoraSdkPlatform.instance.startBluetoothScanWithOptions(options);
+      final result = await NexoraSdkPlatform.instance
+          .startBluetoothScanWithOptions(options);
       if (result) _isScanning = true;
       return result;
     });
@@ -82,14 +85,15 @@ class BluetoothModule {
   void _setupStatusSubscription(String id, bool autoReconnect) {
     _statusSubscriptions[id]?.cancel();
     if (!autoReconnect) return;
-    
+
     _statusSubscriptions[id] = NexoraSdkPlatform.instance.unifiedStream
         .where((e) => e.module == 'bluetooth' && e.type == 'status')
         .listen((e) {
           final data = e.data as Map?;
           if (data != null && data['id'] == id) {
             final state = data['state'] as String?;
-            if (state == 'disconnected' && _desiredConnectedDevices.contains(id)) {
+            if (state == 'disconnected' &&
+                _desiredConnectedDevices.contains(id)) {
               _triggerReconnect(id);
             }
           }

@@ -1,4 +1,4 @@
-import '../../nexora_sdk_platform_interface.dart';
+import 'package:nexora_sdk_platform_interface/nexora_sdk_platform_interface.dart';
 
 /// Native convenience APIs that make Flutter apps feel platform-integrated.
 class NativeModule {

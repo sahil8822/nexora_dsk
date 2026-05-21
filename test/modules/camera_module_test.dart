@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nexora_sdk/nexora_sdk.dart';
-import 'package:nexora_sdk/nexora_sdk_platform_interface.dart';
+import 'package:nexora_sdk_platform_interface/nexora_sdk_platform_interface.dart';
 import '../mocks/mock_platform.dart';
 
 class MockPlatform extends MockNexoraSdkPlatform {
@@ -41,7 +41,8 @@ class MockPlatform extends MockNexoraSdkPlatform {
   Future<String?> takePhoto({String? fileName}) async => '/path/photo.jpg';
 
   @override
-  Future<String?> startVideoRecording({String? fileName}) async => '/path/video.mp4';
+  Future<String?> startVideoRecording({String? fileName}) async =>
+      '/path/video.mp4';
 
   @override
   Future<String?> stopVideoRecording() async => '/path/video.mp4';
@@ -89,11 +90,11 @@ void main() {
       final camera = CameraModule();
       expect(camera.isRunning, false);
       expect(() => camera.setFlash(true), throwsStateError);
-      expect(() => camera.setZoom(2.0), throwsStateError);
-      expect(() => camera.flip(), throwsStateError);
-      expect(() => camera.takePhoto(), throwsStateError);
-      expect(() => camera.startVideoRecording(), throwsStateError);
-      expect(() => camera.stopVideoRecording(), throwsStateError);
+      expect(() => camera.setZoom(2), throwsStateError);
+      expect(camera.flip, throwsStateError);
+      expect(camera.takePhoto, throwsStateError);
+      expect(camera.startVideoRecording, throwsStateError);
+      expect(camera.stopVideoRecording, throwsStateError);
     });
 
     test('operations succeed when camera is running', () async {
@@ -101,10 +102,13 @@ void main() {
       await camera.start();
       expect(camera.isRunning, true);
       expect(await camera.setFlash(true), true);
-      expect(await camera.setZoom(2.0), true);
+      expect(await camera.setZoom(2), true);
       expect(await camera.flip(), true);
       expect(await camera.takePhoto(fileName: 'photo.jpg'), '/path/photo.jpg');
-      expect(await camera.startVideoRecording(fileName: 'video.mp4'), '/path/video.mp4');
+      expect(
+        await camera.startVideoRecording(fileName: 'video.mp4'),
+        '/path/video.mp4',
+      );
       expect(await camera.stopVideoRecording(), '/path/video.mp4');
     });
 

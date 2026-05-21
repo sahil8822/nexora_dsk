@@ -1,6 +1,6 @@
-import '../../nexora_sdk_platform_interface.dart';
-import '../../models/hardware_models.dart';
-import '../../models/sensor_data.dart';
+import 'package:nexora_sdk_platform_interface/models/hardware_models.dart';
+import 'package:nexora_sdk_platform_interface/models/sensor_data.dart';
+import 'package:nexora_sdk_platform_interface/nexora_sdk_platform_interface.dart';
 
 /// Module for motion and environmental hardware sensors.
 class SensorModule {

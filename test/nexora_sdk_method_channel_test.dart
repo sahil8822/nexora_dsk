@@ -1,16 +1,16 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:nexora_sdk/nexora_sdk_method_channel.dart';
+import 'package:nexora_sdk_platform_interface/nexora_sdk_method_channel.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  MethodChannelNexoraSdk platform = MethodChannelNexoraSdk();
-  const MethodChannel channel = MethodChannel('nexora_sdk/methods');
+  final platform = MethodChannelNexoraSdk();
+  const channel = MethodChannel('nexora_sdk/methods');
 
   setUp(() {
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMethodCallHandler(channel, (MethodCall methodCall) async {
+        .setMockMethodCallHandler(channel, (methodCall) async {
           return '42';
         });
   });

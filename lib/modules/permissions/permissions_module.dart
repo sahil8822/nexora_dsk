@@ -1,5 +1,5 @@
-import '../../models/permission_models.dart';
-import '../../nexora_sdk_platform_interface.dart';
+import 'package:nexora_sdk_platform_interface/models/permission_models.dart';
+import 'package:nexora_sdk_platform_interface/nexora_sdk_platform_interface.dart';
 
 /// Permission status checks and settings helpers.
 class PermissionsModule {

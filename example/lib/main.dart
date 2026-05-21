@@ -347,7 +347,9 @@ class _IntelligenceDashboardState extends State<IntelligenceDashboard> {
                       ? () async {
                           final path = await _sdk.camera.takePhoto();
                           if (mounted) {
-                            setState(() => _lastNativeAction = path ?? "Photo failed");
+                            setState(
+                              () => _lastNativeAction = path ?? "Photo failed",
+                            );
                           }
                         }
                       : null,
@@ -602,7 +604,9 @@ class _IntelligenceDashboardState extends State<IntelligenceDashboard> {
           ),
           _buildDataRow(
             "Permissions",
-            _permissionSnapshot?.allGranted == true ? "Granted" : "Needs review",
+            _permissionSnapshot?.allGranted == true
+                ? "Granted"
+                : "Needs review",
           ),
           _buildDataRow("Last Action", _lastNativeAction),
           const SizedBox(height: 12),
@@ -648,15 +652,16 @@ class _IntelligenceDashboardState extends State<IntelligenceDashboard> {
               _buildToggleButton("RUN STORAGE MIGRATION", false, () async {
                 setState(() => _lastNativeAction = "Migrating Storage...");
                 try {
-                  await _sdk.storage.migrateStorage(
-                    1,
-                    2,
-                    (newVer) async {
-                      // Perform dummy storage migration logic
-                      await _sdk.storage.writeFile("migrated_config.json", '{"migrated": true, "version": $newVer}');
-                    },
+                  await _sdk.storage.migrateStorage(1, 2, (newVer) async {
+                    // Perform dummy storage migration logic
+                    await _sdk.storage.writeFile(
+                      "migrated_config.json",
+                      '{"migrated": true, "version": $newVer}',
+                    );
+                  });
+                  setState(
+                    () => _lastNativeAction = "Migration finished successfully",
                   );
-                  setState(() => _lastNativeAction = "Migration finished successfully");
                   _loadStorageInfo();
                 } catch (e) {
                   setState(() => _lastNativeAction = "Migration error: $e");
@@ -669,16 +674,26 @@ class _IntelligenceDashboardState extends State<IntelligenceDashboard> {
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               _buildToggleButton("DEMO STREAM UTILS", false, () async {
-                setState(() => _lastNativeAction = "Simulating stream buffer/throttle...");
+                setState(
+                  () => _lastNativeAction =
+                      "Simulating stream buffer/throttle...",
+                );
                 // Stream throttle example: throttle standard Stream
-                final stream = Stream.periodic(const Duration(milliseconds: 100), (i) => i).take(10);
-                final throttled = stream.throttle(const Duration(milliseconds: 500));
+                final stream = Stream.periodic(
+                  const Duration(milliseconds: 100),
+                  (i) => i,
+                ).take(10);
+                final throttled = stream.throttle(
+                  const Duration(milliseconds: 500),
+                );
                 // Just log to verify the stream utility exists and operates
                 final values = await throttled.toList();
                 setState(() => _lastNativeAction = "Stream throttled: $values");
               }),
               _buildToggleButton("DEMO RETRY HELPER", false, () async {
-                setState(() => _lastNativeAction = "Simulating retry connection...");
+                setState(
+                  () => _lastNativeAction = "Simulating retry connection...",
+                );
                 int attempts = 0;
                 final result = await withRetry(
                   () async {

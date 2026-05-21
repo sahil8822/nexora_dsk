@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nexora_sdk/nexora_sdk.dart';
-import 'package:nexora_sdk/nexora_sdk_platform_interface.dart';
+import 'package:nexora_sdk_platform_interface/nexora_sdk_platform_interface.dart';
 import '../mocks/mock_platform.dart';
 
 class MockConnectivityPlatform extends MockNexoraSdkPlatform {
@@ -36,12 +36,14 @@ void main() {
 
     test('watch() emits on changes', () async {
       final connectivity = ConnectivityModule();
-      final stream = connectivity.watch(interval: const Duration(milliseconds: 5));
+      final stream = connectivity.watch(
+        interval: const Duration(milliseconds: 5),
+      );
 
       final itemsFuture = stream.take(2).toList();
 
       // Emit first item
-      await Future.delayed(const Duration(milliseconds: 10));
+      await Future<void>.delayed(const Duration(milliseconds: 10));
 
       // Change connectivity info
       mockPlatform.mockInfo = const ConnectivityInfo(

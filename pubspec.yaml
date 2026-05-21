@@ -17,15 +17,20 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  flutter_web_plugins:
-    sdk: flutter
-  plugin_platform_interface: ^2.1.8
-  web: ^1.1.1
-
+  nexora_sdk_platform_interface:
+    path: packages/nexora_sdk_platform_interface
+  nexora_sdk_android:
+    path: packages/nexora_sdk_android
+  nexora_sdk_ios:
+    path: packages/nexora_sdk_ios
+  nexora_sdk_web:
+    path: packages/nexora_sdk_web
+  nexora_sdk_desktop:
+    path: packages/nexora_sdk_desktop
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^6.0.0
+  very_good_analysis: ^10.2.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -45,22 +50,17 @@ flutter:
   plugin:
     platforms:
       android:
-        package: com.nexora.sdk
-        pluginClass: NexoraSdk
+        default_package: nexora_sdk_android
       ios:
-        pluginClass: NexoraSdk
+        default_package: nexora_sdk_ios
       macos:
-        dartPluginClass: NexoraSdkDesktop
-        fileName: nexora_sdk_desktop.dart
+        default_package: nexora_sdk_desktop
       windows:
-        dartPluginClass: NexoraSdkDesktop
-        fileName: nexora_sdk_desktop.dart
+        default_package: nexora_sdk_desktop
       linux:
-        dartPluginClass: NexoraSdkDesktop
-        fileName: nexora_sdk_desktop.dart
+        default_package: nexora_sdk_desktop
       web:
-        pluginClass: NexoraSdkWeb
-        fileName: nexora_sdk_web.dart
+        default_package: nexora_sdk_web
 
   # To add assets to your plugin package, add an assets section, like this:
   # assets:

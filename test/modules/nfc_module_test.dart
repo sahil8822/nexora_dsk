@@ -5,24 +5,24 @@ import 'package:nexora_sdk/nexora_sdk.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  const MethodChannel channel = MethodChannel('nexora_sdk/methods');
-  final List<MethodCall> log = <MethodCall>[];
+  const channel = MethodChannel('nexora_sdk/methods');
+  final log = <MethodCall>[];
 
   setUp(() {
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMethodCallHandler(channel, (MethodCall methodCall) async {
-      log.add(methodCall);
-      switch (methodCall.method) {
-        case 'startNfcScan':
-          return true;
-        case 'stopNfcScan':
-          return true;
-        case 'writeNdefRecord':
-          return true;
-        default:
-          return null;
-      }
-    });
+        .setMockMethodCallHandler(channel, (methodCall) async {
+          log.add(methodCall);
+          switch (methodCall.method) {
+            case 'startNfcScan':
+              return true;
+            case 'stopNfcScan':
+              return true;
+            case 'writeNdefRecord':
+              return true;
+            default:
+              return null;
+          }
+        });
   });
 
   tearDown(() {
@@ -44,7 +44,10 @@ void main() {
 
     test('writeNdefRecord success', () async {
       final nfc = NexoraSdk.instance.nfc;
-      expect(await nfc.writeNdefRecord(type: 'text/plain', payload: 'Hello NFC'), true);
+      expect(
+        await nfc.writeNdefRecord(type: 'text/plain', payload: 'Hello NFC'),
+        true,
+      );
 
       expect(log.length, 1);
       expect(log.first.method, 'writeNdefRecord');

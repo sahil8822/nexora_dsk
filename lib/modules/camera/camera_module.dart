@@ -1,6 +1,9 @@
-import '../../nexora_sdk_platform_interface.dart';
-import '../../models/hardware_models.dart';
-import '../../core/concurrency.dart';
+import 'package:flutter/cupertino.dart' show Texture;
+import 'package:flutter/material.dart' show Texture;
+import 'package:flutter/widgets.dart' show Texture;
+import 'package:nexora_sdk_platform_interface/core/concurrency.dart';
+import 'package:nexora_sdk_platform_interface/models/hardware_models.dart';
+import 'package:nexora_sdk_platform_interface/nexora_sdk_platform_interface.dart';
 
 /// Module for controlling device cameras and receiving frame streams.
 class CameraModule {

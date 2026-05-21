@@ -1,5 +1,5 @@
-import '../../models/device_models.dart';
-import '../../nexora_sdk_platform_interface.dart';
+import 'package:nexora_sdk_platform_interface/models/device_models.dart';
+import 'package:nexora_sdk_platform_interface/nexora_sdk_platform_interface.dart';
 
 /// Native connectivity diagnostics for adapting app behavior.
 class ConnectivityModule {

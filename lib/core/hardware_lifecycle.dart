@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 
-import '../nexora_sdk.dart';
+import 'package:nexora_sdk/nexora_sdk.dart';
+import 'package:nexora_sdk_platform_interface/models/hardware_capabilities.dart';
 
 /// Controls automatic hardware cleanup during Flutter app lifecycle changes.
 class HardwareLifecycleController with WidgetsBindingObserver {

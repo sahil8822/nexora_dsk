@@ -1,0 +1,30 @@
+name: nexora_sdk_web
+description: The web implementation of nexora_sdk.
+version: 1.0.0
+publish_to: 'none'
+
+environment:
+  sdk: '>=3.3.0 <4.0.0'
+  flutter: '>=3.3.0'
+
+flutter:
+  plugin:
+    implements: nexora_sdk
+    platforms:
+      web:
+        pluginClass: NexoraSdkWeb
+        fileName: nexora_sdk_web.dart
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_web_plugins:
+    sdk: flutter
+  web: ^1.1.1
+  nexora_sdk_platform_interface:
+    path: ../nexora_sdk_platform_interface
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  very_good_analysis: ^6.0.0

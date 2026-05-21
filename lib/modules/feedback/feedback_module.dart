@@ -1,12 +1,13 @@
-import '../../nexora_sdk_platform_interface.dart';
-import '../../models/hardware_models.dart';
+import 'package:nexora_sdk_platform_interface/models/hardware_models.dart';
+import 'package:nexora_sdk_platform_interface/nexora_sdk_platform_interface.dart';
 
 /// Supported haptic feedback patterns.
 enum HapticPattern {
   impact('impact'),
   success('success'),
   warning('warning'),
-  error('error');
+  error('error')
+  ;
 
   const HapticPattern(this.value);
 

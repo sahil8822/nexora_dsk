@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 import 'package:nexora_sdk/nexora_sdk.dart';
-import 'package:nexora_sdk/nexora_sdk_platform_interface.dart';
+import 'package:nexora_sdk_platform_interface/nexora_sdk_platform_interface.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 class MockNexoraSdkPlatform extends NexoraSdkPlatform
@@ -283,7 +283,7 @@ class MockNexoraSdkPlatform extends NexoraSdkPlatform
   @override
   Future<String?> getCacheDirectory() => Future.value('/test/cache');
   @override
-  Future<String?> getExternalDirectory() => Future.value(null);
+  Future<String?> getExternalDirectory() => Future.value();
 
   @override
   Future<bool> copyText(String text) => Future.value(true);

@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nexora_sdk/nexora_sdk.dart';
-import 'package:nexora_sdk/nexora_sdk_platform_interface.dart';
+import 'package:nexora_sdk_platform_interface/nexora_sdk_platform_interface.dart';
 import '../mocks/mock_platform.dart';
 
 class MockStoragePlatform extends MockNexoraSdkPlatform {
@@ -60,7 +60,9 @@ class MockStoragePlatform extends MockNexoraSdkPlatform {
   Future<List<FileInfo>> listFiles() async {
     return files.entries.map((e) {
       final isBytes = e.value is Uint8List;
-      final size = isBytes ? (e.value as Uint8List).length : (e.value as String).length;
+      final size = isBytes
+          ? (e.value as Uint8List).length
+          : (e.value as String).length;
       return FileInfo(
         name: e.key,
         size: size,
@@ -151,7 +153,9 @@ void main() {
       final storage = StorageModule();
       final data = {'key': 'value', 'num': 42};
       await storage.writeJson('data.json', data);
-      final readData = await storage.readJson<Map<dynamic, dynamic>>('data.json');
+      final readData = await storage.readJson<Map<dynamic, dynamic>>(
+        'data.json',
+      );
       expect(readData, isNotNull);
       expect(readData!['key'], 'value');
       expect(readData['num'], 42);
@@ -161,7 +165,9 @@ void main() {
       expect(invalidType, isNull);
 
       // Read missing file
-      final missing = await storage.readJson<Map<dynamic, dynamic>>('absent.json');
+      final missing = await storage.readJson<Map<dynamic, dynamic>>(
+        'absent.json',
+      );
       expect(missing, isNull);
     });
 
@@ -190,7 +196,7 @@ void main() {
       final storage = StorageModule();
       expect(() => storage.readFile(''), throwsArgumentError);
       expect(() => storage.readFile('a/b.txt'), throwsArgumentError);
-      expect(() => storage.readFile('a\\b.txt'), throwsArgumentError);
+      expect(() => storage.readFile(r'a\b.txt'), throwsArgumentError);
       expect(() => storage.readFile('.'), throwsArgumentError);
       expect(() => storage.readFile('..'), throwsArgumentError);
       expect(() => storage.readFile('a' * 121), throwsArgumentError);
@@ -198,7 +204,7 @@ void main() {
 
     test('migrateStorage schema logic', () async {
       final storage = StorageModule();
-      final List<int> migratedVersions = [];
+      final migratedVersions = <int>[];
 
       // Migrate version 0 -> 2
       await storage.migrateStorage(0, 2, (version) async {
@@ -207,7 +213,9 @@ void main() {
 
       expect(migratedVersions, [1, 2]);
 
-      final versionInfo = await storage.readJson<Map<String, dynamic>>('_schema_version.json');
+      final versionInfo = await storage.readJson<Map<String, dynamic>>(
+        '_schema_version.json',
+      );
       expect(versionInfo, isNotNull);
       expect(versionInfo!['version'], 2);
 

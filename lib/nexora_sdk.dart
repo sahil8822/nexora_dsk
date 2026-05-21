@@ -1,60 +1,57 @@
 import 'dart:async';
-import 'nexora_sdk_platform_interface.dart';
-import 'modules/camera/camera_module.dart';
-import 'modules/audio/audio_module.dart';
-import 'modules/sensor/sensor_module.dart';
-import 'modules/bluetooth/bluetooth_module.dart';
-import 'modules/location/location_module.dart';
-import 'modules/biometric/biometric_module.dart';
-import 'modules/feedback/feedback_module.dart';
-import 'modules/health/health_module.dart';
-import 'modules/storage/storage_module.dart';
-import 'modules/device/device_module.dart';
-import 'modules/connectivity/connectivity_module.dart';
-import 'modules/native/native_module.dart';
-import 'modules/permissions/permissions_module.dart';
-import 'modules/utility/utility_module.dart';
-import 'core/hardware_lifecycle.dart';
-import 'models/device_models.dart';
-import 'models/hardware_capabilities.dart';
-import 'models/hardware_diagnostics.dart';
-import 'models/hardware_models.dart';
-import 'models/permission_models.dart';
-import 'core/hardware_core.dart';
-import 'modules/nfc/nfc_module.dart';
-import 'modules/storage/secure_storage_module.dart';
 
-export 'nexora_sdk_desktop_stub.dart'
-    if (dart.library.io) 'nexora_sdk_desktop.dart';
-export 'nexora_sdk_web_stub.dart' if (dart.library.html) 'nexora_sdk_web.dart';
-export 'models/hardware_capabilities.dart';
-export 'models/hardware_diagnostics.dart';
-export 'models/hardware_models.dart';
-export 'models/hardware_exception.dart';
-export 'models/device_models.dart';
-export 'models/permission_models.dart';
-export 'models/sensor_data.dart';
-export 'core/hardware_core.dart';
-export 'core/stream_utils.dart';
-export 'core/hardware_retry.dart';
+import 'package:nexora_sdk_platform_interface/core/hardware_core.dart';
+import 'core/hardware_lifecycle.dart';
+import 'package:nexora_sdk_platform_interface/models/device_models.dart';
+import 'package:nexora_sdk_platform_interface/models/hardware_capabilities.dart';
+import 'package:nexora_sdk_platform_interface/models/hardware_diagnostics.dart';
+import 'package:nexora_sdk_platform_interface/models/hardware_models.dart';
+import 'package:nexora_sdk_platform_interface/models/permission_models.dart';
+import 'package:nexora_sdk/modules/audio/audio_module.dart';
+import 'package:nexora_sdk/modules/biometric/biometric_module.dart';
+import 'package:nexora_sdk/modules/bluetooth/bluetooth_module.dart';
+import 'package:nexora_sdk/modules/camera/camera_module.dart';
+import 'package:nexora_sdk/modules/connectivity/connectivity_module.dart';
+import 'package:nexora_sdk/modules/device/device_module.dart';
+import 'package:nexora_sdk/modules/feedback/feedback_module.dart';
+import 'package:nexora_sdk/modules/health/health_module.dart';
+import 'package:nexora_sdk/modules/location/location_module.dart';
+import 'package:nexora_sdk/modules/native/native_module.dart';
+import 'package:nexora_sdk/modules/nfc/nfc_module.dart';
+import 'package:nexora_sdk/modules/permissions/permissions_module.dart';
+import 'package:nexora_sdk/modules/sensor/sensor_module.dart';
+import 'package:nexora_sdk/modules/storage/secure_storage_module.dart';
+import 'package:nexora_sdk/modules/storage/storage_module.dart';
+import 'package:nexora_sdk/modules/utility/utility_module.dart';
+import 'package:nexora_sdk_platform_interface/nexora_sdk_platform_interface.dart';
+export 'package:nexora_sdk_platform_interface/core/background_isolates.dart';
+export 'package:nexora_sdk_platform_interface/core/hardware_core.dart';
 export 'core/hardware_lifecycle.dart';
+export 'package:nexora_sdk_platform_interface/core/hardware_retry.dart';
+export 'package:nexora_sdk_platform_interface/core/stream_utils.dart';
+export 'package:nexora_sdk_platform_interface/models/device_models.dart';
+export 'package:nexora_sdk_platform_interface/models/hardware_capabilities.dart';
+export 'package:nexora_sdk_platform_interface/models/hardware_diagnostics.dart';
+export 'package:nexora_sdk_platform_interface/models/hardware_exception.dart';
+export 'package:nexora_sdk_platform_interface/models/hardware_models.dart';
+export 'package:nexora_sdk_platform_interface/models/permission_models.dart';
+export 'package:nexora_sdk_platform_interface/models/sensor_data.dart';
 export 'modules/audio/audio_module.dart';
 export 'modules/biometric/biometric_module.dart';
 export 'modules/bluetooth/bluetooth_module.dart';
 export 'modules/camera/camera_module.dart';
+export 'modules/connectivity/connectivity_module.dart';
+export 'modules/device/device_module.dart';
 export 'modules/feedback/feedback_module.dart';
 export 'modules/health/health_module.dart';
 export 'modules/location/location_module.dart';
-export 'modules/sensor/sensor_module.dart';
-export 'modules/storage/storage_module.dart';
-export 'modules/device/device_module.dart';
-export 'modules/connectivity/connectivity_module.dart';
 export 'modules/native/native_module.dart';
-export 'modules/permissions/permissions_module.dart';
-export 'modules/utility/utility_module.dart';
 export 'modules/nfc/nfc_module.dart';
+export 'modules/permissions/permissions_module.dart';
+export 'modules/sensor/sensor_module.dart';
 export 'modules/storage/secure_storage_module.dart';
-export 'core/background_isolates.dart';
+export 'modules/storage/storage_module.dart';
+export 'modules/utility/utility_module.dart';
 
 /// Nexora SDK (v3.2.1) - Intelligence + Storage Edition.
 ///
@@ -102,7 +99,8 @@ class NexoraSdk {
   NfcModule get nfc => _nfc ??= NfcModule();
 
   /// AES-256 secure storage module.
-  SecureStorageModule get secureStorage => _secureStorage ??= SecureStorageModule();
+  SecureStorageModule get secureStorage =>
+      _secureStorage ??= SecureStorageModule();
 
   /// Vision AI camera module with face/barcode detection.
   CameraModule get camera => _camera ??= CameraModule();

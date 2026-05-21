@@ -1,7 +1,7 @@
 import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nexora_sdk/nexora_sdk.dart';
-import 'package:nexora_sdk/nexora_sdk_platform_interface.dart';
+import 'package:nexora_sdk_platform_interface/nexora_sdk_platform_interface.dart';
 import '../mocks/mock_platform.dart';
 
 class MockBluetoothPlatform extends MockNexoraSdkPlatform {
@@ -22,7 +22,9 @@ class MockBluetoothPlatform extends MockNexoraSdkPlatform {
   }
 
   @override
-  Future<bool> startBluetoothScanWithOptions(BluetoothScanOptions options) async {
+  Future<bool> startBluetoothScanWithOptions(
+    BluetoothScanOptions options,
+  ) async {
     isScanning = true;
     return true;
   }
@@ -97,7 +99,9 @@ void main() {
     test('startScanWithOptions() permission denied', () async {
       mockPlatform.requestPermissionResult = false;
       final ble = BluetoothModule();
-      final success = await ble.startScanWithOptions(const BluetoothScanOptions());
+      final success = await ble.startScanWithOptions(
+        const BluetoothScanOptions(),
+      );
       expect(success, false);
       expect(ble.isScanning, false);
     });

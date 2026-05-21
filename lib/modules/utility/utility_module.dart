@@ -1,5 +1,5 @@
-import '../../nexora_sdk_platform_interface.dart';
-import '../../models/hardware_models.dart';
+import 'package:nexora_sdk_platform_interface/models/hardware_models.dart';
+import 'package:nexora_sdk_platform_interface/nexora_sdk_platform_interface.dart';
 
 /// Module for managing system energy levels, battery status, and thermal thresholds.
 class UtilityModule {

@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nexora_sdk/nexora_sdk.dart';
-import 'package:nexora_sdk/nexora_sdk_platform_interface.dart';
+import 'package:nexora_sdk_platform_interface/nexora_sdk_platform_interface.dart';
 import '../mocks/mock_platform.dart';
 
 class MockAudioPlatform extends MockNexoraSdkPlatform {
@@ -97,7 +97,9 @@ void main() {
 
     test('startWithOptions() success', () async {
       final audio = AudioModule();
-      final success = await audio.startWithOptions(const AudioOptions(sampleRate: 22050));
+      final success = await audio.startWithOptions(
+        const AudioOptions(sampleRate: 22050),
+      );
       expect(success, true);
       expect(audio.isRunning, true);
     });
@@ -124,12 +126,15 @@ void main() {
 
     test('input controller functions', () async {
       final audio = AudioModule();
-      expect(await audio.input.selectMicrophone(AudioInputDevice.backMic), true);
+      expect(
+        await audio.input.selectMicrophone(AudioInputDevice.backMic),
+        true,
+      );
       expect(mockPlatform.activeInput, AudioInputDevice.backMic);
 
       expect(await audio.input.setGain(0.9), true);
       expect(mockPlatform.gain, 0.9);
-      expect(() => audio.input.setGain(2.0), throwsArgumentError);
+      expect(() => audio.input.setGain(2), throwsArgumentError);
       expect(() => audio.input.setGain(-0.1), throwsArgumentError);
     });
   });

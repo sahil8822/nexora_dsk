@@ -1,12 +1,12 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nexora_sdk/nexora_sdk.dart';
-import 'package:nexora_sdk/nexora_sdk_platform_interface.dart';
+import 'package:nexora_sdk_platform_interface/nexora_sdk_platform_interface.dart';
 
 import 'mocks/mock_platform.dart';
 
 void main() {
   test('getPlatformVersion', () async {
-    MockNexoraSdkPlatform fakePlatform = MockNexoraSdkPlatform();
+    final fakePlatform = MockNexoraSdkPlatform();
     NexoraSdkPlatform.instance = fakePlatform;
     expect(await NexoraSdkPlatform.instance.getPlatformVersion(), '42');
   });
@@ -353,7 +353,7 @@ void main() {
         );
 
         expect(
-          await NexoraSdk.instance.location.start(autoRequestPermission: true),
+          await NexoraSdk.instance.location.start(),
           isTrue,
         );
 
@@ -391,7 +391,7 @@ void main() {
         // 7. Location Options
         const locOptions = LocationOptions(
           accuracy: LocationAccuracy.navigation,
-          distanceFilterMeters: 5.0,
+          distanceFilterMeters: 5,
         );
         expect(
           await NexoraSdk.instance.location.startWithOptions(locOptions),
