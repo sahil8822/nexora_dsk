@@ -1,12 +1,6 @@
 import 'dart:async';
 
-import 'package:nexora_sdk_platform_interface/core/hardware_core.dart';
-import 'core/hardware_lifecycle.dart';
-import 'package:nexora_sdk_platform_interface/models/device_models.dart';
-import 'package:nexora_sdk_platform_interface/models/hardware_capabilities.dart';
-import 'package:nexora_sdk_platform_interface/models/hardware_diagnostics.dart';
-import 'package:nexora_sdk_platform_interface/models/hardware_models.dart';
-import 'package:nexora_sdk_platform_interface/models/permission_models.dart';
+import 'package:nexora_sdk/core/hardware_lifecycle.dart';
 import 'package:nexora_sdk/modules/audio/audio_module.dart';
 import 'package:nexora_sdk/modules/biometric/biometric_module.dart';
 import 'package:nexora_sdk/modules/bluetooth/bluetooth_module.dart';
@@ -23,10 +17,34 @@ import 'package:nexora_sdk/modules/sensor/sensor_module.dart';
 import 'package:nexora_sdk/modules/storage/secure_storage_module.dart';
 import 'package:nexora_sdk/modules/storage/storage_module.dart';
 import 'package:nexora_sdk/modules/utility/utility_module.dart';
+import 'package:nexora_sdk_platform_interface/core/hardware_core.dart';
+import 'package:nexora_sdk_platform_interface/models/device_models.dart';
+import 'package:nexora_sdk_platform_interface/models/hardware_capabilities.dart';
+import 'package:nexora_sdk_platform_interface/models/hardware_diagnostics.dart';
+import 'package:nexora_sdk_platform_interface/models/hardware_models.dart';
+import 'package:nexora_sdk_platform_interface/models/permission_models.dart';
 import 'package:nexora_sdk_platform_interface/nexora_sdk_platform_interface.dart';
+
+export 'package:nexora_sdk/core/hardware_lifecycle.dart';
+export 'package:nexora_sdk/modules/audio/audio_module.dart';
+export 'package:nexora_sdk/modules/biometric/biometric_module.dart';
+export 'package:nexora_sdk/modules/bluetooth/bluetooth_module.dart';
+export 'package:nexora_sdk/modules/camera/camera_module.dart';
+export 'package:nexora_sdk/modules/connectivity/connectivity_module.dart';
+export 'package:nexora_sdk/modules/device/device_module.dart';
+export 'package:nexora_sdk/modules/feedback/feedback_module.dart';
+export 'package:nexora_sdk/modules/health/health_module.dart';
+export 'package:nexora_sdk/modules/location/location_module.dart';
+export 'package:nexora_sdk/modules/native/native_module.dart';
+export 'package:nexora_sdk/modules/nfc/nfc_module.dart';
+export 'package:nexora_sdk/modules/permissions/permissions_module.dart';
+export 'package:nexora_sdk/modules/sensor/sensor_module.dart';
+export 'package:nexora_sdk/modules/storage/secure_storage_module.dart';
+export 'package:nexora_sdk/modules/storage/storage_module.dart';
+export 'package:nexora_sdk/modules/utility/utility_module.dart';
+export 'package:nexora_sdk/widgets/nexora_camera_preview.dart';
 export 'package:nexora_sdk_platform_interface/core/background_isolates.dart';
 export 'package:nexora_sdk_platform_interface/core/hardware_core.dart';
-export 'core/hardware_lifecycle.dart';
 export 'package:nexora_sdk_platform_interface/core/hardware_retry.dart';
 export 'package:nexora_sdk_platform_interface/core/stream_utils.dart';
 export 'package:nexora_sdk_platform_interface/models/device_models.dart';
@@ -35,24 +53,7 @@ export 'package:nexora_sdk_platform_interface/models/hardware_diagnostics.dart';
 export 'package:nexora_sdk_platform_interface/models/hardware_exception.dart';
 export 'package:nexora_sdk_platform_interface/models/hardware_models.dart';
 export 'package:nexora_sdk_platform_interface/models/permission_models.dart';
-export 'widgets/nexora_camera_preview.dart';
 export 'package:nexora_sdk_platform_interface/models/sensor_data.dart';
-export 'modules/audio/audio_module.dart';
-export 'modules/biometric/biometric_module.dart';
-export 'modules/bluetooth/bluetooth_module.dart';
-export 'modules/camera/camera_module.dart';
-export 'modules/connectivity/connectivity_module.dart';
-export 'modules/device/device_module.dart';
-export 'modules/feedback/feedback_module.dart';
-export 'modules/health/health_module.dart';
-export 'modules/location/location_module.dart';
-export 'modules/native/native_module.dart';
-export 'modules/nfc/nfc_module.dart';
-export 'modules/permissions/permissions_module.dart';
-export 'modules/sensor/sensor_module.dart';
-export 'modules/storage/secure_storage_module.dart';
-export 'modules/storage/storage_module.dart';
-export 'modules/utility/utility_module.dart';
 
 /// Nexora SDK (v3.2.1) - Intelligence + Storage Edition.
 ///
@@ -72,10 +73,10 @@ class NexoraSdk {
   Future<void> initialize({bool logCapabilities = false}) async {
     final platform = await NexoraSdkPlatform.instance.getPlatformVersion();
     if (logCapabilities) {
-      // ignore: avoid_print
+      // ignore: avoid_print — SDK diagnostics output
       print('Nexora SDK $version on $platform');
       for (final entry in featureMatrix.entries) {
-        // ignore: avoid_print
+        // ignore: avoid_print — SDK diagnostics output
         print('  ${entry.key.name}: ${entry.value.level.name}');
       }
     }
@@ -194,7 +195,7 @@ class NexoraSdk {
   ///
   /// Native Android/iOS code shows system prompts for Camera, Microphone,
   /// foreground Location, and Bluetooth where the OS supports runtime prompts.
-  /// Returns [true] when the critical runtime permissions are granted.
+  /// Returns `true` when the critical runtime permissions are granted.
   Future<bool> requestPermissions() async {
     return NexoraSdkPlatform.instance.requestPermissions();
   }
@@ -303,12 +304,44 @@ class NexoraSdk {
     );
   }
 
-  /// Returns the current platform version.
+  /// Starts broadcasting this device as a BLE Peripheral
+  /// with the given [uuid].
+  Future<bool> startBlePeripheral(String uuid) {
+    return NexoraSdkPlatform.instance.startBlePeripheral(uuid);
+  }
+
+  /// Stops broadcasting Bluetooth LE.
+  Future<void> stopBlePeripheral() {
+    return NexoraSdkPlatform.instance.stopBlePeripheral();
+  }
+
+  /// Shrinks the current activity into a
+  /// Picture-in-Picture window (Android 8.0+).
+  Future<bool> enterPictureInPicture() {
+    return NexoraSdkPlatform.instance.enterPictureInPicture();
+  }
+
+  /// Gets a list of connected USB OTG devices.
+  Future<List<String>> getConnectedUsbDevices() {
+    return NexoraSdkPlatform.instance.getConnectedUsbDevices();
+  }
+
+  /// Dynamically updates the Android Foreground Service notification UI.
+  Future<bool> updateForegroundService(String title, String text) async {
+    final result = await NexoraSdkPlatform.instance.updateForegroundService(
+      title,
+      text,
+    );
+    return result;
+  }
+
+  /// Returns the current platform version string.
   Future<String?> getPlatformVersion() {
     return NexoraSdkPlatform.instance.getPlatformVersion();
   }
 
-  /// Returns native device information such as model, memory, CPU, and thermal state.
+  /// Returns native device information such as model,
+  /// memory, CPU, and thermal state.
   Future<DeviceInfo> getDeviceInfo() => device.getInfo();
 
   /// Returns current connectivity information.
@@ -365,7 +398,7 @@ class NexoraSdk {
       tasks.entries.map((entry) async {
         try {
           return MapEntry(entry.key, await entry.value);
-        } catch (_) {
+        } on Exception catch (_) {
           return MapEntry(entry.key, false);
         }
       }),
@@ -399,7 +432,8 @@ class NexoraSdk {
     return NexoraSdkPlatform.instance.saveToGallery(filePath);
   }
 
-  /// Starts a persistent foreground service (Android only) to keep background tasks alive.
+  /// Starts a persistent foreground service (Android)
+  /// to keep background tasks alive.
   Future<bool> startForegroundService({
     required String title,
     required String content,

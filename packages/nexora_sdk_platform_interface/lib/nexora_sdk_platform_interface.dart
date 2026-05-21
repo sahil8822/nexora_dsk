@@ -28,6 +28,26 @@ abstract class NexoraSdkPlatform extends PlatformInterface {
   /// API Documentation for getPlatformVersion.
   Future<String?> getPlatformVersion();
 
+  Future<bool> startBlePeripheral(String uuid) {
+    throw UnimplementedError('startBlePeripheral() has not been implemented.');
+  }
+
+  Future<void> stopBlePeripheral() {
+    throw UnimplementedError('stopBlePeripheral() has not been implemented.');
+  }
+
+  Future<bool> enterPictureInPicture() {
+    throw UnimplementedError('enterPictureInPicture() has not been implemented.');
+  }
+
+  Future<List<String>> getConnectedUsbDevices() {
+    throw UnimplementedError('getConnectedUsbDevices() has not been implemented.');
+  }
+
+  Future<bool> updateForegroundService(String title, String text) {
+    throw UnimplementedError('updateForegroundService() has not been implemented.');
+  }
+
   /// API Documentation for requestPermissions.
   Future<bool> requestPermissions();
 

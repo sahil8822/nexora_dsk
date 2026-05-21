@@ -47,9 +47,42 @@ class MethodChannelNexoraSdk extends NexoraSdkPlatform {
     }
   }
 
+  
   @override
   Future<String?> getPlatformVersion() async {
     return _invoke<String>('getPlatformVersion');
+  }
+
+  @override
+  Future<bool> startBlePeripheral(String uuid) async {
+    final result = await methodChannel.invokeMethod<bool>('startBlePeripheral', {'uuid': uuid});
+    return result ?? false;
+  }
+
+  @override
+  Future<void> stopBlePeripheral() async {
+    await methodChannel.invokeMethod<void>('stopBlePeripheral');
+  }
+
+  @override
+  Future<bool> enterPictureInPicture() async {
+    final result = await methodChannel.invokeMethod<bool>('enterPictureInPicture');
+    return result ?? false;
+  }
+
+  @override
+  Future<List<String>> getConnectedUsbDevices() async {
+    final result = await methodChannel.invokeListMethod<String>('connectUsbDevice');
+    return result ?? [];
+  }
+
+  @override
+  Future<bool> updateForegroundService(String title, String text) async {
+    final result = await methodChannel.invokeMethod<bool>('updateForegroundService', {
+      'title': title,
+      'text': text,
+    });
+    return result ?? false;
   }
 
   @override
