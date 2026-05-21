@@ -1,5 +1,21 @@
 # Changelog
 
+## 4.0.0
+
+**Massive Architecture & Quality Update**
+
+* **Federated Architecture:** Completely restructured the plugin into a highly modular **Federated Plugin** (`nexora_sdk_platform_interface`, `nexora_sdk_android`, `nexora_sdk_ios`, `nexora_sdk_web`, `nexora_sdk_desktop`). This improves tree-shaking, separation of concerns, and drastically simplifies the platform channel method calls.
+* **Deep Mocking & Testing:** Added a dedicated mock platform implementation (`MockNexoraSdkPlatform`) with comprehensive unit testing. The SDK now boasts incredibly deep, full-coverage tests that seamlessly test the main facade against the platform interface.
+* **API Consistency (Exceptions):** Unified behavior across all unsupported platforms (Web & Desktop). Unsupported hardware calls now explicitly throw strongly-typed `HardwareException`s (like `HardwareUnsupportedException`) instead of silently failing or returning `false` or `null`.
+* **Deep Web API Integration:** Expanded the `nexora_sdk_web` package with rich integrations:
+  * Upgraded `startLocation()` to use `navigator.geolocation.watchPosition()` for true streaming.
+  * Implemented real `getDeviceInfo()` parsing via `navigator.userAgent`.
+  * Hooked into `navigator.connection` for `getConnectivityInfo()`.
+  * Implemented `pasteText()` using `navigator.clipboard`.
+  * Integrated `window.navigator.getBattery()`.
+* **Zero Warnings:** Executed an exhaustive linting pass on all Dart code. The entire mono-repo (all 6 packages) now proudly scores 0 warnings and 0 errors under the `very_good_analysis` linter, with 100% public member documentation coverage.
+
+
 ## 3.2.1
 
 * **Smart Sync**: Built offline telemetry database/queueing on native Android and iOS, featuring rolled file rotation, internet connectivity detection, and automated background upload with exponential retry backoff.

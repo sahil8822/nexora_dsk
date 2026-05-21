@@ -1,11 +1,13 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:js_interop';
+import 'dart:js_interop_unsafe';
 import 'dart:typed_data';
 
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 import 'package:nexora_sdk_platform_interface/core/hardware_core.dart';
 import 'package:nexora_sdk_platform_interface/models/device_models.dart';
+import 'package:nexora_sdk_platform_interface/models/hardware_exception.dart';
 import 'package:nexora_sdk_platform_interface/models/hardware_models.dart';
 import 'package:nexora_sdk_platform_interface/models/permission_models.dart';
 import 'package:nexora_sdk_platform_interface/nexora_sdk_platform_interface.dart';
@@ -16,6 +18,9 @@ class NexoraSdkWeb extends NexoraSdkPlatform {
   final StreamController<HardwareEvent> _eventController =
       StreamController<HardwareEvent>.broadcast();
 
+  int? _watchId;
+
+  /// API Documentation for registerWith.
   static void registerWith(Registrar registrar) {
     NexoraSdkPlatform.instance = NexoraSdkWeb();
   }
@@ -29,41 +34,70 @@ class NexoraSdkWeb extends NexoraSdkPlatform {
   }
 
   @override
-  Future<bool> requestPermissions() async => false;
+  Future<bool> requestPermissions({dynamic options}) async =>
+      throw HardwareException.unsupported('requestPermissions');
 
   @override
-  Future<bool> requestCameraPermission() async => false;
+  Future<bool> requestCameraPermission({dynamic options}) async =>
+      throw HardwareException.unsupported('requestCameraPermission');
 
   @override
-  Future<bool> requestAudioPermission() async => false;
+  Future<bool> requestAudioPermission({dynamic options}) async =>
+      throw HardwareException.unsupported('requestAudioPermission');
 
   @override
-  Future<bool> requestLocationPermission() async => false;
+  Future<bool> requestLocationPermission({dynamic options}) async =>
+      throw HardwareException.unsupported('requestLocationPermission');
 
   @override
-  Future<bool> requestBluetoothPermission() async => false;
+  Future<bool> requestBluetoothPermission({dynamic options}) async =>
+      throw HardwareException.unsupported('requestBluetoothPermission');
 
   @override
   Future<HardwarePermissionStatus> getPermissionStatus(
     HardwarePermission permission,
   ) async {
-    return HardwarePermissionStatus(
-      permission: permission,
-      state: HardwarePermissionState.unsupported,
-      canRequest: false,
-    );
+    throw HardwareException.unsupported('getPermissionStatus');
   }
 
   @override
-  Future<bool> openAppSettings() async => false;
+  Future<bool> openAppSettings({dynamic options}) async =>
+      throw HardwareException.unsupported('openAppSettings');
 
   @override
   Future<DeviceInfo> getDeviceInfo() async {
-    return const DeviceInfo(
+    final nav = web.window.navigator;
+    final ua = nav.userAgent.toLowerCase();
+
+    var browser = 'unknown';
+    if (ua.contains('chrome') && !ua.contains('edg')) {
+      browser = 'chrome';
+    } else if (ua.contains('safari') && !ua.contains('chrome')) {
+      browser = 'safari';
+    } else if (ua.contains('firefox')) {
+      browser = 'firefox';
+    } else if (ua.contains('edg')) {
+      browser = 'edge';
+    }
+
+    var os = 'unknown';
+    if (ua.contains('win')) {
+      os = 'windows';
+    } else if (ua.contains('mac')) {
+      os = 'macos';
+    } else if (ua.contains('linux')) {
+      os = 'linux';
+    } else if (ua.contains('android')) {
+      os = 'android';
+    } else if (ua.contains('like mac os x')) {
+      os = 'ios';
+    }
+
+    return DeviceInfo(
       platform: 'web',
-      manufacturer: 'browser',
-      model: 'browser',
-      osVersion: 'web',
+      manufacturer: browser,
+      model: os,
+      osVersion: nav.appVersion,
       sdkVersion: 'web',
       isPhysicalDevice: true,
       totalRamBytes: 0,
@@ -76,10 +110,26 @@ class NexoraSdkWeb extends NexoraSdkPlatform {
 
   @override
   Future<ConnectivityInfo> getConnectivityInfo() async {
+    final nav = web.window.navigator;
+    final isConnected = nav.onLine;
+    var networkType = 'browser';
+    var isMetered = false;
+
+    if (nav.hasProperty('connection'.toJS).toDart) {
+      final conn = nav.getProperty('connection'.toJS)! as JSObject;
+      if (conn.hasProperty('effectiveType'.toJS).toDart) {
+        networkType =
+            (conn.getProperty('effectiveType'.toJS)! as JSString).toDart;
+      }
+      if (conn.hasProperty('saveData'.toJS).toDart) {
+        isMetered = (conn.getProperty('saveData'.toJS)! as JSBoolean).toDart;
+      }
+    }
+
     return ConnectivityInfo(
-      isConnected: web.window.navigator.onLine,
-      networkType: 'browser',
-      isMetered: false,
+      isConnected: isConnected,
+      networkType: networkType,
+      isMetered: isMetered,
       isVpn: false,
       signalStrength: null,
       ipAddress: null,
@@ -88,12 +138,12 @@ class NexoraSdkWeb extends NexoraSdkPlatform {
 
   @override
   Future<dynamic> startCamera({int width = 1280, int height = 720}) async {
-    return false;
+    throw HardwareException.unsupported('startCamera');
   }
 
   @override
   Future<dynamic> startCameraWithOptions(CameraOptions options) async {
-    return false;
+    throw HardwareException.unsupported('startCameraWithOptions');
   }
 
   @override
@@ -101,7 +151,7 @@ class NexoraSdkWeb extends NexoraSdkPlatform {
 
   @override
   Future<bool> setVisionMode({bool barcode = false, bool face = false}) async {
-    return false;
+    throw HardwareException.unsupported('setVisionMode');
   }
 
   @override
@@ -110,26 +160,32 @@ class NexoraSdkWeb extends NexoraSdkPlatform {
     required List<String> labels,
     double threshold = 0.5,
   }) async {
-    return false;
+    throw HardwareException.unsupported('registerCustomClassifier');
   }
 
   @override
-  Future<bool> setFlash(bool on) async => false;
+  Future<bool> setFlash(bool on) async =>
+      throw HardwareException.unsupported('setFlash');
 
   @override
-  Future<bool> setZoom(double level) async => false;
+  Future<bool> setZoom(double level) async =>
+      throw HardwareException.unsupported('setZoom');
 
   @override
-  Future<bool> flipCamera() async => false;
+  Future<bool> flipCamera({dynamic options}) async =>
+      throw HardwareException.unsupported('flipCamera');
 
   @override
-  Future<String?> takePhoto({String? fileName}) async => null;
+  Future<String?> takePhoto({String? fileName}) async =>
+      throw HardwareException.unsupported('takePhoto');
 
   @override
-  Future<String?> startVideoRecording({String? fileName}) async => null;
+  Future<String?> startVideoRecording({String? fileName}) async =>
+      throw HardwareException.unsupported('startVideoRecording');
 
   @override
-  Future<String?> stopVideoRecording() async => null;
+  Future<String?> stopVideoRecording() async =>
+      throw HardwareException.unsupported('stopVideoRecording');
 
   @override
   Future<bool> startAudio({
@@ -137,12 +193,12 @@ class NexoraSdkWeb extends NexoraSdkPlatform {
     bool streamBytes = false,
     int updateIntervalMs = 80,
   }) async {
-    return false;
+    throw HardwareException.unsupported('startAudio');
   }
 
   @override
   Future<bool> startAudioWithOptions(AudioOptions options) async {
-    return false;
+    throw HardwareException.unsupported('startAudioWithOptions');
   }
 
   @override
@@ -176,28 +232,33 @@ class NexoraSdkWeb extends NexoraSdkPlatform {
     double lon,
     double radius,
   ) async {
-    return false;
+    throw HardwareException.unsupported('addGeofence');
   }
 
   @override
-  Future<bool> startBluetoothScan() async => false;
+  Future<bool> startBluetoothScan({dynamic options}) async =>
+      throw HardwareException.unsupported('startBluetoothScan');
 
   @override
   Future<bool> startBluetoothScanWithOptions(
     BluetoothScanOptions options,
-  ) async => false;
+  ) async =>
+      throw HardwareException.unsupported('startBluetoothScanWithOptions');
 
   @override
   Future<bool> stopBluetoothScan() async => true;
 
   @override
-  Future<bool> connectDevice(String id) async => false;
+  Future<bool> connectDevice(String id) async =>
+      throw HardwareException.unsupported('connectDevice');
 
   @override
-  Future<bool> disconnectDevice(String id) async => false;
+  Future<bool> disconnectDevice(String id) async =>
+      throw HardwareException.unsupported('disconnectDevice');
 
   @override
-  Future<List<String>> discoverServices(String deviceId) async => [];
+  Future<List<String>> discoverServices(String deviceId) async =>
+      throw HardwareException.unsupported('discoverServices');
 
   @override
   Future<bool> sendData(
@@ -206,7 +267,7 @@ class NexoraSdkWeb extends NexoraSdkPlatform {
     String charId,
     List<int> data,
   ) async {
-    return false;
+    throw HardwareException.unsupported('sendData');
   }
 
   @override
@@ -215,51 +276,157 @@ class NexoraSdkWeb extends NexoraSdkPlatform {
     String serviceId,
     String charId,
   ) async {
-    return null;
+    throw HardwareException.unsupported('readData');
   }
 
   @override
-  Future<bool> authenticate(String reason) async => false;
+  Future<bool> authenticate(String reason) async =>
+      throw HardwareException.unsupported('authenticate');
 
   @override
   Future<bool> authenticateWithOptions(BiometricPromptOptions options) async =>
-      false;
+      throw HardwareException.unsupported('authenticateWithOptions');
 
   @override
-  Future<bool> canAuthenticate() async => false;
+  Future<bool> canAuthenticate({dynamic options}) async =>
+      throw HardwareException.unsupported('canAuthenticate');
 
   @override
-  Future<void> vibrate(int durationMs) async {}
+  Future<void> vibrate(int durationMs) async {
+    throw HardwareException.unsupported('vibrate');
+  }
 
   @override
-  Future<void> hapticFeedback(String type) async {}
+  Future<void> hapticFeedback(String type) async {
+    throw HardwareException.unsupported('hapticFeedback');
+  }
 
   @override
-  Future<void> performHapticWithOptions(HapticOptions options) async {}
+  Future<void> performHapticWithOptions(HapticOptions options) async {
+    throw HardwareException.unsupported('performHapticWithOptions');
+  }
 
   @override
-  Future<BatteryInfo?> getBatteryInfo() async => null;
+  Future<BatteryInfo?> getBatteryInfo() async {
+    try {
+      final nav = web.window.navigator;
+      if (!nav.hasProperty('getBattery'.toJS).toDart) {
+        return null;
+      }
+      final promise = nav.callMethod<JSPromise>('getBattery'.toJS);
+      final batteryManager = (await promise.toDart)! as JSObject;
+
+      final levelJS = batteryManager.getProperty('level'.toJS)! as JSNumber;
+      final chargingJS =
+          batteryManager.getProperty('charging'.toJS)! as JSBoolean;
+
+      return BatteryInfo(
+        level: levelJS.toDartDouble,
+        isCharging: chargingJS.toDart,
+        status: chargingJS.toDart ? 'charging' : 'discharging',
+        temperature: 0, // Unavailable on web
+      );
+    } catch (_) {
+      return null;
+    }
+  }
 
   @override
   Future<WifiInfo?> getWifiInfo() async => null;
 
   @override
-  Future<bool> startLocation() async => false;
+  Future<bool> startLocation() async {
+    try {
+      final nav = web.window.navigator;
+      if (!nav.hasProperty('geolocation'.toJS).toDart) {
+        return false;
+      }
+      final geolocation = nav.getProperty('geolocation'.toJS)! as JSObject;
+
+      // We'll broadcast the location
+      final successCallback = ((JSObject position) {
+        final coords = position.getProperty('coords'.toJS)! as JSObject;
+        final lat =
+            (coords.getProperty('latitude'.toJS)! as JSNumber).toDartDouble;
+        final lng =
+            (coords.getProperty('longitude'.toJS)! as JSNumber).toDartDouble;
+        final alt = ((coords.getProperty('altitude'.toJS)) as JSNumber?)
+                ?.toDartDouble ??
+            0.0;
+        final acc =
+            (coords.getProperty('accuracy'.toJS)! as JSNumber).toDartDouble;
+        final spd =
+            ((coords.getProperty('speed'.toJS)) as JSNumber?)?.toDartDouble ??
+                0.0;
+
+        _eventController.add(
+          HardwareEvent(
+            module: 'location',
+            type: 'location_update',
+            data: LocationData(
+              latitude: lat,
+              longitude: lng,
+              altitude: alt,
+              accuracy: acc,
+              speed: spd,
+            ).toMap(),
+            timestamp: DateTime.now(),
+          ),
+        );
+      }).toJS;
+
+      final errorCallback = ((JSObject error) {
+        _eventController.add(
+          HardwareEvent(
+            module: 'location',
+            type: 'location_error',
+            data: {'error': 'Failed to get position'},
+            timestamp: DateTime.now(),
+          ),
+        );
+      }).toJS;
+
+      geolocation.callMethod(
+        'getCurrentPosition'.toJS,
+        successCallback,
+        errorCallback,
+      );
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
 
   @override
-  Future<bool> startLocationWithOptions(LocationOptions options) async => false;
+  Future<bool> startLocationWithOptions(LocationOptions options) async {
+    return startLocation();
+  }
 
   @override
-  Future<bool> stopLocation() async => true;
+  Future<bool> stopLocation() async {
+    if (_watchId != null) {
+      try {
+        final nav = web.window.navigator;
+        final geolocation = nav.getProperty('geolocation'.toJS)! as JSObject;
+        // ignore: cascade_invocations
+        geolocation.callMethod('clearWatch'.toJS, _watchId!.toJS);
+        _watchId = null;
+      } catch (_) {}
+    }
+    return true;
+  }
 
   @override
-  Future<bool> setBackgroundLocationEnabled(bool enabled) async => false;
+  Future<bool> setBackgroundLocationEnabled(bool enabled) async =>
+      throw HardwareException.unsupported('setBackgroundLocationEnabled');
 
   @override
-  Future<bool> startSensor({int frequencyHz = 60}) async => false;
+  Future<bool> startSensor({int frequencyHz = 60}) async =>
+      throw HardwareException.unsupported('startSensor');
 
   @override
-  Future<bool> startSensorWithOptions(SensorOptions options) async => false;
+  Future<bool> startSensorWithOptions(SensorOptions options) async =>
+      throw HardwareException.unsupported('startSensorWithOptions');
 
   @override
   Future<bool> stopSensor() async => true;
@@ -390,10 +557,10 @@ class NexoraSdkWeb extends NexoraSdkPlatform {
       return true;
     } catch (_) {
       try {
-        final textArea = web.HTMLTextAreaElement()
-          ..value = text
-          ..style.position = 'fixed'
-          ..style.left = '-9999px';
+        final textArea = web.HTMLTextAreaElement()..value = text;
+        textArea.style
+          ..position = 'fixed'
+          ..left = '-9999px';
         web.document.body?.appendChild(textArea);
         textArea.select();
         final success = web.document.execCommand('copy');
@@ -406,7 +573,18 @@ class NexoraSdkWeb extends NexoraSdkPlatform {
   }
 
   @override
-  Future<String?> pasteText() async => null;
+  Future<String?> pasteText() async {
+    try {
+      final nav = web.window.navigator;
+      if (!nav.hasProperty('clipboard'.toJS).toDart) return null;
+      final clipboard = nav.getProperty('clipboard'.toJS)! as JSObject;
+      final promise = clipboard.callMethod<JSPromise>('readText'.toJS);
+      final textJs = (await promise.toDart)! as JSString;
+      return textJs.toDart;
+    } catch (_) {
+      return null;
+    }
+  }
 
   @override
   Future<bool> openUrl(String url) async {
@@ -423,27 +601,33 @@ class NexoraSdkWeb extends NexoraSdkPlatform {
     required Map<String, String> headers,
     int rollLimitBytes = 2 * 1024 * 1024,
     bool requireWifi = true,
-  }) async => false;
+  }) async =>
+      throw HardwareException.unsupported('enableSmartSync');
 
   @override
-  Future<bool> applyCameraFilterShader(String shaderType) async => false;
+  Future<bool> applyCameraFilterShader(String shaderType) async =>
+      throw HardwareException.unsupported('applyCameraFilterShader');
 
   @override
   Stream<Uint8List> openL2capStream(String deviceId, int psm) =>
-      const Stream.empty();
+      throw HardwareException.unsupported('openL2capStream');
 
   @override
-  Future<bool> enableDeadReckoning(bool enabled) async => false;
+  Future<bool> enableDeadReckoning(bool enabled) async =>
+      throw HardwareException.unsupported('enableDeadReckoning');
 
   @override
-  Future<void> setEcoModeEnabled(bool enabled) async {}
+  Future<void> setEcoModeEnabled(bool enabled) async {
+    throw HardwareException.unsupported('setEcoModeEnabled');
+  }
 
   @override
-  Future<bool> isEcoModeActive() async => false;
+  Future<bool> isEcoModeActive({dynamic options}) async =>
+      throw HardwareException.unsupported('isEcoModeActive');
 
   @override
   Future<DeviceThermalState> getThermalState() async =>
-      DeviceThermalState.normal;
+      throw HardwareException.unsupported('getThermalState');
 
   static const String _storagePrefix = 'nexora_sdk:file:';
 

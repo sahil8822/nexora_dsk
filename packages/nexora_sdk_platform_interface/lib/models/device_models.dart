@@ -1,5 +1,6 @@
 /// Basic device and OS details for native-feeling Flutter apps.
 class DeviceInfo {
+  /// API Documentation for DeviceInfo.
   const DeviceInfo({
     required this.platform,
     required this.manufacturer,
@@ -14,6 +15,7 @@ class DeviceInfo {
     required this.thermalState,
   });
 
+  /// API Documentation for DeviceInfo.fromMap.
   factory DeviceInfo.fromMap(Map<dynamic, dynamic> map) {
     return DeviceInfo(
       platform: map['platform'] as String? ?? 'unknown',
@@ -30,31 +32,53 @@ class DeviceInfo {
     );
   }
 
+  /// API Documentation for platform;.
   final String platform;
+
+  /// API Documentation for manufacturer;.
   final String manufacturer;
+
+  /// API Documentation for model;.
   final String model;
+
+  /// API Documentation for osVersion;.
   final String osVersion;
+
+  /// API Documentation for sdkVersion;.
   final String sdkVersion;
+
+  /// API Documentation for isPhysicalDevice;.
   final bool isPhysicalDevice;
+
+  /// API Documentation for totalRamBytes;.
   final int totalRamBytes;
+
+  /// API Documentation for availableRamBytes;.
   final int availableRamBytes;
+
+  /// API Documentation for cpuArchitecture;.
   final String cpuArchitecture;
+
+  /// API Documentation for screenRefreshRate;.
   final double screenRefreshRate;
+
+  /// API Documentation for thermalState;.
   final String thermalState;
 
+  /// API Documentation for toMap.
   Map<String, Object> toMap() => <String, Object>{
-    'platform': platform,
-    'manufacturer': manufacturer,
-    'model': model,
-    'osVersion': osVersion,
-    'sdkVersion': sdkVersion,
-    'isPhysicalDevice': isPhysicalDevice,
-    'totalRamBytes': totalRamBytes,
-    'availableRamBytes': availableRamBytes,
-    'cpuArchitecture': cpuArchitecture,
-    'screenRefreshRate': screenRefreshRate,
-    'thermalState': thermalState,
-  };
+        'platform': platform,
+        'manufacturer': manufacturer,
+        'model': model,
+        'osVersion': osVersion,
+        'sdkVersion': sdkVersion,
+        'isPhysicalDevice': isPhysicalDevice,
+        'totalRamBytes': totalRamBytes,
+        'availableRamBytes': availableRamBytes,
+        'cpuArchitecture': cpuArchitecture,
+        'screenRefreshRate': screenRefreshRate,
+        'thermalState': thermalState,
+      };
 
   @override
   bool operator ==(Object other) {
@@ -75,18 +99,18 @@ class DeviceInfo {
 
   @override
   int get hashCode => Object.hash(
-    platform,
-    manufacturer,
-    model,
-    osVersion,
-    sdkVersion,
-    isPhysicalDevice,
-    totalRamBytes,
-    availableRamBytes,
-    cpuArchitecture,
-    screenRefreshRate,
-    thermalState,
-  );
+        platform,
+        manufacturer,
+        model,
+        osVersion,
+        sdkVersion,
+        isPhysicalDevice,
+        totalRamBytes,
+        availableRamBytes,
+        cpuArchitecture,
+        screenRefreshRate,
+        thermalState,
+      );
 
   @override
   String toString() {
@@ -96,6 +120,7 @@ class DeviceInfo {
 
 /// Snapshot of the current network route.
 class ConnectivityInfo {
+  /// API Documentation for ConnectivityInfo.
   const ConnectivityInfo({
     required this.isConnected,
     required this.networkType,
@@ -105,6 +130,7 @@ class ConnectivityInfo {
     required this.ipAddress,
   });
 
+  /// API Documentation for ConnectivityInfo.fromMap.
   factory ConnectivityInfo.fromMap(Map<dynamic, dynamic> map) {
     return ConnectivityInfo(
       isConnected: map['isConnected'] as bool? ?? false,
@@ -116,21 +142,33 @@ class ConnectivityInfo {
     );
   }
 
+  /// API Documentation for isConnected;.
   final bool isConnected;
+
+  /// API Documentation for networkType;.
   final String networkType;
+
+  /// API Documentation for isMetered;.
   final bool isMetered;
+
+  /// API Documentation for isVpn;.
   final bool isVpn;
+
+  /// API Documentation for signalStrength;.
   final int? signalStrength;
+
+  /// API Documentation for ipAddress;.
   final String? ipAddress;
 
+  /// API Documentation for toMap.
   Map<String, Object?> toMap() => <String, Object?>{
-    'isConnected': isConnected,
-    'networkType': networkType,
-    'isMetered': isMetered,
-    'isVpn': isVpn,
-    'signalStrength': signalStrength,
-    'ipAddress': ipAddress,
-  };
+        'isConnected': isConnected,
+        'networkType': networkType,
+        'isMetered': isMetered,
+        'isVpn': isVpn,
+        'signalStrength': signalStrength,
+        'ipAddress': ipAddress,
+      };
 
   @override
   bool operator ==(Object other) {
@@ -146,13 +184,13 @@ class ConnectivityInfo {
 
   @override
   int get hashCode => Object.hash(
-    isConnected,
-    networkType,
-    isMetered,
-    isVpn,
-    signalStrength,
-    ipAddress,
-  );
+        isConnected,
+        networkType,
+        isMetered,
+        isVpn,
+        signalStrength,
+        ipAddress,
+      );
 
   @override
   String toString() {

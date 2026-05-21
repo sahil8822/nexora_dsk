@@ -4,6 +4,7 @@ import 'dart:typed_data';
 
 import 'package:nexora_sdk_platform_interface/core/hardware_core.dart';
 import 'package:nexora_sdk_platform_interface/models/device_models.dart';
+import 'package:nexora_sdk_platform_interface/models/hardware_exception.dart';
 import 'package:nexora_sdk_platform_interface/models/hardware_models.dart';
 import 'package:nexora_sdk_platform_interface/models/permission_models.dart';
 import 'package:nexora_sdk_platform_interface/nexora_sdk_platform_interface.dart';
@@ -30,33 +31,35 @@ class NexoraSdkDesktop extends NexoraSdkPlatform {
   }
 
   @override
-  Future<bool> requestPermissions() async => false;
+  Future<bool> requestPermissions() async =>
+      throw HardwareException.unsupported('unsupported');
 
   @override
-  Future<bool> requestCameraPermission() async => false;
+  Future<bool> requestCameraPermission() async =>
+      throw HardwareException.unsupported('unsupported');
 
   @override
-  Future<bool> requestAudioPermission() async => false;
+  Future<bool> requestAudioPermission() async =>
+      throw HardwareException.unsupported('unsupported');
 
   @override
-  Future<bool> requestLocationPermission() async => false;
+  Future<bool> requestLocationPermission() async =>
+      throw HardwareException.unsupported('unsupported');
 
   @override
-  Future<bool> requestBluetoothPermission() async => false;
+  Future<bool> requestBluetoothPermission() async =>
+      throw HardwareException.unsupported('unsupported');
 
   @override
   Future<HardwarePermissionStatus> getPermissionStatus(
     HardwarePermission permission,
   ) async {
-    return HardwarePermissionStatus(
-      permission: permission,
-      state: HardwarePermissionState.unsupported,
-      canRequest: false,
-    );
+    throw HardwareException.unsupported('getPermissionStatus');
   }
 
   @override
-  Future<bool> openAppSettings() async => false;
+  Future<bool> openAppSettings() async =>
+      throw HardwareException.unsupported('unsupported');
 
   @override
   Future<DeviceInfo> getDeviceInfo() async {
@@ -89,20 +92,21 @@ class NexoraSdkDesktop extends NexoraSdkPlatform {
 
   @override
   Future<dynamic> startCamera({int width = 1280, int height = 720}) async {
-    return false;
+    throw HardwareException.unsupported('startCamera');
   }
 
   @override
   Future<dynamic> startCameraWithOptions(CameraOptions options) async {
-    return false;
+    throw HardwareException.unsupported('startCameraWithOptions');
   }
 
   @override
-  Future<bool> stopCamera() async => true;
+  Future<bool> stopCamera() async =>
+      throw HardwareException.unsupported('unsupported');
 
   @override
   Future<bool> setVisionMode({bool barcode = false, bool face = false}) async {
-    return false;
+    throw HardwareException.unsupported('setVisionMode');
   }
 
   @override
@@ -111,26 +115,32 @@ class NexoraSdkDesktop extends NexoraSdkPlatform {
     required List<String> labels,
     double threshold = 0.5,
   }) async {
-    return false;
+    throw HardwareException.unsupported('registerCustomClassifier');
   }
 
   @override
-  Future<bool> setFlash(bool on) async => false;
+  Future<bool> setFlash(bool on) async =>
+      throw HardwareException.unsupported('unsupported');
 
   @override
-  Future<bool> setZoom(double level) async => false;
+  Future<bool> setZoom(double level) async =>
+      throw HardwareException.unsupported('unsupported');
 
   @override
-  Future<bool> flipCamera() async => false;
+  Future<bool> flipCamera() async =>
+      throw HardwareException.unsupported('unsupported');
 
   @override
-  Future<String?> takePhoto({String? fileName}) async => null;
+  Future<String?> takePhoto({String? fileName}) async =>
+      throw HardwareException.unsupported('takePhoto');
 
   @override
-  Future<String?> startVideoRecording({String? fileName}) async => null;
+  Future<String?> startVideoRecording({String? fileName}) async =>
+      throw HardwareException.unsupported('startVideoRecording');
 
   @override
-  Future<String?> stopVideoRecording() async => null;
+  Future<String?> stopVideoRecording() async =>
+      throw HardwareException.unsupported('stopVideoRecording');
 
   @override
   Future<bool> startAudio({
@@ -138,37 +148,45 @@ class NexoraSdkDesktop extends NexoraSdkPlatform {
     bool streamBytes = false,
     int updateIntervalMs = 80,
   }) async {
-    return false;
+    throw HardwareException.unsupported('startAudio');
   }
 
   @override
   Future<bool> startAudioWithOptions(AudioOptions options) async {
-    return false;
+    throw HardwareException.unsupported('startAudioWithOptions');
   }
 
   @override
-  Future<bool> stopAudio() async => true;
+  Future<bool> stopAudio() async =>
+      throw HardwareException.unsupported('unsupported');
 
   @override
-  Future<bool> routeAudioOutput(AudioOutputRoute route) async => true;
+  Future<bool> routeAudioOutput(AudioOutputRoute route) async =>
+      throw HardwareException.unsupported('unsupported');
 
   @override
-  Future<double> getAudioVolume() async => 0.5;
+  Future<double> getAudioVolume() async =>
+      throw HardwareException.unsupported('getAudioVolume');
 
   @override
-  Future<bool> setAudioVolume(double level) async => true;
+  Future<bool> setAudioVolume(double level) async =>
+      throw HardwareException.unsupported('unsupported');
 
   @override
-  Future<bool> selectAudioInput(AudioInputDevice device) async => true;
+  Future<bool> selectAudioInput(AudioInputDevice device) async =>
+      throw HardwareException.unsupported('unsupported');
 
   @override
-  Future<bool> setAudioGain(double gain) async => true;
+  Future<bool> setAudioGain(double gain) async =>
+      throw HardwareException.unsupported('unsupported');
 
   @override
-  Future<bool> startHardwareLogging(LogConfig config) async => false;
+  Future<bool> startHardwareLogging(LogConfig config) async =>
+      throw HardwareException.unsupported('unsupported');
 
   @override
-  Future<bool> stopHardwareLogging() async => true;
+  Future<bool> stopHardwareLogging() async =>
+      throw HardwareException.unsupported('unsupported');
 
   @override
   Future<bool> addGeofence(
@@ -177,28 +195,34 @@ class NexoraSdkDesktop extends NexoraSdkPlatform {
     double lon,
     double radius,
   ) async {
-    return false;
+    throw HardwareException.unsupported('addGeofence');
   }
 
   @override
-  Future<bool> startBluetoothScan() async => false;
+  Future<bool> startBluetoothScan() async =>
+      throw HardwareException.unsupported('unsupported');
 
   @override
   Future<bool> startBluetoothScanWithOptions(
     BluetoothScanOptions options,
-  ) async => false;
+  ) async =>
+      throw HardwareException.unsupported('unsupported');
 
   @override
-  Future<bool> stopBluetoothScan() async => true;
+  Future<bool> stopBluetoothScan() async =>
+      throw HardwareException.unsupported('unsupported');
 
   @override
-  Future<bool> connectDevice(String id) async => false;
+  Future<bool> connectDevice(String id) async =>
+      throw HardwareException.unsupported('unsupported');
 
   @override
-  Future<bool> disconnectDevice(String id) async => false;
+  Future<bool> disconnectDevice(String id) async =>
+      throw HardwareException.unsupported('unsupported');
 
   @override
-  Future<List<String>> discoverServices(String deviceId) async => [];
+  Future<List<String>> discoverServices(String deviceId) async =>
+      throw HardwareException.unsupported('unsupported');
 
   @override
   Future<bool> sendData(
@@ -207,7 +231,7 @@ class NexoraSdkDesktop extends NexoraSdkPlatform {
     String charId,
     List<int> data,
   ) async {
-    return false;
+    throw HardwareException.unsupported('sendData');
   }
 
   @override
@@ -216,54 +240,71 @@ class NexoraSdkDesktop extends NexoraSdkPlatform {
     String serviceId,
     String charId,
   ) async {
-    return null;
+    throw HardwareException.unsupported('readData');
   }
 
   @override
-  Future<bool> authenticate(String reason) async => false;
+  Future<bool> authenticate(String reason) async =>
+      throw HardwareException.unsupported('unsupported');
 
   @override
   Future<bool> authenticateWithOptions(BiometricPromptOptions options) async =>
-      false;
+      throw HardwareException.unsupported('unsupported');
 
   @override
-  Future<bool> canAuthenticate() async => false;
+  Future<bool> canAuthenticate() async =>
+      throw HardwareException.unsupported('unsupported');
 
   @override
-  Future<void> vibrate(int durationMs) async {}
+  Future<void> vibrate(int durationMs) async {
+    throw HardwareException.unsupported('vibrate');
+  }
 
   @override
-  Future<void> hapticFeedback(String type) async {}
+  Future<void> hapticFeedback(String type) async {
+    throw HardwareException.unsupported('hapticFeedback');
+  }
 
   @override
-  Future<void> performHapticWithOptions(HapticOptions options) async {}
+  Future<void> performHapticWithOptions(HapticOptions options) async {
+    throw HardwareException.unsupported('performHapticWithOptions');
+  }
 
   @override
-  Future<BatteryInfo?> getBatteryInfo() async => null;
+  Future<BatteryInfo?> getBatteryInfo() async =>
+      throw HardwareException.unsupported('getBatteryInfo');
 
   @override
-  Future<WifiInfo?> getWifiInfo() async => null;
+  Future<WifiInfo?> getWifiInfo() async =>
+      throw HardwareException.unsupported('getWifiInfo');
 
   @override
-  Future<bool> startLocation() async => false;
+  Future<bool> startLocation() async =>
+      throw HardwareException.unsupported('unsupported');
 
   @override
-  Future<bool> startLocationWithOptions(LocationOptions options) async => false;
+  Future<bool> startLocationWithOptions(LocationOptions options) async =>
+      throw HardwareException.unsupported('unsupported');
 
   @override
-  Future<bool> stopLocation() async => true;
+  Future<bool> stopLocation() async =>
+      throw HardwareException.unsupported('unsupported');
 
   @override
-  Future<bool> setBackgroundLocationEnabled(bool enabled) async => false;
+  Future<bool> setBackgroundLocationEnabled(bool enabled) async =>
+      throw HardwareException.unsupported('unsupported');
 
   @override
-  Future<bool> startSensor({int frequencyHz = 60}) async => false;
+  Future<bool> startSensor({int frequencyHz = 60}) async =>
+      throw HardwareException.unsupported('unsupported');
 
   @override
-  Future<bool> startSensorWithOptions(SensorOptions options) async => false;
+  Future<bool> startSensorWithOptions(SensorOptions options) async =>
+      throw HardwareException.unsupported('unsupported');
 
   @override
-  Future<bool> stopSensor() async => true;
+  Future<bool> stopSensor() async =>
+      throw HardwareException.unsupported('unsupported');
 
   @override
   Future<StorageInfo?> getStorageInfo() async {
@@ -423,8 +464,8 @@ class NexoraSdkDesktop extends NexoraSdkPlatform {
       final command = Platform.isMacOS
           ? 'open'
           : Platform.isWindows
-          ? 'rundll32'
-          : 'xdg-open';
+              ? 'rundll32'
+              : 'xdg-open';
       final args = Platform.isWindows
           ? <String>['url.dll,FileProtocolHandler', url]
           : <String>[url];
@@ -444,27 +485,33 @@ class NexoraSdkDesktop extends NexoraSdkPlatform {
     required Map<String, String> headers,
     int rollLimitBytes = 2 * 1024 * 1024,
     bool requireWifi = true,
-  }) async => false;
+  }) async =>
+      throw HardwareException.unsupported('unsupported');
 
   @override
-  Future<bool> applyCameraFilterShader(String shaderType) async => false;
+  Future<bool> applyCameraFilterShader(String shaderType) async =>
+      throw HardwareException.unsupported('unsupported');
 
   @override
   Stream<Uint8List> openL2capStream(String deviceId, int psm) =>
-      const Stream.empty();
+      throw HardwareException.unsupported('openL2capStream');
 
   @override
-  Future<bool> enableDeadReckoning(bool enabled) async => false;
+  Future<bool> enableDeadReckoning(bool enabled) async =>
+      throw HardwareException.unsupported('unsupported');
 
   @override
-  Future<void> setEcoModeEnabled(bool enabled) async {}
+  Future<void> setEcoModeEnabled(bool enabled) async {
+    throw HardwareException.unsupported('setEcoModeEnabled');
+  }
 
   @override
-  Future<bool> isEcoModeActive() async => false;
+  Future<bool> isEcoModeActive() async =>
+      throw HardwareException.unsupported('unsupported');
 
   @override
   Future<DeviceThermalState> getThermalState() async =>
-      DeviceThermalState.normal;
+      throw HardwareException.unsupported('getThermalState');
 
   Future<File> _file(String fileName) async {
     final safeName = fileName.replaceAll(

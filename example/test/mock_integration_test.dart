@@ -5,7 +5,7 @@ import 'mock_channel_setup.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
-  
+
   // Set up the mock native backend for the integration tests.
   // This allows tests to run consistently in CI without needing real hardware
   // to return camera textures, geofence callbacks, etc.
@@ -66,7 +66,9 @@ void main() {
       expect(success, true);
     });
 
-    testWidgets('Deep Model Verification - Battery Info', (WidgetTester tester) async {
+    testWidgets('Deep Model Verification - Battery Info', (
+      WidgetTester tester,
+    ) async {
       final battery = await sdk.health.getBatteryInfo();
       expect(battery, isNotNull);
       expect(battery?.level, 0.85);
@@ -74,14 +76,18 @@ void main() {
       expect(battery?.temperature, 35.5);
     });
 
-    testWidgets('Deep Model Verification - WiFi Info', (WidgetTester tester) async {
+    testWidgets('Deep Model Verification - WiFi Info', (
+      WidgetTester tester,
+    ) async {
       final wifi = await sdk.health.getWifiInfo();
       expect(wifi, isNotNull);
       expect(wifi?.ssid, 'MockWiFi');
       expect(wifi?.signalStrength, -50);
     });
 
-    testWidgets('Deep Model Verification - Storage Info', (WidgetTester tester) async {
+    testWidgets('Deep Model Verification - Storage Info', (
+      WidgetTester tester,
+    ) async {
       final storage = await sdk.storage.getStorageInfo();
       expect(storage, isNotNull);
       expect(storage?.appDataSize, 1024 * 1024 * 50);

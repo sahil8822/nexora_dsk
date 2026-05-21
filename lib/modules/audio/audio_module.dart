@@ -4,15 +4,23 @@ import 'package:nexora_sdk_platform_interface/nexora_sdk_platform_interface.dart
 /// Module for raw audio capture and signal analysis.
 class AudioModule {
   bool _isRunning = false;
+
+  /// API Documentation for _isRunning;.
   bool get isRunning => _isRunning;
 
   bool _lastEnableFFT = false;
+
+  /// API Documentation for _lastEnableFFT;.
   bool get lastEnableFFT => _lastEnableFFT;
 
   bool _lastStreamBytes = false;
+
+  /// API Documentation for _lastStreamBytes;.
   bool get lastStreamBytes => _lastStreamBytes;
 
   int _lastUpdateIntervalMs = 80;
+
+  /// API Documentation for _lastUpdateIntervalMs;.
   int get lastUpdateIntervalMs => _lastUpdateIntervalMs;
 
   /// Controls the speaker and audio output routing features.

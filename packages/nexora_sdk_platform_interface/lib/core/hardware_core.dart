@@ -1,7 +1,6 @@
 /// Common structure for all hardware events emitted by the SDK.
 /// This acts as the base data transfer object for the unified stream.
 class HardwareEvent {
-
   /// Constructs a [HardwareEvent].
   HardwareEvent({
     required this.module,
@@ -9,6 +8,7 @@ class HardwareEvent {
     required this.data,
     required this.timestamp,
   });
+
   /// The hardware subsystem emitting the event (e.g., 'camera', 'gps').
   final String module;
 

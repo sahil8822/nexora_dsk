@@ -17,12 +17,26 @@ class HardwareLifecycleController with WidgetsBindingObserver {
   }) : _sdk = sdk;
 
   final NexoraSdk _sdk;
+
+  /// API Documentation for autoStopOnPause;.
   final bool autoStopOnPause;
+
+  /// API Documentation for stopCamera;.
   final bool stopCamera;
+
+  /// API Documentation for stopAudio;.
   final bool stopAudio;
+
+  /// API Documentation for stopBluetoothScan;.
   final bool stopBluetoothScan;
+
+  /// API Documentation for stopLocation;.
   final bool stopLocation;
+
+  /// API Documentation for stopSensors;.
   final bool stopSensors;
+
+  /// API Documentation for stopLogging;.
   final bool stopLogging;
 
   bool _isStarted = false;

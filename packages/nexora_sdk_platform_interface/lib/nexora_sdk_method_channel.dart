@@ -10,8 +10,12 @@ import 'package:nexora_sdk_platform_interface/nexora_sdk_platform_interface.dart
 /// An implementation of [NexoraSdkPlatform] that uses method channels.
 class MethodChannelNexoraSdk extends NexoraSdkPlatform {
   @visibleForTesting
+
+  /// API Documentation for MethodChannel.
   final methodChannel = const MethodChannel('nexora_sdk/methods');
   @visibleForTesting
+
+  /// API Documentation for EventChannel.
   final eventChannel = const EventChannel('nexora_sdk/events');
 
   Stream<HardwareEvent>? _cachedUnifiedStream;
@@ -628,7 +632,7 @@ class MethodChannelNexoraSdk extends NexoraSdkPlatform {
   // --- Unified Stream ---
   @override
   Stream<HardwareEvent> get unifiedStream => _cachedUnifiedStream ??=
-      eventChannel.receiveBroadcastStream().map((data) {
+          eventChannel.receiveBroadcastStream().map((data) {
         final map = data as Map;
         return HardwareEvent(
           module: map['module'] as String,

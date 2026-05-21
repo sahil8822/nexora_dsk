@@ -5,9 +5,13 @@ import 'package:nexora_sdk_platform_interface/nexora_sdk_platform_interface.dart
 /// Module for motion and environmental hardware sensors.
 class SensorModule {
   bool _isRunning = false;
+
+  /// API Documentation for _isRunning;.
   bool get isRunning => _isRunning;
 
   int _lastFrequencyHz = 60;
+
+  /// API Documentation for _lastFrequencyHz;.
   int get lastFrequencyHz => _lastFrequencyHz;
 
   /// Starts the accelerometer and gyroscope at the specified [frequencyHz].

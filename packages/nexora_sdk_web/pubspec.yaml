@@ -20,9 +20,9 @@ dependencies:
     sdk: flutter
   flutter_web_plugins:
     sdk: flutter
-  web: ^1.1.1
   nexora_sdk_platform_interface:
     path: ../nexora_sdk_platform_interface
+  web: ^1.1.1
 
 dev_dependencies:
   flutter_test:

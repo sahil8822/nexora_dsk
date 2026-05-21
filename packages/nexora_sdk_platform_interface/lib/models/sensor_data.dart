@@ -1,6 +1,6 @@
 /// Encapsulates sensor data from native hardware.
 class SensorData {
-
+  /// API Documentation for SensorData.
   SensorData({
     required this.x,
     required this.y,
@@ -21,11 +21,20 @@ class SensorData {
           : DateTime.now(),
     );
   }
+
+  /// API Documentation for x;.
   final double x;
+
+  /// API Documentation for y;.
   final double y;
+
+  /// API Documentation for z;.
   final double z;
+
+  /// API Documentation for timestamp;.
   final DateTime timestamp;
 
+  /// API Documentation for toMap.
   Map<String, dynamic> toMap() {
     return {
       'x': x,

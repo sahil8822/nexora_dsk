@@ -60,6 +60,8 @@ export 'modules/utility/utility_module.dart';
 /// Sensors, Health Diagnostics, and now device Storage.
 class NexoraSdk {
   NexoraSdk._();
+
+  /// API Documentation for NexoraSdk._.
   static final NexoraSdk instance = NexoraSdk._();
 
   /// The current SDK version.

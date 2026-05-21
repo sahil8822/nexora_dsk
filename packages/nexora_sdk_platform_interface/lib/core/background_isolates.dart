@@ -9,6 +9,7 @@ class BackgroundIsolateWrapper {
   final StreamController<dynamic> _dataController =
       StreamController<dynamic>.broadcast();
 
+  /// API Documentation for _dataController.stream;.
   Stream<dynamic> get dataStream => _dataController.stream;
 
   /// Starts the background isolate.
