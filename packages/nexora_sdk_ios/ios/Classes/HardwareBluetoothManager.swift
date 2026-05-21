@@ -81,7 +81,27 @@ public class HardwareBluetoothManager: NSObject, CBCentralManagerDelegate {
         return true
     }
 
-    public func disconnect() {
+    public 
+    func subscribeToCharacteristic(deviceId: String, serviceId: String, charId: String, enable: Bool, callback: @escaping (Bool) -> Void) {
+        guard let p = peripheral else {
+            callback(false)
+            return
+        }
+        
+        let sId = CBUUID(string: serviceId)
+        let cId = CBUUID(string: charId)
+        
+        guard let service = p.services?.first(where: { $0.uuid == sId }),
+              let char = service.characteristics?.first(where: { $0.uuid == cId }) else {
+            callback(false)
+            return
+        }
+        
+        p.setNotifyValue(enable, for: char)
+        callback(true)
+    }
+
+    func disconnect() {
         if let peripheral = connectedPeripheral {
             centralManager?.cancelPeripheralConnection(peripheral)
         }
@@ -152,11 +172,46 @@ extension HardwareBluetoothManager: CBPeripheralDelegate {
         }
     }
 
-    public func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
+    public func old_peripheral_didUpdateValueFor(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
         let data = (error == nil) ? characteristic.value : nil
         DispatchQueue.main.async {
             self.readCharacteristicCallback?(data)
             self.readCharacteristicCallback = nil
         }
     }
+}
+
+
+
+extension HardwareBluetoothManager {
+
+    func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
+        if let error = error {
+            return
+        }
+        
+        if let data = characteristic.value {
+            // Check if this was a read callback
+            if let cb = readCallback {
+                cb(FlutterStandardTypedData(bytes: data))
+                readCallback = nil
+            } else {
+                // Otherwise it's a notification
+                let eventData: [String: Any] = [
+                    "module": "bluetooth",
+                    "type": "data",
+                    "data": [
+                        "id": peripheral.identifier.uuidString,
+                        "serviceId": characteristic.service?.uuid.uuidString ?? "",
+                        "charId": characteristic.uuid.uuidString,
+                        "value": FlutterStandardTypedData(bytes: data)
+                    ]
+                ]
+                DispatchQueue.main.async {
+                    self.eventSink?(eventData)
+                }
+            }
+        }
+    }
+
 }

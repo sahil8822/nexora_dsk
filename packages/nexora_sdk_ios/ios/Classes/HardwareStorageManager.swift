@@ -1,3 +1,4 @@
+import Photos
 import Foundation
 import Flutter
 import Security
@@ -123,7 +124,35 @@ public class HardwareStorageManager {
     }
 
     /// Checks if a file exists in the Documents directory.
-    public func fileExists(fileName: String) -> Bool {
+    public 
+    func saveToGallery(filePath: String, callback: @escaping (String?) -> Void) {
+        let url = URL(fileURLWithPath: filePath)
+        PHPhotoLibrary.requestAuthorization { status in
+            if status == .authorized {
+                PHPhotoLibrary.shared().performChanges({
+                    if filePath.hasSuffix(".mp4") {
+                        PHAssetChangeRequest.creationRequestForAssetFromVideo(atFileURL: url)
+                    } else {
+                        PHAssetChangeRequest.creationRequestForAssetFromImage(atFileURL: url)
+                    }
+                }) { success, error in
+                    DispatchQueue.main.async {
+                        if success {
+                            callback(filePath)
+                        } else {
+                            callback(nil)
+                        }
+                    }
+                }
+            } else {
+                DispatchQueue.main.async {
+                    callback(nil)
+                }
+            }
+        }
+    }
+
+    func fileExists(fileName: String) -> Bool {
         guard let url = safeFileURL(fileName: fileName) else { return false }
         return FileManager.default.fileExists(atPath: url.path)
     }

@@ -91,12 +91,12 @@ class NexoraSdkDesktop extends NexoraSdkPlatform {
   }
 
   @override
-  Future<dynamic> startCamera({int width = 1280, int height = 720}) async {
+  Future<int?> startCamera({int width = 1280, int height = 720}) async {
     throw HardwareException.unsupported('startCamera');
   }
 
   @override
-  Future<dynamic> startCameraWithOptions(CameraOptions options) async {
+  Future<int?> startCameraWithOptions(CameraOptions options) async {
     throw HardwareException.unsupported('startCameraWithOptions');
   }
 

@@ -66,11 +66,11 @@ class MockNexoraSdkPlatform extends NexoraSdkPlatform
   );
 
   @override
-  Future<dynamic> startCamera({int width = 1280, int height = 720}) =>
-      Future.value(42);
+  Future<int?> startCamera({int width = 1280, int height = 720}) =>
+      Future.value(1);
   @override
-  Future<dynamic> startCameraWithOptions(CameraOptions options) =>
-      Future.value(42);
+  Future<int?> startCameraWithOptions(CameraOptions options) =>
+      Future.value(1);
   @override
   Future<bool> stopCamera() => Future.value(true);
   @override
@@ -319,4 +319,27 @@ class MockNexoraSdkPlatform extends NexoraSdkPlatform
   @override
   Future<DeviceThermalState> getThermalState() =>
       Future.value(DeviceThermalState.normal);
+
+  @override
+  Future<bool> subscribeToCharacteristic(
+    String deviceId,
+    String serviceId,
+    String charId, {
+    required bool enable,
+  }) async => true;
+
+  @override
+  Future<bool> requestMtu(String deviceId, int mtu) async => true;
+
+  @override
+  Future<String?> saveToGallery(String filePath) async => 'gallery/$filePath';
+
+  @override
+  Future<bool> startForegroundService({
+    required String title,
+    required String content,
+  }) async => true;
+
+  @override
+  Future<bool> stopForegroundService() async => true;
 }

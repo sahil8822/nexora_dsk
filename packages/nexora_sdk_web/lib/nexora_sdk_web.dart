@@ -1,3 +1,4 @@
+// ignore_for_file: avoid_catches_without_on_clauses, avoid_web_libraries_in_flutter
 import 'dart:async';
 import 'dart:convert';
 import 'dart:js_interop';
@@ -137,12 +138,12 @@ class NexoraSdkWeb extends NexoraSdkPlatform {
   }
 
   @override
-  Future<dynamic> startCamera({int width = 1280, int height = 720}) async {
+  Future<int?> startCamera({int width = 1280, int height = 720}) async {
     throw HardwareException.unsupported('startCamera');
   }
 
   @override
-  Future<dynamic> startCameraWithOptions(CameraOptions options) async {
+  Future<int?> startCameraWithOptions(CameraOptions options) async {
     throw HardwareException.unsupported('startCameraWithOptions');
   }
 

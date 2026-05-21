@@ -116,16 +116,16 @@ class MethodChannelNexoraSdk extends NexoraSdkPlatform {
 
   // --- Camera & Vision ---
   @override
-  Future<dynamic> startCamera({int width = 1280, int height = 720}) async {
-    return _invoke<dynamic>('startCamera', {
+  Future<int?> startCamera({int width = 1280, int height = 720}) async {
+    return _invoke<int>('startCamera', {
       'width': width,
       'height': height,
     });
   }
 
   @override
-  Future<dynamic> startCameraWithOptions(CameraOptions options) async {
-    return _invoke<dynamic>('startCameraWithOptions', options.toMap());
+  Future<int?> startCameraWithOptions(CameraOptions options) async {
+    return _invoke<int>('startCameraWithOptions', options.toMap());
   }
 
   @override
@@ -641,4 +641,58 @@ class MethodChannelNexoraSdk extends NexoraSdkPlatform {
           timestamp: DateTime.now(),
         );
       }).asBroadcastStream();
+
+  @override
+  Future<bool> subscribeToCharacteristic(
+    String deviceId,
+    String serviceId,
+    String charId, {
+    required bool enable,
+  }) async {
+    final result = await methodChannel.invokeMethod<bool>(
+      'subscribeToCharacteristic',
+      {
+        'deviceId': deviceId,
+        'serviceId': serviceId,
+        'charId': charId,
+        'enable': enable,
+      },
+    );
+    return result ?? false;
+  }
+
+  @override
+  Future<bool> requestMtu(String deviceId, int mtu) async {
+    final result = await methodChannel.invokeMethod<bool>('requestMtu', {
+      'deviceId': deviceId,
+      'mtu': mtu,
+    });
+    return result ?? false;
+  }
+
+  @override
+  Future<String?> saveToGallery(String filePath) async {
+    return methodChannel.invokeMethod<String>('saveToGallery', {
+      'filePath': filePath,
+    });
+  }
+
+  @override
+  Future<bool> startForegroundService({
+    required String title,
+    required String content,
+  }) async {
+    final result = await methodChannel.invokeMethod<bool>(
+      'startForegroundService',
+      {'title': title, 'content': content},
+    );
+    return result ?? false;
+  }
+
+  @override
+  Future<bool> stopForegroundService() async {
+    final result =
+        await methodChannel.invokeMethod<bool>('stopForegroundService');
+    return result ?? false;
+  }
 }

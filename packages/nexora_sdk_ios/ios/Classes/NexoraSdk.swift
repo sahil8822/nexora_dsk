@@ -110,6 +110,84 @@ public class NexoraSdk: NSObject, FlutterPlugin, CLLocationManagerDelegate {
              "enableSmartSync", "enableDeadReckoning",
              "getBatteryInfo", "getWifiInfo", "getDeviceInfo", "getConnectivityInfo":
             return true
+        
+        case "startForegroundService":
+            // iOS background tasks are handled via Info.plist and Background Fetch, so this is mostly a no-op
+            // but we can register a background task to keep the app alive slightly longer
+            let title = args["title"] as? String ?? "Background Task"
+            result(true)
+            
+        case "stopForegroundService":
+            result(true)
+            
+        case "subscribeToCharacteristic":
+            guard let deviceId = args["deviceId"] as? String,
+                  let serviceId = args["serviceId"] as? String,
+                  let charId = args["charId"] as? String,
+                  let enable = args["enable"] as? Bool else {
+                result(FlutterError(code: "INVALID_ARGUMENT", message: "Missing arguments", details: nil))
+                return
+            }
+            bluetooth.subscribeToCharacteristic(deviceId: deviceId, serviceId: serviceId, charId: charId, enable: enable) { res in
+                result(res)
+            }
+            
+        case "requestMtu":
+            // iOS negotiates MTU automatically
+            result(true)
+            
+        case "saveToGallery":
+            guard let filePath = args["filePath"] as? String else {
+                result(FlutterError(code: "INVALID_ARGUMENT", message: "Missing filePath", details: nil))
+                return
+            }
+            storage.saveToGallery(filePath: filePath) { path in
+                if let p = path {
+                    result(p)
+                } else {
+                    result(FlutterError(code: "STORAGE_ERROR", message: "Failed to save to Gallery", details: nil))
+                }
+            }
+
+        
+        case "loadCustomModel":
+            let path = args["modelPath"] as? String ?? ""
+            result(ai.loadCustomModel(modelPath: path))
+            
+        case "runInference":
+            let input = args["input"] as? [String: Any] ?? [:]
+            result(ai.runInference(input: input))
+            
+        case "getConnectedUsbDevices":
+            // USB OTG not fully supported on iOS without MFi
+            result([])
+            
+        case "openUsbConnection", "writeUsbData":
+            result(false)
+            
+        case "startDepthCamera":
+            result(false)
+            
+        case "generateSecureKeyPair":
+            let alias = args["alias"] as? String ?? ""
+            result(crypto.generateSecureKeyPair(alias: alias))
+            
+        case "signData":
+            guard let alias = args["alias"] as? String, let data = args["data"] as? FlutterStandardTypedData else {
+                result(nil)
+                return
+            }
+            if let signature = crypto.signData(alias: alias, data: data.data) {
+                result(signature)
+            } else {
+                result(nil)
+            }
+            
+        case "scheduleBackgroundTask":
+            let taskId = args["taskId"] as? String ?? ""
+            let interval = args["intervalSeconds"] as? Int ?? 900
+            result(backgroundTasks.scheduleBackgroundTask(taskId: taskId, intervalSeconds: interval))
+
         default:
             return false
         }
@@ -316,7 +394,85 @@ public class NexoraSdk: NSObject, FlutterPlugin, CLLocationManagerDelegate {
                 result("serious")
             case .critical:
                 result("critical")
-            @unknown default:
+            @unknown 
+        case "startForegroundService":
+            // iOS background tasks are handled via Info.plist and Background Fetch, so this is mostly a no-op
+            // but we can register a background task to keep the app alive slightly longer
+            let title = args["title"] as? String ?? "Background Task"
+            result(true)
+            
+        case "stopForegroundService":
+            result(true)
+            
+        case "subscribeToCharacteristic":
+            guard let deviceId = args["deviceId"] as? String,
+                  let serviceId = args["serviceId"] as? String,
+                  let charId = args["charId"] as? String,
+                  let enable = args["enable"] as? Bool else {
+                result(FlutterError(code: "INVALID_ARGUMENT", message: "Missing arguments", details: nil))
+                return
+            }
+            bluetooth.subscribeToCharacteristic(deviceId: deviceId, serviceId: serviceId, charId: charId, enable: enable) { res in
+                result(res)
+            }
+            
+        case "requestMtu":
+            // iOS negotiates MTU automatically
+            result(true)
+            
+        case "saveToGallery":
+            guard let filePath = args["filePath"] as? String else {
+                result(FlutterError(code: "INVALID_ARGUMENT", message: "Missing filePath", details: nil))
+                return
+            }
+            storage.saveToGallery(filePath: filePath) { path in
+                if let p = path {
+                    result(p)
+                } else {
+                    result(FlutterError(code: "STORAGE_ERROR", message: "Failed to save to Gallery", details: nil))
+                }
+            }
+
+        
+        case "loadCustomModel":
+            let path = args["modelPath"] as? String ?? ""
+            result(ai.loadCustomModel(modelPath: path))
+            
+        case "runInference":
+            let input = args["input"] as? [String: Any] ?? [:]
+            result(ai.runInference(input: input))
+            
+        case "getConnectedUsbDevices":
+            // USB OTG not fully supported on iOS without MFi
+            result([])
+            
+        case "openUsbConnection", "writeUsbData":
+            result(false)
+            
+        case "startDepthCamera":
+            result(false)
+            
+        case "generateSecureKeyPair":
+            let alias = args["alias"] as? String ?? ""
+            result(crypto.generateSecureKeyPair(alias: alias))
+            
+        case "signData":
+            guard let alias = args["alias"] as? String, let data = args["data"] as? FlutterStandardTypedData else {
+                result(nil)
+                return
+            }
+            if let signature = crypto.signData(alias: alias, data: data.data) {
+                result(signature)
+            } else {
+                result(nil)
+            }
+            
+        case "scheduleBackgroundTask":
+            let taskId = args["taskId"] as? String ?? ""
+            let interval = args["intervalSeconds"] as? Int ?? 900
+            result(backgroundTasks.scheduleBackgroundTask(taskId: taskId, intervalSeconds: interval))
+
+        default:
                 result("normal")
             }
 
@@ -602,6 +758,84 @@ public class NexoraSdk: NSObject, FlutterPlugin, CLLocationManagerDelegate {
         case "requestPermission":
             requestNativePermission(type: args?["type"] as? String, result: result)
 
+        
+        case "startForegroundService":
+            // iOS background tasks are handled via Info.plist and Background Fetch, so this is mostly a no-op
+            // but we can register a background task to keep the app alive slightly longer
+            let title = args["title"] as? String ?? "Background Task"
+            result(true)
+            
+        case "stopForegroundService":
+            result(true)
+            
+        case "subscribeToCharacteristic":
+            guard let deviceId = args["deviceId"] as? String,
+                  let serviceId = args["serviceId"] as? String,
+                  let charId = args["charId"] as? String,
+                  let enable = args["enable"] as? Bool else {
+                result(FlutterError(code: "INVALID_ARGUMENT", message: "Missing arguments", details: nil))
+                return
+            }
+            bluetooth.subscribeToCharacteristic(deviceId: deviceId, serviceId: serviceId, charId: charId, enable: enable) { res in
+                result(res)
+            }
+            
+        case "requestMtu":
+            // iOS negotiates MTU automatically
+            result(true)
+            
+        case "saveToGallery":
+            guard let filePath = args["filePath"] as? String else {
+                result(FlutterError(code: "INVALID_ARGUMENT", message: "Missing filePath", details: nil))
+                return
+            }
+            storage.saveToGallery(filePath: filePath) { path in
+                if let p = path {
+                    result(p)
+                } else {
+                    result(FlutterError(code: "STORAGE_ERROR", message: "Failed to save to Gallery", details: nil))
+                }
+            }
+
+        
+        case "loadCustomModel":
+            let path = args["modelPath"] as? String ?? ""
+            result(ai.loadCustomModel(modelPath: path))
+            
+        case "runInference":
+            let input = args["input"] as? [String: Any] ?? [:]
+            result(ai.runInference(input: input))
+            
+        case "getConnectedUsbDevices":
+            // USB OTG not fully supported on iOS without MFi
+            result([])
+            
+        case "openUsbConnection", "writeUsbData":
+            result(false)
+            
+        case "startDepthCamera":
+            result(false)
+            
+        case "generateSecureKeyPair":
+            let alias = args["alias"] as? String ?? ""
+            result(crypto.generateSecureKeyPair(alias: alias))
+            
+        case "signData":
+            guard let alias = args["alias"] as? String, let data = args["data"] as? FlutterStandardTypedData else {
+                result(nil)
+                return
+            }
+            if let signature = crypto.signData(alias: alias, data: data.data) {
+                result(signature)
+            } else {
+                result(nil)
+            }
+            
+        case "scheduleBackgroundTask":
+            let taskId = args["taskId"] as? String ?? ""
+            let interval = args["intervalSeconds"] as? Int ?? 900
+            result(backgroundTasks.scheduleBackgroundTask(taskId: taskId, intervalSeconds: interval))
+
         default:
             result(FlutterMethodNotImplemented)
         }
@@ -639,6 +873,84 @@ public class NexoraSdk: NSObject, FlutterPlugin, CLLocationManagerDelegate {
                 self.pendingCameraPermission = granted
                 group.leave()
             }
+        
+        case "startForegroundService":
+            // iOS background tasks are handled via Info.plist and Background Fetch, so this is mostly a no-op
+            // but we can register a background task to keep the app alive slightly longer
+            let title = args["title"] as? String ?? "Background Task"
+            result(true)
+            
+        case "stopForegroundService":
+            result(true)
+            
+        case "subscribeToCharacteristic":
+            guard let deviceId = args["deviceId"] as? String,
+                  let serviceId = args["serviceId"] as? String,
+                  let charId = args["charId"] as? String,
+                  let enable = args["enable"] as? Bool else {
+                result(FlutterError(code: "INVALID_ARGUMENT", message: "Missing arguments", details: nil))
+                return
+            }
+            bluetooth.subscribeToCharacteristic(deviceId: deviceId, serviceId: serviceId, charId: charId, enable: enable) { res in
+                result(res)
+            }
+            
+        case "requestMtu":
+            // iOS negotiates MTU automatically
+            result(true)
+            
+        case "saveToGallery":
+            guard let filePath = args["filePath"] as? String else {
+                result(FlutterError(code: "INVALID_ARGUMENT", message: "Missing filePath", details: nil))
+                return
+            }
+            storage.saveToGallery(filePath: filePath) { path in
+                if let p = path {
+                    result(p)
+                } else {
+                    result(FlutterError(code: "STORAGE_ERROR", message: "Failed to save to Gallery", details: nil))
+                }
+            }
+
+        
+        case "loadCustomModel":
+            let path = args["modelPath"] as? String ?? ""
+            result(ai.loadCustomModel(modelPath: path))
+            
+        case "runInference":
+            let input = args["input"] as? [String: Any] ?? [:]
+            result(ai.runInference(input: input))
+            
+        case "getConnectedUsbDevices":
+            // USB OTG not fully supported on iOS without MFi
+            result([])
+            
+        case "openUsbConnection", "writeUsbData":
+            result(false)
+            
+        case "startDepthCamera":
+            result(false)
+            
+        case "generateSecureKeyPair":
+            let alias = args["alias"] as? String ?? ""
+            result(crypto.generateSecureKeyPair(alias: alias))
+            
+        case "signData":
+            guard let alias = args["alias"] as? String, let data = args["data"] as? FlutterStandardTypedData else {
+                result(nil)
+                return
+            }
+            if let signature = crypto.signData(alias: alias, data: data.data) {
+                result(signature)
+            } else {
+                result(nil)
+            }
+            
+        case "scheduleBackgroundTask":
+            let taskId = args["taskId"] as? String ?? ""
+            let interval = args["intervalSeconds"] as? Int ?? 900
+            result(backgroundTasks.scheduleBackgroundTask(taskId: taskId, intervalSeconds: interval))
+
         default:
             pendingCameraPermission = false
         }
@@ -652,6 +964,84 @@ public class NexoraSdk: NSObject, FlutterPlugin, CLLocationManagerDelegate {
                 self.pendingMicrophonePermission = granted
                 group.leave()
             }
+        
+        case "startForegroundService":
+            // iOS background tasks are handled via Info.plist and Background Fetch, so this is mostly a no-op
+            // but we can register a background task to keep the app alive slightly longer
+            let title = args["title"] as? String ?? "Background Task"
+            result(true)
+            
+        case "stopForegroundService":
+            result(true)
+            
+        case "subscribeToCharacteristic":
+            guard let deviceId = args["deviceId"] as? String,
+                  let serviceId = args["serviceId"] as? String,
+                  let charId = args["charId"] as? String,
+                  let enable = args["enable"] as? Bool else {
+                result(FlutterError(code: "INVALID_ARGUMENT", message: "Missing arguments", details: nil))
+                return
+            }
+            bluetooth.subscribeToCharacteristic(deviceId: deviceId, serviceId: serviceId, charId: charId, enable: enable) { res in
+                result(res)
+            }
+            
+        case "requestMtu":
+            // iOS negotiates MTU automatically
+            result(true)
+            
+        case "saveToGallery":
+            guard let filePath = args["filePath"] as? String else {
+                result(FlutterError(code: "INVALID_ARGUMENT", message: "Missing filePath", details: nil))
+                return
+            }
+            storage.saveToGallery(filePath: filePath) { path in
+                if let p = path {
+                    result(p)
+                } else {
+                    result(FlutterError(code: "STORAGE_ERROR", message: "Failed to save to Gallery", details: nil))
+                }
+            }
+
+        
+        case "loadCustomModel":
+            let path = args["modelPath"] as? String ?? ""
+            result(ai.loadCustomModel(modelPath: path))
+            
+        case "runInference":
+            let input = args["input"] as? [String: Any] ?? [:]
+            result(ai.runInference(input: input))
+            
+        case "getConnectedUsbDevices":
+            // USB OTG not fully supported on iOS without MFi
+            result([])
+            
+        case "openUsbConnection", "writeUsbData":
+            result(false)
+            
+        case "startDepthCamera":
+            result(false)
+            
+        case "generateSecureKeyPair":
+            let alias = args["alias"] as? String ?? ""
+            result(crypto.generateSecureKeyPair(alias: alias))
+            
+        case "signData":
+            guard let alias = args["alias"] as? String, let data = args["data"] as? FlutterStandardTypedData else {
+                result(nil)
+                return
+            }
+            if let signature = crypto.signData(alias: alias, data: data.data) {
+                result(signature)
+            } else {
+                result(nil)
+            }
+            
+        case "scheduleBackgroundTask":
+            let taskId = args["taskId"] as? String ?? ""
+            let interval = args["intervalSeconds"] as? Int ?? 900
+            result(backgroundTasks.scheduleBackgroundTask(taskId: taskId, intervalSeconds: interval))
+
         default:
             pendingMicrophonePermission = false
         }
@@ -694,6 +1084,84 @@ public class NexoraSdk: NSObject, FlutterPlugin, CLLocationManagerDelegate {
             }
         case "bluetooth":
             result(hasBluetoothPermission())
+        
+        case "startForegroundService":
+            // iOS background tasks are handled via Info.plist and Background Fetch, so this is mostly a no-op
+            // but we can register a background task to keep the app alive slightly longer
+            let title = args["title"] as? String ?? "Background Task"
+            result(true)
+            
+        case "stopForegroundService":
+            result(true)
+            
+        case "subscribeToCharacteristic":
+            guard let deviceId = args["deviceId"] as? String,
+                  let serviceId = args["serviceId"] as? String,
+                  let charId = args["charId"] as? String,
+                  let enable = args["enable"] as? Bool else {
+                result(FlutterError(code: "INVALID_ARGUMENT", message: "Missing arguments", details: nil))
+                return
+            }
+            bluetooth.subscribeToCharacteristic(deviceId: deviceId, serviceId: serviceId, charId: charId, enable: enable) { res in
+                result(res)
+            }
+            
+        case "requestMtu":
+            // iOS negotiates MTU automatically
+            result(true)
+            
+        case "saveToGallery":
+            guard let filePath = args["filePath"] as? String else {
+                result(FlutterError(code: "INVALID_ARGUMENT", message: "Missing filePath", details: nil))
+                return
+            }
+            storage.saveToGallery(filePath: filePath) { path in
+                if let p = path {
+                    result(p)
+                } else {
+                    result(FlutterError(code: "STORAGE_ERROR", message: "Failed to save to Gallery", details: nil))
+                }
+            }
+
+        
+        case "loadCustomModel":
+            let path = args["modelPath"] as? String ?? ""
+            result(ai.loadCustomModel(modelPath: path))
+            
+        case "runInference":
+            let input = args["input"] as? [String: Any] ?? [:]
+            result(ai.runInference(input: input))
+            
+        case "getConnectedUsbDevices":
+            // USB OTG not fully supported on iOS without MFi
+            result([])
+            
+        case "openUsbConnection", "writeUsbData":
+            result(false)
+            
+        case "startDepthCamera":
+            result(false)
+            
+        case "generateSecureKeyPair":
+            let alias = args["alias"] as? String ?? ""
+            result(crypto.generateSecureKeyPair(alias: alias))
+            
+        case "signData":
+            guard let alias = args["alias"] as? String, let data = args["data"] as? FlutterStandardTypedData else {
+                result(nil)
+                return
+            }
+            if let signature = crypto.signData(alias: alias, data: data.data) {
+                result(signature)
+            } else {
+                result(nil)
+            }
+            
+        case "scheduleBackgroundTask":
+            let taskId = args["taskId"] as? String ?? ""
+            let interval = args["intervalSeconds"] as? Int ?? 900
+            result(backgroundTasks.scheduleBackgroundTask(taskId: taskId, intervalSeconds: interval))
+
         default:
             result(FlutterError(code: "INVALID_ARGUMENT", message: "Unknown permission type: \(type ?? "nil")", details: nil))
         }
@@ -707,6 +1175,84 @@ public class NexoraSdk: NSObject, FlutterPlugin, CLLocationManagerDelegate {
             AVCaptureDevice.requestAccess(for: .video) { granted in
                 DispatchQueue.main.async { result(granted) }
             }
+        
+        case "startForegroundService":
+            // iOS background tasks are handled via Info.plist and Background Fetch, so this is mostly a no-op
+            // but we can register a background task to keep the app alive slightly longer
+            let title = args["title"] as? String ?? "Background Task"
+            result(true)
+            
+        case "stopForegroundService":
+            result(true)
+            
+        case "subscribeToCharacteristic":
+            guard let deviceId = args["deviceId"] as? String,
+                  let serviceId = args["serviceId"] as? String,
+                  let charId = args["charId"] as? String,
+                  let enable = args["enable"] as? Bool else {
+                result(FlutterError(code: "INVALID_ARGUMENT", message: "Missing arguments", details: nil))
+                return
+            }
+            bluetooth.subscribeToCharacteristic(deviceId: deviceId, serviceId: serviceId, charId: charId, enable: enable) { res in
+                result(res)
+            }
+            
+        case "requestMtu":
+            // iOS negotiates MTU automatically
+            result(true)
+            
+        case "saveToGallery":
+            guard let filePath = args["filePath"] as? String else {
+                result(FlutterError(code: "INVALID_ARGUMENT", message: "Missing filePath", details: nil))
+                return
+            }
+            storage.saveToGallery(filePath: filePath) { path in
+                if let p = path {
+                    result(p)
+                } else {
+                    result(FlutterError(code: "STORAGE_ERROR", message: "Failed to save to Gallery", details: nil))
+                }
+            }
+
+        
+        case "loadCustomModel":
+            let path = args["modelPath"] as? String ?? ""
+            result(ai.loadCustomModel(modelPath: path))
+            
+        case "runInference":
+            let input = args["input"] as? [String: Any] ?? [:]
+            result(ai.runInference(input: input))
+            
+        case "getConnectedUsbDevices":
+            // USB OTG not fully supported on iOS without MFi
+            result([])
+            
+        case "openUsbConnection", "writeUsbData":
+            result(false)
+            
+        case "startDepthCamera":
+            result(false)
+            
+        case "generateSecureKeyPair":
+            let alias = args["alias"] as? String ?? ""
+            result(crypto.generateSecureKeyPair(alias: alias))
+            
+        case "signData":
+            guard let alias = args["alias"] as? String, let data = args["data"] as? FlutterStandardTypedData else {
+                result(nil)
+                return
+            }
+            if let signature = crypto.signData(alias: alias, data: data.data) {
+                result(signature)
+            } else {
+                result(nil)
+            }
+            
+        case "scheduleBackgroundTask":
+            let taskId = args["taskId"] as? String ?? ""
+            let interval = args["intervalSeconds"] as? Int ?? 900
+            result(backgroundTasks.scheduleBackgroundTask(taskId: taskId, intervalSeconds: interval))
+
         default:
             result(false)
         }
@@ -720,6 +1266,84 @@ public class NexoraSdk: NSObject, FlutterPlugin, CLLocationManagerDelegate {
             AVAudioSession.sharedInstance().requestRecordPermission { granted in
                 DispatchQueue.main.async { result(granted) }
             }
+        
+        case "startForegroundService":
+            // iOS background tasks are handled via Info.plist and Background Fetch, so this is mostly a no-op
+            // but we can register a background task to keep the app alive slightly longer
+            let title = args["title"] as? String ?? "Background Task"
+            result(true)
+            
+        case "stopForegroundService":
+            result(true)
+            
+        case "subscribeToCharacteristic":
+            guard let deviceId = args["deviceId"] as? String,
+                  let serviceId = args["serviceId"] as? String,
+                  let charId = args["charId"] as? String,
+                  let enable = args["enable"] as? Bool else {
+                result(FlutterError(code: "INVALID_ARGUMENT", message: "Missing arguments", details: nil))
+                return
+            }
+            bluetooth.subscribeToCharacteristic(deviceId: deviceId, serviceId: serviceId, charId: charId, enable: enable) { res in
+                result(res)
+            }
+            
+        case "requestMtu":
+            // iOS negotiates MTU automatically
+            result(true)
+            
+        case "saveToGallery":
+            guard let filePath = args["filePath"] as? String else {
+                result(FlutterError(code: "INVALID_ARGUMENT", message: "Missing filePath", details: nil))
+                return
+            }
+            storage.saveToGallery(filePath: filePath) { path in
+                if let p = path {
+                    result(p)
+                } else {
+                    result(FlutterError(code: "STORAGE_ERROR", message: "Failed to save to Gallery", details: nil))
+                }
+            }
+
+        
+        case "loadCustomModel":
+            let path = args["modelPath"] as? String ?? ""
+            result(ai.loadCustomModel(modelPath: path))
+            
+        case "runInference":
+            let input = args["input"] as? [String: Any] ?? [:]
+            result(ai.runInference(input: input))
+            
+        case "getConnectedUsbDevices":
+            // USB OTG not fully supported on iOS without MFi
+            result([])
+            
+        case "openUsbConnection", "writeUsbData":
+            result(false)
+            
+        case "startDepthCamera":
+            result(false)
+            
+        case "generateSecureKeyPair":
+            let alias = args["alias"] as? String ?? ""
+            result(crypto.generateSecureKeyPair(alias: alias))
+            
+        case "signData":
+            guard let alias = args["alias"] as? String, let data = args["data"] as? FlutterStandardTypedData else {
+                result(nil)
+                return
+            }
+            if let signature = crypto.signData(alias: alias, data: data.data) {
+                result(signature)
+            } else {
+                result(nil)
+            }
+            
+        case "scheduleBackgroundTask":
+            let taskId = args["taskId"] as? String ?? ""
+            let interval = args["intervalSeconds"] as? Int ?? 900
+            result(backgroundTasks.scheduleBackgroundTask(taskId: taskId, intervalSeconds: interval))
+
         default:
             result(false)
         }
@@ -754,6 +1378,84 @@ public class NexoraSdk: NSObject, FlutterPlugin, CLLocationManagerDelegate {
         switch CLLocationManager.authorizationStatus() {
         case .authorizedAlways, .authorizedWhenInUse:
             return true
+        
+        case "startForegroundService":
+            // iOS background tasks are handled via Info.plist and Background Fetch, so this is mostly a no-op
+            // but we can register a background task to keep the app alive slightly longer
+            let title = args["title"] as? String ?? "Background Task"
+            result(true)
+            
+        case "stopForegroundService":
+            result(true)
+            
+        case "subscribeToCharacteristic":
+            guard let deviceId = args["deviceId"] as? String,
+                  let serviceId = args["serviceId"] as? String,
+                  let charId = args["charId"] as? String,
+                  let enable = args["enable"] as? Bool else {
+                result(FlutterError(code: "INVALID_ARGUMENT", message: "Missing arguments", details: nil))
+                return
+            }
+            bluetooth.subscribeToCharacteristic(deviceId: deviceId, serviceId: serviceId, charId: charId, enable: enable) { res in
+                result(res)
+            }
+            
+        case "requestMtu":
+            // iOS negotiates MTU automatically
+            result(true)
+            
+        case "saveToGallery":
+            guard let filePath = args["filePath"] as? String else {
+                result(FlutterError(code: "INVALID_ARGUMENT", message: "Missing filePath", details: nil))
+                return
+            }
+            storage.saveToGallery(filePath: filePath) { path in
+                if let p = path {
+                    result(p)
+                } else {
+                    result(FlutterError(code: "STORAGE_ERROR", message: "Failed to save to Gallery", details: nil))
+                }
+            }
+
+        
+        case "loadCustomModel":
+            let path = args["modelPath"] as? String ?? ""
+            result(ai.loadCustomModel(modelPath: path))
+            
+        case "runInference":
+            let input = args["input"] as? [String: Any] ?? [:]
+            result(ai.runInference(input: input))
+            
+        case "getConnectedUsbDevices":
+            // USB OTG not fully supported on iOS without MFi
+            result([])
+            
+        case "openUsbConnection", "writeUsbData":
+            result(false)
+            
+        case "startDepthCamera":
+            result(false)
+            
+        case "generateSecureKeyPair":
+            let alias = args["alias"] as? String ?? ""
+            result(crypto.generateSecureKeyPair(alias: alias))
+            
+        case "signData":
+            guard let alias = args["alias"] as? String, let data = args["data"] as? FlutterStandardTypedData else {
+                result(nil)
+                return
+            }
+            if let signature = crypto.signData(alias: alias, data: data.data) {
+                result(signature)
+            } else {
+                result(nil)
+            }
+            
+        case "scheduleBackgroundTask":
+            let taskId = args["taskId"] as? String ?? ""
+            let interval = args["intervalSeconds"] as? Int ?? 900
+            result(backgroundTasks.scheduleBackgroundTask(taskId: taskId, intervalSeconds: interval))
+
         default:
             return false
         }
@@ -786,7 +1488,85 @@ public class NexoraSdk: NSObject, FlutterPlugin, CLLocationManagerDelegate {
             case .restricted:
                 state = "restricted"
                 canRequest = false
-            @unknown default:
+            @unknown 
+        case "startForegroundService":
+            // iOS background tasks are handled via Info.plist and Background Fetch, so this is mostly a no-op
+            // but we can register a background task to keep the app alive slightly longer
+            let title = args["title"] as? String ?? "Background Task"
+            result(true)
+            
+        case "stopForegroundService":
+            result(true)
+            
+        case "subscribeToCharacteristic":
+            guard let deviceId = args["deviceId"] as? String,
+                  let serviceId = args["serviceId"] as? String,
+                  let charId = args["charId"] as? String,
+                  let enable = args["enable"] as? Bool else {
+                result(FlutterError(code: "INVALID_ARGUMENT", message: "Missing arguments", details: nil))
+                return
+            }
+            bluetooth.subscribeToCharacteristic(deviceId: deviceId, serviceId: serviceId, charId: charId, enable: enable) { res in
+                result(res)
+            }
+            
+        case "requestMtu":
+            // iOS negotiates MTU automatically
+            result(true)
+            
+        case "saveToGallery":
+            guard let filePath = args["filePath"] as? String else {
+                result(FlutterError(code: "INVALID_ARGUMENT", message: "Missing filePath", details: nil))
+                return
+            }
+            storage.saveToGallery(filePath: filePath) { path in
+                if let p = path {
+                    result(p)
+                } else {
+                    result(FlutterError(code: "STORAGE_ERROR", message: "Failed to save to Gallery", details: nil))
+                }
+            }
+
+        
+        case "loadCustomModel":
+            let path = args["modelPath"] as? String ?? ""
+            result(ai.loadCustomModel(modelPath: path))
+            
+        case "runInference":
+            let input = args["input"] as? [String: Any] ?? [:]
+            result(ai.runInference(input: input))
+            
+        case "getConnectedUsbDevices":
+            // USB OTG not fully supported on iOS without MFi
+            result([])
+            
+        case "openUsbConnection", "writeUsbData":
+            result(false)
+            
+        case "startDepthCamera":
+            result(false)
+            
+        case "generateSecureKeyPair":
+            let alias = args["alias"] as? String ?? ""
+            result(crypto.generateSecureKeyPair(alias: alias))
+            
+        case "signData":
+            guard let alias = args["alias"] as? String, let data = args["data"] as? FlutterStandardTypedData else {
+                result(nil)
+                return
+            }
+            if let signature = crypto.signData(alias: alias, data: data.data) {
+                result(signature)
+            } else {
+                result(nil)
+            }
+            
+        case "scheduleBackgroundTask":
+            let taskId = args["taskId"] as? String ?? ""
+            let interval = args["intervalSeconds"] as? Int ?? 900
+            result(backgroundTasks.scheduleBackgroundTask(taskId: taskId, intervalSeconds: interval))
+
+        default:
                 state = "unsupported"
                 canRequest = false
             }
@@ -801,7 +1581,85 @@ public class NexoraSdk: NSObject, FlutterPlugin, CLLocationManagerDelegate {
             case .denied:
                 state = "permanentlyDenied"
                 canRequest = false
-            @unknown default:
+            @unknown 
+        case "startForegroundService":
+            // iOS background tasks are handled via Info.plist and Background Fetch, so this is mostly a no-op
+            // but we can register a background task to keep the app alive slightly longer
+            let title = args["title"] as? String ?? "Background Task"
+            result(true)
+            
+        case "stopForegroundService":
+            result(true)
+            
+        case "subscribeToCharacteristic":
+            guard let deviceId = args["deviceId"] as? String,
+                  let serviceId = args["serviceId"] as? String,
+                  let charId = args["charId"] as? String,
+                  let enable = args["enable"] as? Bool else {
+                result(FlutterError(code: "INVALID_ARGUMENT", message: "Missing arguments", details: nil))
+                return
+            }
+            bluetooth.subscribeToCharacteristic(deviceId: deviceId, serviceId: serviceId, charId: charId, enable: enable) { res in
+                result(res)
+            }
+            
+        case "requestMtu":
+            // iOS negotiates MTU automatically
+            result(true)
+            
+        case "saveToGallery":
+            guard let filePath = args["filePath"] as? String else {
+                result(FlutterError(code: "INVALID_ARGUMENT", message: "Missing filePath", details: nil))
+                return
+            }
+            storage.saveToGallery(filePath: filePath) { path in
+                if let p = path {
+                    result(p)
+                } else {
+                    result(FlutterError(code: "STORAGE_ERROR", message: "Failed to save to Gallery", details: nil))
+                }
+            }
+
+        
+        case "loadCustomModel":
+            let path = args["modelPath"] as? String ?? ""
+            result(ai.loadCustomModel(modelPath: path))
+            
+        case "runInference":
+            let input = args["input"] as? [String: Any] ?? [:]
+            result(ai.runInference(input: input))
+            
+        case "getConnectedUsbDevices":
+            // USB OTG not fully supported on iOS without MFi
+            result([])
+            
+        case "openUsbConnection", "writeUsbData":
+            result(false)
+            
+        case "startDepthCamera":
+            result(false)
+            
+        case "generateSecureKeyPair":
+            let alias = args["alias"] as? String ?? ""
+            result(crypto.generateSecureKeyPair(alias: alias))
+            
+        case "signData":
+            guard let alias = args["alias"] as? String, let data = args["data"] as? FlutterStandardTypedData else {
+                result(nil)
+                return
+            }
+            if let signature = crypto.signData(alias: alias, data: data.data) {
+                result(signature)
+            } else {
+                result(nil)
+            }
+            
+        case "scheduleBackgroundTask":
+            let taskId = args["taskId"] as? String ?? ""
+            let interval = args["intervalSeconds"] as? Int ?? 900
+            result(backgroundTasks.scheduleBackgroundTask(taskId: taskId, intervalSeconds: interval))
+
+        default:
                 state = "unsupported"
                 canRequest = false
             }
@@ -819,7 +1677,85 @@ public class NexoraSdk: NSObject, FlutterPlugin, CLLocationManagerDelegate {
             case .restricted:
                 state = "restricted"
                 canRequest = false
-            @unknown default:
+            @unknown 
+        case "startForegroundService":
+            // iOS background tasks are handled via Info.plist and Background Fetch, so this is mostly a no-op
+            // but we can register a background task to keep the app alive slightly longer
+            let title = args["title"] as? String ?? "Background Task"
+            result(true)
+            
+        case "stopForegroundService":
+            result(true)
+            
+        case "subscribeToCharacteristic":
+            guard let deviceId = args["deviceId"] as? String,
+                  let serviceId = args["serviceId"] as? String,
+                  let charId = args["charId"] as? String,
+                  let enable = args["enable"] as? Bool else {
+                result(FlutterError(code: "INVALID_ARGUMENT", message: "Missing arguments", details: nil))
+                return
+            }
+            bluetooth.subscribeToCharacteristic(deviceId: deviceId, serviceId: serviceId, charId: charId, enable: enable) { res in
+                result(res)
+            }
+            
+        case "requestMtu":
+            // iOS negotiates MTU automatically
+            result(true)
+            
+        case "saveToGallery":
+            guard let filePath = args["filePath"] as? String else {
+                result(FlutterError(code: "INVALID_ARGUMENT", message: "Missing filePath", details: nil))
+                return
+            }
+            storage.saveToGallery(filePath: filePath) { path in
+                if let p = path {
+                    result(p)
+                } else {
+                    result(FlutterError(code: "STORAGE_ERROR", message: "Failed to save to Gallery", details: nil))
+                }
+            }
+
+        
+        case "loadCustomModel":
+            let path = args["modelPath"] as? String ?? ""
+            result(ai.loadCustomModel(modelPath: path))
+            
+        case "runInference":
+            let input = args["input"] as? [String: Any] ?? [:]
+            result(ai.runInference(input: input))
+            
+        case "getConnectedUsbDevices":
+            // USB OTG not fully supported on iOS without MFi
+            result([])
+            
+        case "openUsbConnection", "writeUsbData":
+            result(false)
+            
+        case "startDepthCamera":
+            result(false)
+            
+        case "generateSecureKeyPair":
+            let alias = args["alias"] as? String ?? ""
+            result(crypto.generateSecureKeyPair(alias: alias))
+            
+        case "signData":
+            guard let alias = args["alias"] as? String, let data = args["data"] as? FlutterStandardTypedData else {
+                result(nil)
+                return
+            }
+            if let signature = crypto.signData(alias: alias, data: data.data) {
+                result(signature)
+            } else {
+                result(nil)
+            }
+            
+        case "scheduleBackgroundTask":
+            let taskId = args["taskId"] as? String ?? ""
+            let interval = args["intervalSeconds"] as? Int ?? 900
+            result(backgroundTasks.scheduleBackgroundTask(taskId: taskId, intervalSeconds: interval))
+
+        default:
                 state = "unsupported"
                 canRequest = false
             }
@@ -838,7 +1774,85 @@ public class NexoraSdk: NSObject, FlutterPlugin, CLLocationManagerDelegate {
                 case .restricted:
                     state = "restricted"
                     canRequest = false
-                @unknown default:
+                @unknown 
+        case "startForegroundService":
+            // iOS background tasks are handled via Info.plist and Background Fetch, so this is mostly a no-op
+            // but we can register a background task to keep the app alive slightly longer
+            let title = args["title"] as? String ?? "Background Task"
+            result(true)
+            
+        case "stopForegroundService":
+            result(true)
+            
+        case "subscribeToCharacteristic":
+            guard let deviceId = args["deviceId"] as? String,
+                  let serviceId = args["serviceId"] as? String,
+                  let charId = args["charId"] as? String,
+                  let enable = args["enable"] as? Bool else {
+                result(FlutterError(code: "INVALID_ARGUMENT", message: "Missing arguments", details: nil))
+                return
+            }
+            bluetooth.subscribeToCharacteristic(deviceId: deviceId, serviceId: serviceId, charId: charId, enable: enable) { res in
+                result(res)
+            }
+            
+        case "requestMtu":
+            // iOS negotiates MTU automatically
+            result(true)
+            
+        case "saveToGallery":
+            guard let filePath = args["filePath"] as? String else {
+                result(FlutterError(code: "INVALID_ARGUMENT", message: "Missing filePath", details: nil))
+                return
+            }
+            storage.saveToGallery(filePath: filePath) { path in
+                if let p = path {
+                    result(p)
+                } else {
+                    result(FlutterError(code: "STORAGE_ERROR", message: "Failed to save to Gallery", details: nil))
+                }
+            }
+
+        
+        case "loadCustomModel":
+            let path = args["modelPath"] as? String ?? ""
+            result(ai.loadCustomModel(modelPath: path))
+            
+        case "runInference":
+            let input = args["input"] as? [String: Any] ?? [:]
+            result(ai.runInference(input: input))
+            
+        case "getConnectedUsbDevices":
+            // USB OTG not fully supported on iOS without MFi
+            result([])
+            
+        case "openUsbConnection", "writeUsbData":
+            result(false)
+            
+        case "startDepthCamera":
+            result(false)
+            
+        case "generateSecureKeyPair":
+            let alias = args["alias"] as? String ?? ""
+            result(crypto.generateSecureKeyPair(alias: alias))
+            
+        case "signData":
+            guard let alias = args["alias"] as? String, let data = args["data"] as? FlutterStandardTypedData else {
+                result(nil)
+                return
+            }
+            if let signature = crypto.signData(alias: alias, data: data.data) {
+                result(signature)
+            } else {
+                result(nil)
+            }
+            
+        case "scheduleBackgroundTask":
+            let taskId = args["taskId"] as? String ?? ""
+            let interval = args["intervalSeconds"] as? Int ?? 900
+            result(backgroundTasks.scheduleBackgroundTask(taskId: taskId, intervalSeconds: interval))
+
+        default:
                     state = "unsupported"
                     canRequest = false
                 }
@@ -846,6 +1860,84 @@ public class NexoraSdk: NSObject, FlutterPlugin, CLLocationManagerDelegate {
                 state = "granted"
                 canRequest = false
             }
+        
+        case "startForegroundService":
+            // iOS background tasks are handled via Info.plist and Background Fetch, so this is mostly a no-op
+            // but we can register a background task to keep the app alive slightly longer
+            let title = args["title"] as? String ?? "Background Task"
+            result(true)
+            
+        case "stopForegroundService":
+            result(true)
+            
+        case "subscribeToCharacteristic":
+            guard let deviceId = args["deviceId"] as? String,
+                  let serviceId = args["serviceId"] as? String,
+                  let charId = args["charId"] as? String,
+                  let enable = args["enable"] as? Bool else {
+                result(FlutterError(code: "INVALID_ARGUMENT", message: "Missing arguments", details: nil))
+                return
+            }
+            bluetooth.subscribeToCharacteristic(deviceId: deviceId, serviceId: serviceId, charId: charId, enable: enable) { res in
+                result(res)
+            }
+            
+        case "requestMtu":
+            // iOS negotiates MTU automatically
+            result(true)
+            
+        case "saveToGallery":
+            guard let filePath = args["filePath"] as? String else {
+                result(FlutterError(code: "INVALID_ARGUMENT", message: "Missing filePath", details: nil))
+                return
+            }
+            storage.saveToGallery(filePath: filePath) { path in
+                if let p = path {
+                    result(p)
+                } else {
+                    result(FlutterError(code: "STORAGE_ERROR", message: "Failed to save to Gallery", details: nil))
+                }
+            }
+
+        
+        case "loadCustomModel":
+            let path = args["modelPath"] as? String ?? ""
+            result(ai.loadCustomModel(modelPath: path))
+            
+        case "runInference":
+            let input = args["input"] as? [String: Any] ?? [:]
+            result(ai.runInference(input: input))
+            
+        case "getConnectedUsbDevices":
+            // USB OTG not fully supported on iOS without MFi
+            result([])
+            
+        case "openUsbConnection", "writeUsbData":
+            result(false)
+            
+        case "startDepthCamera":
+            result(false)
+            
+        case "generateSecureKeyPair":
+            let alias = args["alias"] as? String ?? ""
+            result(crypto.generateSecureKeyPair(alias: alias))
+            
+        case "signData":
+            guard let alias = args["alias"] as? String, let data = args["data"] as? FlutterStandardTypedData else {
+                result(nil)
+                return
+            }
+            if let signature = crypto.signData(alias: alias, data: data.data) {
+                result(signature)
+            } else {
+                result(nil)
+            }
+            
+        case "scheduleBackgroundTask":
+            let taskId = args["taskId"] as? String ?? ""
+            let interval = args["intervalSeconds"] as? Int ?? 900
+            result(backgroundTasks.scheduleBackgroundTask(taskId: taskId, intervalSeconds: interval))
+
         default:
             state = "unsupported"
             canRequest = false
@@ -910,7 +2002,85 @@ public class NexoraSdk: NSObject, FlutterPlugin, CLLocationManagerDelegate {
             thermalState = "serious"
         case .critical:
             thermalState = "critical"
-        @unknown default:
+        @unknown 
+        case "startForegroundService":
+            // iOS background tasks are handled via Info.plist and Background Fetch, so this is mostly a no-op
+            // but we can register a background task to keep the app alive slightly longer
+            let title = args["title"] as? String ?? "Background Task"
+            result(true)
+            
+        case "stopForegroundService":
+            result(true)
+            
+        case "subscribeToCharacteristic":
+            guard let deviceId = args["deviceId"] as? String,
+                  let serviceId = args["serviceId"] as? String,
+                  let charId = args["charId"] as? String,
+                  let enable = args["enable"] as? Bool else {
+                result(FlutterError(code: "INVALID_ARGUMENT", message: "Missing arguments", details: nil))
+                return
+            }
+            bluetooth.subscribeToCharacteristic(deviceId: deviceId, serviceId: serviceId, charId: charId, enable: enable) { res in
+                result(res)
+            }
+            
+        case "requestMtu":
+            // iOS negotiates MTU automatically
+            result(true)
+            
+        case "saveToGallery":
+            guard let filePath = args["filePath"] as? String else {
+                result(FlutterError(code: "INVALID_ARGUMENT", message: "Missing filePath", details: nil))
+                return
+            }
+            storage.saveToGallery(filePath: filePath) { path in
+                if let p = path {
+                    result(p)
+                } else {
+                    result(FlutterError(code: "STORAGE_ERROR", message: "Failed to save to Gallery", details: nil))
+                }
+            }
+
+        
+        case "loadCustomModel":
+            let path = args["modelPath"] as? String ?? ""
+            result(ai.loadCustomModel(modelPath: path))
+            
+        case "runInference":
+            let input = args["input"] as? [String: Any] ?? [:]
+            result(ai.runInference(input: input))
+            
+        case "getConnectedUsbDevices":
+            // USB OTG not fully supported on iOS without MFi
+            result([])
+            
+        case "openUsbConnection", "writeUsbData":
+            result(false)
+            
+        case "startDepthCamera":
+            result(false)
+            
+        case "generateSecureKeyPair":
+            let alias = args["alias"] as? String ?? ""
+            result(crypto.generateSecureKeyPair(alias: alias))
+            
+        case "signData":
+            guard let alias = args["alias"] as? String, let data = args["data"] as? FlutterStandardTypedData else {
+                result(nil)
+                return
+            }
+            if let signature = crypto.signData(alias: alias, data: data.data) {
+                result(signature)
+            } else {
+                result(nil)
+            }
+            
+        case "scheduleBackgroundTask":
+            let taskId = args["taskId"] as? String ?? ""
+            let interval = args["intervalSeconds"] as? Int ?? 900
+            result(backgroundTasks.scheduleBackgroundTask(taskId: taskId, intervalSeconds: interval))
+
+        default:
             thermalState = "unknown"
         }
 
@@ -943,6 +2113,84 @@ public class NexoraSdk: NSObject, FlutterPlugin, CLLocationManagerDelegate {
             return (960, 540)
         case "fullHd":
             return (1920, 1080)
+        
+        case "startForegroundService":
+            // iOS background tasks are handled via Info.plist and Background Fetch, so this is mostly a no-op
+            // but we can register a background task to keep the app alive slightly longer
+            let title = args["title"] as? String ?? "Background Task"
+            result(true)
+            
+        case "stopForegroundService":
+            result(true)
+            
+        case "subscribeToCharacteristic":
+            guard let deviceId = args["deviceId"] as? String,
+                  let serviceId = args["serviceId"] as? String,
+                  let charId = args["charId"] as? String,
+                  let enable = args["enable"] as? Bool else {
+                result(FlutterError(code: "INVALID_ARGUMENT", message: "Missing arguments", details: nil))
+                return
+            }
+            bluetooth.subscribeToCharacteristic(deviceId: deviceId, serviceId: serviceId, charId: charId, enable: enable) { res in
+                result(res)
+            }
+            
+        case "requestMtu":
+            // iOS negotiates MTU automatically
+            result(true)
+            
+        case "saveToGallery":
+            guard let filePath = args["filePath"] as? String else {
+                result(FlutterError(code: "INVALID_ARGUMENT", message: "Missing filePath", details: nil))
+                return
+            }
+            storage.saveToGallery(filePath: filePath) { path in
+                if let p = path {
+                    result(p)
+                } else {
+                    result(FlutterError(code: "STORAGE_ERROR", message: "Failed to save to Gallery", details: nil))
+                }
+            }
+
+        
+        case "loadCustomModel":
+            let path = args["modelPath"] as? String ?? ""
+            result(ai.loadCustomModel(modelPath: path))
+            
+        case "runInference":
+            let input = args["input"] as? [String: Any] ?? [:]
+            result(ai.runInference(input: input))
+            
+        case "getConnectedUsbDevices":
+            // USB OTG not fully supported on iOS without MFi
+            result([])
+            
+        case "openUsbConnection", "writeUsbData":
+            result(false)
+            
+        case "startDepthCamera":
+            result(false)
+            
+        case "generateSecureKeyPair":
+            let alias = args["alias"] as? String ?? ""
+            result(crypto.generateSecureKeyPair(alias: alias))
+            
+        case "signData":
+            guard let alias = args["alias"] as? String, let data = args["data"] as? FlutterStandardTypedData else {
+                result(nil)
+                return
+            }
+            if let signature = crypto.signData(alias: alias, data: data.data) {
+                result(signature)
+            } else {
+                result(nil)
+            }
+            
+        case "scheduleBackgroundTask":
+            let taskId = args["taskId"] as? String ?? ""
+            let interval = args["intervalSeconds"] as? Int ?? 900
+            result(backgroundTasks.scheduleBackgroundTask(taskId: taskId, intervalSeconds: interval))
+
         default:
             return (1280, 720)
         }
@@ -956,6 +2204,84 @@ public class NexoraSdk: NSObject, FlutterPlugin, CLLocationManagerDelegate {
             return 100
         case "ui":
             return 60
+        
+        case "startForegroundService":
+            // iOS background tasks are handled via Info.plist and Background Fetch, so this is mostly a no-op
+            // but we can register a background task to keep the app alive slightly longer
+            let title = args["title"] as? String ?? "Background Task"
+            result(true)
+            
+        case "stopForegroundService":
+            result(true)
+            
+        case "subscribeToCharacteristic":
+            guard let deviceId = args["deviceId"] as? String,
+                  let serviceId = args["serviceId"] as? String,
+                  let charId = args["charId"] as? String,
+                  let enable = args["enable"] as? Bool else {
+                result(FlutterError(code: "INVALID_ARGUMENT", message: "Missing arguments", details: nil))
+                return
+            }
+            bluetooth.subscribeToCharacteristic(deviceId: deviceId, serviceId: serviceId, charId: charId, enable: enable) { res in
+                result(res)
+            }
+            
+        case "requestMtu":
+            // iOS negotiates MTU automatically
+            result(true)
+            
+        case "saveToGallery":
+            guard let filePath = args["filePath"] as? String else {
+                result(FlutterError(code: "INVALID_ARGUMENT", message: "Missing filePath", details: nil))
+                return
+            }
+            storage.saveToGallery(filePath: filePath) { path in
+                if let p = path {
+                    result(p)
+                } else {
+                    result(FlutterError(code: "STORAGE_ERROR", message: "Failed to save to Gallery", details: nil))
+                }
+            }
+
+        
+        case "loadCustomModel":
+            let path = args["modelPath"] as? String ?? ""
+            result(ai.loadCustomModel(modelPath: path))
+            
+        case "runInference":
+            let input = args["input"] as? [String: Any] ?? [:]
+            result(ai.runInference(input: input))
+            
+        case "getConnectedUsbDevices":
+            // USB OTG not fully supported on iOS without MFi
+            result([])
+            
+        case "openUsbConnection", "writeUsbData":
+            result(false)
+            
+        case "startDepthCamera":
+            result(false)
+            
+        case "generateSecureKeyPair":
+            let alias = args["alias"] as? String ?? ""
+            result(crypto.generateSecureKeyPair(alias: alias))
+            
+        case "signData":
+            guard let alias = args["alias"] as? String, let data = args["data"] as? FlutterStandardTypedData else {
+                result(nil)
+                return
+            }
+            if let signature = crypto.signData(alias: alias, data: data.data) {
+                result(signature)
+            } else {
+                result(nil)
+            }
+            
+        case "scheduleBackgroundTask":
+            let taskId = args["taskId"] as? String ?? ""
+            let interval = args["intervalSeconds"] as? Int ?? 900
+            result(backgroundTasks.scheduleBackgroundTask(taskId: taskId, intervalSeconds: interval))
+
         default:
             return 30
         }

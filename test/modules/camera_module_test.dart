@@ -6,20 +6,24 @@ import '../mocks/mock_platform.dart';
 class MockPlatform extends MockNexoraSdkPlatform {
   bool isCameraRunning = false;
   bool requestPermissionResult = true;
+  bool startCameraCalled = false;
+  bool startCameraWithOptionsCalled = false;
+  CameraOptions? lastCameraOptions;
 
   @override
   Future<bool> requestCameraPermission() async => requestPermissionResult;
 
   @override
-  Future<dynamic> startCamera({int width = 1280, int height = 720}) async {
-    isCameraRunning = true;
-    return 42;
+  Future<int?> startCamera({int width = 1280, int height = 720}) async {
+    startCameraCalled = true;
+    return 1;
   }
 
   @override
-  Future<dynamic> startCameraWithOptions(CameraOptions options) async {
-    isCameraRunning = true;
-    return 42;
+  Future<int?> startCameraWithOptions(CameraOptions options) async {
+    startCameraWithOptionsCalled = true;
+    lastCameraOptions = options;
+    return 1;
   }
 
   @override
@@ -68,7 +72,7 @@ void main() {
       final camera = CameraModule();
       expect(camera.isRunning, false);
       final textureId = await camera.start();
-      expect(textureId, 42);
+      expect(textureId, 1);
       expect(camera.isRunning, true);
     });
 

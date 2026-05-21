@@ -145,6 +145,60 @@ class HardwareStorageManager(private val context: Context) {
     }
 
     /// Checks whether a file exists in app-private storage.
+    
+    fun saveToGallery(filePath: String, callback: (String?) -> Unit) {
+        val file = File(filePath)
+        if (!file.exists()) {
+            callback(null)
+            return
+        }
+
+        val values = ContentValues().apply {
+            put(MediaStore.MediaColumns.DISPLAY_NAME, file.name)
+            put(MediaStore.MediaColumns.MIME_TYPE, if (file.name.endsWith(".mp4")) "video/mp4" else "image/jpeg")
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                put(MediaStore.MediaColumns.RELATIVE_PATH, if (file.name.endsWith(".mp4")) Environment.DIRECTORY_MOVIES else Environment.DIRECTORY_PICTURES)
+                put(MediaStore.MediaColumns.IS_PENDING, 1)
+            }
+        }
+
+        val collection = if (file.name.endsWith(".mp4")) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                MediaStore.Video.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
+            } else {
+                MediaStore.Video.Media.EXTERNAL_CONTENT_URI
+            }
+        } else {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
+            } else {
+                MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+            }
+        }
+
+        val uri = context.contentResolver.insert(collection, values)
+        if (uri != null) {
+            try {
+                context.contentResolver.openOutputStream(uri)?.use { out ->
+                    FileInputStream(file).use { input ->
+                        input.copyTo(out)
+                    }
+                }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    values.clear()
+                    values.put(MediaStore.MediaColumns.IS_PENDING, 0)
+                    context.contentResolver.update(uri, values, null, null)
+                }
+                callback(uri.toString())
+            } catch (e: Exception) {
+                context.contentResolver.delete(uri, null, null)
+                callback(null)
+            }
+        } else {
+            callback(null)
+        }
+    }
+
     fun fileExists(fileName: String): Boolean {
         return safeFile(fileName).exists()
     }

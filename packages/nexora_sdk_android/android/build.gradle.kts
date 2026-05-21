@@ -9,6 +9,9 @@ buildscript {
     }
 
     dependencies {
+    implementation("org.tensorflow:tensorflow-lite:2.14.0")
+    implementation("androidx.work:work-runtime-ktx:2.9.0")
+
         classpath("com.android.tools.build:gradle:8.2.2")
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
     }
@@ -29,6 +32,12 @@ plugins {
 android {
     namespace = "com.nexora.sdk"
     compileSdk = 34
+    externalNativeBuild {
+        cmake {
+            path("CMakeLists.txt")
+        }
+    }
+
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -49,6 +58,9 @@ android {
 }
 
 dependencies {
+    implementation("org.tensorflow:tensorflow-lite:2.14.0")
+    implementation("androidx.work:work-runtime-ktx:2.9.0")
+
     // Core Hardware
     implementation("com.google.android.gms:play-services-location:21.3.0")
     implementation("androidx.biometric:biometric:1.2.0-alpha05")

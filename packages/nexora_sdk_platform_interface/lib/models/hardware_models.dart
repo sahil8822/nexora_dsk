@@ -1,3 +1,4 @@
+// ignore_for_file: lines_longer_than_80_chars, public_member_api_docs, sort_constructors_first
 import 'dart:typed_data';
 
 import 'package:flutter/cupertino.dart' show Texture;
@@ -1020,3 +1021,70 @@ enum AudioInputDevice {
 /// API Documentation for Public member.
 /// API Documentation for Public member.
 enum DeviceThermalState { normal, fair, serious, critical }
+
+
+/// Data class representing a connected USB device.
+class UsbDevice {
+  /// The unique device identifier (e.g. device path or ID).
+  final String deviceId;
+  /// The product name or description.
+  final String name;
+  /// The manufacturer string.
+  final String manufacturer;
+
+  /// Creates a [UsbDevice].
+  UsbDevice({required this.deviceId, required this.name, required this.manufacturer});
+
+  /// Creates a [UsbDevice] from a Map.
+  factory UsbDevice.fromMap(Map<String, dynamic> map) {
+    return UsbDevice(
+      deviceId: map['deviceId'] as String? ?? '',
+      name: map['name'] as String? ?? 'Unknown',
+      manufacturer: map['manufacturer'] as String? ?? 'Unknown',
+    );
+  }
+
+  /// Converts this [UsbDevice] to a Map.
+  Map<String, dynamic> toMap() => {
+    'deviceId': deviceId,
+    'name': name,
+    'manufacturer': manufacturer,
+  };
+}
+
+/// Data class representing the result of an AI inference.
+class AiInferenceResult {
+  /// The raw tensor outputs mapped by their output names.
+  final Map<String, dynamic> outputs;
+  /// The execution time in milliseconds.
+  final int executionTimeMs;
+
+  /// Creates an [AiInferenceResult].
+  AiInferenceResult({required this.outputs, required this.executionTimeMs});
+
+  /// Creates an [AiInferenceResult] from a Map.
+  factory AiInferenceResult.fromMap(Map<String, dynamic> map) {
+    return AiInferenceResult(
+      outputs: Map<String, dynamic>.from(map['outputs'] as Map? ?? {}),
+      executionTimeMs: map['executionTimeMs'] as int? ?? 0,
+    );
+  }
+}
+
+/// Options for Depth Camera capturing.
+class DepthOptions {
+  /// Whether to return raw point cloud data.
+  final bool enablePointCloud;
+  /// Whether to return a depth map (distance matrix).
+  final bool enableDepthMap;
+
+  /// Creates [DepthOptions].
+  DepthOptions({this.enablePointCloud = true, this.enableDepthMap = false});
+
+  /// Converts to Map.
+  Map<String, dynamic> toMap() => {
+    'enablePointCloud': enablePointCloud,
+    'enableDepthMap': enableDepthMap,
+  };
+}
+

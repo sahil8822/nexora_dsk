@@ -103,6 +103,41 @@ class HardwareBluetoothManager(private val context: Context) {
     }
 
     @SuppressLint("MissingPermission")
+    
+    @SuppressLint("MissingPermission")
+    fun requestMtu(deviceId: String, mtu: Int, callback: (Boolean) -> Unit) {
+        val gatt = bluetoothGatt ?: run { callback(false); return }
+        val success = gatt.requestMtu(mtu)
+        callback(success)
+    }
+
+    @SuppressLint("MissingPermission")
+    fun subscribeToCharacteristic(deviceId: String, serviceId: String, charId: String, enable: Boolean, callback: (Boolean) -> Unit) {
+        val gatt = bluetoothGatt ?: run { callback(false); return }
+        val serviceUuid = parseUuid(serviceId) ?: run { callback(false); return }
+        val charUuid = parseUuid(charId) ?: run { callback(false); return }
+        val service = gatt.getService(serviceUuid) ?: run { callback(false); return }
+        val char = service.getCharacteristic(charUuid) ?: run { callback(false); return }
+
+        val success = gatt.setCharacteristicNotification(char, enable)
+        if (success) {
+            val descriptor = char.getDescriptor(UUID.fromString("00002902-0000-1000-8000-00805f9b34fb"))
+            if (descriptor != null) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    val value = if (enable) BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE else BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE
+                    gatt.writeDescriptor(descriptor, value)
+                } else {
+                    @Suppress("DEPRECATION")
+                    descriptor.value = if (enable) BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE else BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE
+                    @Suppress("DEPRECATION")
+                    gatt.writeDescriptor(descriptor)
+                }
+            }
+        }
+        callback(success)
+    }
+
+    @SuppressLint("MissingPermission")
     fun disconnect() {
         bluetoothGatt?.disconnect()
         bluetoothGatt?.close()
@@ -165,6 +200,36 @@ class HardwareBluetoothManager(private val context: Context) {
             }
         }
     }
+
+    
+        @Suppress("DEPRECATION")
+        override fun onCharacteristicChanged(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic) {
+            val data = mapOf(
+                "module" to "bluetooth",
+                "type" to "data",
+                "data" to mapOf(
+                    "id" to gatt.device.address,
+                    "serviceId" to characteristic.service.uuid.toString(),
+                    "charId" to characteristic.uuid.toString(),
+                    "value" to characteristic.value
+                )
+            )
+            Handler(context.mainLooper).post { eventSink?.success(data) }
+        }
+
+        override fun onCharacteristicChanged(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic, value: ByteArray) {
+            val data = mapOf(
+                "module" to "bluetooth",
+                "type" to "data",
+                "data" to mapOf(
+                    "id" to gatt.device.address,
+                    "serviceId" to characteristic.service.uuid.toString(),
+                    "charId" to characteristic.uuid.toString(),
+                    "value" to value
+                )
+            )
+            Handler(context.mainLooper).post { eventSink?.success(data) }
+        }
 
     private val scanCallback = object : ScanCallback() {
         @SuppressLint("MissingPermission")

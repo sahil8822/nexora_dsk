@@ -59,10 +59,10 @@ abstract class NexoraSdkPlatform extends PlatformInterface {
 
   // --- Camera & Vision (AI) ---
   /// API Documentation for startCamera.
-  Future<dynamic> startCamera({int width = 1280, int height = 720});
+  Future<int?> startCamera({int width = 1280, int height = 720});
 
   /// API Documentation for startCameraWithOptions.
-  Future<dynamic> startCameraWithOptions(CameraOptions options);
+  Future<int?> startCameraWithOptions(CameraOptions options);
 
   /// API Documentation for stopCamera.
   Future<bool> stopCamera();
@@ -328,4 +328,43 @@ abstract class NexoraSdkPlatform extends PlatformInterface {
               'timestamp': e.timestamp.millisecondsSinceEpoch,
             }),
           );
+
+  /// API Documentation for subscribeToCharacteristic.
+  Future<bool> subscribeToCharacteristic(
+    String deviceId,
+    String serviceId,
+    String charId, {
+    required bool enable,
+  }) {
+    throw UnimplementedError(
+      'subscribeToCharacteristic() has not been implemented.',
+    );
+  }
+
+  /// API Documentation for requestMtu.
+  Future<bool> requestMtu(String deviceId, int mtu) {
+    throw UnimplementedError('requestMtu() has not been implemented.');
+  }
+
+  /// API Documentation for saveToGallery.
+  Future<String?> saveToGallery(String filePath) {
+    throw UnimplementedError('saveToGallery() has not been implemented.');
+  }
+
+  /// API Documentation for startForegroundService.
+  Future<bool> startForegroundService({
+    required String title,
+    required String content,
+  }) {
+    throw UnimplementedError(
+      'startForegroundService() has not been implemented.',
+    );
+  }
+
+  /// API Documentation for stopForegroundService.
+  Future<bool> stopForegroundService() {
+    throw UnimplementedError(
+      'stopForegroundService() has not been implemented.',
+    );
+  }
 }

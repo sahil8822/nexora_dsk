@@ -35,6 +35,7 @@ export 'package:nexora_sdk_platform_interface/models/hardware_diagnostics.dart';
 export 'package:nexora_sdk_platform_interface/models/hardware_exception.dart';
 export 'package:nexora_sdk_platform_interface/models/hardware_models.dart';
 export 'package:nexora_sdk_platform_interface/models/permission_models.dart';
+export 'widgets/nexora_camera_preview.dart';
 export 'package:nexora_sdk_platform_interface/models/sensor_data.dart';
 export 'modules/audio/audio_module.dart';
 export 'modules/biometric/biometric_module.dart';
@@ -371,5 +372,46 @@ class NexoraSdk {
     );
 
     return HardwareShutdownResult(Map<String, bool>.fromEntries(entries));
+  }
+
+  /// Subscribes to a BLE characteristic's notifications.
+  Future<bool> subscribeToCharacteristic(
+    String deviceId,
+    String serviceId,
+    String charId, {
+    required bool enable,
+  }) {
+    return NexoraSdkPlatform.instance.subscribeToCharacteristic(
+      deviceId,
+      serviceId,
+      charId,
+      enable: enable,
+    );
+  }
+
+  /// Requests a specific MTU size for a BLE connection.
+  Future<bool> requestMtu(String deviceId, int mtu) {
+    return NexoraSdkPlatform.instance.requestMtu(deviceId, mtu);
+  }
+
+  /// Saves a file from the app's internal storage to the public gallery/downloads.
+  Future<String?> saveToGallery(String filePath) {
+    return NexoraSdkPlatform.instance.saveToGallery(filePath);
+  }
+
+  /// Starts a persistent foreground service (Android only) to keep background tasks alive.
+  Future<bool> startForegroundService({
+    required String title,
+    required String content,
+  }) {
+    return NexoraSdkPlatform.instance.startForegroundService(
+      title: title,
+      content: content,
+    );
+  }
+
+  /// Stops the foreground service.
+  Future<bool> stopForegroundService() {
+    return NexoraSdkPlatform.instance.stopForegroundService();
   }
 }

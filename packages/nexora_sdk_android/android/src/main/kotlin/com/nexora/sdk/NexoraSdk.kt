@@ -61,6 +61,11 @@ class NexoraSdk: FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry
     private lateinit var storage: HardwareStorageManager
     private lateinit var nfc: HardwareNfcManager
     private lateinit var smartSync: SmartSyncManager
+    private lateinit var ai: HardwareAiManager
+    private lateinit var usb: HardwareUsbManager
+    private lateinit var crypto: HardwareCryptoManager
+    private lateinit var backgroundTasks: HardwareTaskManager
+
 
     private val executor = java.util.concurrent.Executors.newCachedThreadPool()
     private val mainHandler = android.os.Handler(android.os.Looper.getMainLooper())
@@ -86,6 +91,11 @@ class NexoraSdk: FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry
         storage = HardwareStorageManager(context)
         nfc = HardwareNfcManager(context)
         smartSync = SmartSyncManager(context)
+        ai = HardwareAiManager(context)
+        usb = HardwareUsbManager(context)
+        crypto = HardwareCryptoManager()
+        backgroundTasks = HardwareTaskManager(context)
+
         
         health.setSmartSyncManager(smartSync)
 
@@ -133,6 +143,7 @@ class NexoraSdk: FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry
     }
 
     private fun handleMethodCallSafe(call: MethodCall, result: Result) {
+        try {
         when (call.method) {
             // ==================== Camera & Vision ====================
             "startCamera" -> {
@@ -646,7 +657,111 @@ class NexoraSdk: FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry
             "requestPermissions" -> requestNativePermissions(result)
             "requestPermission" -> requestNativePermission(call.argument<String>("type"), result)
             
+            
+            // ==================== Foreground Service ====================
+            "startForegroundService" -> {
+                val title = call.argument<String>("title") ?: "Nexora Background Service"
+                val content = call.argument<String>("content") ?: "Running hardware tasks in background"
+                val intent = Intent(context, NexoraForegroundService::class.java).apply {
+                    putExtra("title", title)
+                    putExtra("content", content)
+                }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    context.startForegroundService(intent)
+                } else {
+                    context.startService(intent)
+                }
+                result.success(true)
+            }
+            "stopForegroundService" -> {
+                val intent = Intent(context, NexoraForegroundService::class.java)
+                context.stopService(intent)
+                result.success(true)
+            }
+
+            // ==================== Bluetooth Phase 6 ====================
+            "subscribeToCharacteristic" -> {
+                if (!hasBluetoothPermissions()) {
+                    result.error("PERMISSION_DENIED", "Bluetooth connect permission is required.", null)
+                    return
+                }
+                val deviceId = call.argument<String>("deviceId") ?: ""
+                val serviceId = call.argument<String>("serviceId") ?: ""
+                val charId = call.argument<String>("charId") ?: ""
+                val enable = call.argument<Boolean>("enable") ?: true
+                bluetooth.subscribeToCharacteristic(deviceId, serviceId, charId, enable) { res ->
+                    result.success(res)
+                }
+            }
+            "requestMtu" -> {
+                if (!hasBluetoothPermissions()) {
+                    result.error("PERMISSION_DENIED", "Bluetooth connect permission is required.", null)
+                    return
+                }
+                val deviceId = call.argument<String>("deviceId") ?: ""
+                val mtu = call.argument<Int>("mtu") ?: 512
+                bluetooth.requestMtu(deviceId, mtu) { res ->
+                    result.success(res)
+                }
+            }
+            
+            // ==================== Storage Phase 6 ====================
+            "saveToGallery" -> {
+                val filePath = call.argument<String>("filePath")
+                if (filePath == null) {
+                    result.error("INVALID_ARGUMENT", "saveToGallery requires filePath.", null)
+                    return
+                }
+                storage.saveToGallery(filePath) { uri ->
+                    if (uri != null) {
+                        result.success(uri)
+                    } else {
+                        result.error("STORAGE_ERROR", "Failed to save file to Gallery.", null)
+                    }
+                }
+            }
+
+
+            // ==================== Phase 7 ====================
+            "loadCustomModel" -> {
+                val path = call.argument<String>("modelPath") ?: ""
+                result.success(ai.loadCustomModel(path))
+            }
+            "runInference" -> {
+                val input = call.argument<Map<String, Any>>("input") ?: mapOf()
+                result.success(ai.runInference(input))
+            }
+            "getConnectedUsbDevices" -> {
+                result.success(usb.getConnectedUsbDevices())
+            }
+            "openUsbConnection" -> {
+                val id = call.argument<String>("deviceId") ?: ""
+                result.success(usb.openUsbConnection(id))
+            }
+            "writeUsbData" -> {
+                val id = call.argument<String>("deviceId") ?: ""
+                val data = call.argument<ByteArray>("data") ?: ByteArray(0)
+                result.success(usb.writeUsbData(id, data))
+            }
+            "generateSecureKeyPair" -> {
+                val alias = call.argument<String>("alias") ?: ""
+                result.success(crypto.generateSecureKeyPair(alias))
+            }
+            "signData" -> {
+                val alias = call.argument<String>("alias") ?: ""
+                val data = call.argument<ByteArray>("data") ?: ByteArray(0)
+                result.success(crypto.signData(alias, data))
+            }
+            "scheduleBackgroundTask" -> {
+                val taskId = call.argument<String>("taskId") ?: ""
+                val interval = call.argument<Int>("intervalSeconds") ?: 900
+                result.success(backgroundTasks.scheduleBackgroundTask(taskId, interval))
+            }
+
             else -> result.notImplemented()
+        }
+        } catch (e: Exception) {
+            result.error("NATIVE_CRASH", e.message, null)
         }
     }
 
@@ -712,7 +827,7 @@ class NexoraSdk: FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry
             "getStorageInfo", "writeFile", "appendFile", "readFile", "deleteFile", "fileExists", 
             "listFiles", "writeBytes", "readBytes", "clearCache", "getAppDirectory", "getCacheDirectory", "getExternalDirectory",
             "startBluetoothScan", "startBluetoothScanWithOptions", "stopBluetoothScan", "connectDevice", 
-            "disconnectDevice", "discoverServices", "sendData", "readData",
+            "disconnectDevice", "discoverServices", "sendData", "readData", "subscribeToCharacteristic", "requestMtu", "saveToGallery",
             "startHardwareLogging", "stopHardwareLogging", "addGeofence",
             "enableSmartSync", "enableDeadReckoning",
             "getBatteryInfo", "getWifiInfo", "getDeviceInfo", "getConnectivityInfo" -> true
