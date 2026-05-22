@@ -55,7 +55,7 @@ export 'package:nexora_sdk_platform_interface/models/hardware_models.dart';
 export 'package:nexora_sdk_platform_interface/models/permission_models.dart';
 export 'package:nexora_sdk_platform_interface/models/sensor_data.dart';
 
-/// Nexora SDK (v3.4.0) - Intelligence + Storage Edition.
+/// Nexora SDK (v3.4.1) - Intelligence + Storage Edition.
 ///
 /// A world-class, lightweight hardware toolkit for Flutter.
 /// Provides unified access to Camera, Audio, GPS, Bluetooth, Biometrics,
@@ -67,7 +67,7 @@ class NexoraSdk {
   static final NexoraSdk instance = NexoraSdk._();
 
   /// The current SDK version.
-  static const String version = '3.4.0';
+  static const String version = '3.4.1';
 
   /// Initializes the SDK by pre-warming capabilities/platform channel.
   Future<void> initialize({bool logCapabilities = false}) async {

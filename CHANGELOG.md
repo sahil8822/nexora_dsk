@@ -1,5 +1,10 @@
 # Changelog
 
+## 3.4.1
+
+* **Developer Experience & Beginner Guides:** Updated the root `README.md` to add a comprehensive, step-by-step setup guide for beginners. Includes detailed permission declarations for Android (`AndroidManifest.xml`) and iOS (`Info.plist`), installation instructions, and a complete copy-pasteable `main.dart` camera example.
+* **Dependencies:** Added `meta` to the direct dependencies block of the root package to resolve the package validation block regarding `@experimental` annotations.
+
 ## 3.4.0
 
 **Massive Architecture & Quality Update**

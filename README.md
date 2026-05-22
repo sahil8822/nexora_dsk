@@ -2,6 +2,197 @@
 
 Nexora SDK is a cross-platform Flutter plugin for hardware features. It provides a single Dart API for camera preview, native vision results, audio capture with FFT data, BLE scanning and GATT operations, location updates, geofencing, biometrics, haptics, device health, and app-private storage.
 
+## 🚀 Beginner Quick Start & Installation Guide
+
+### Step 1: Add Dependency
+
+Add `nexora_sdk` to your Flutter project:
+
+```bash
+flutter pub add nexora_sdk
+```
+
+---
+
+### Step 2: Platform Configuration
+
+Platform permissions must be declared in your native project files before you can use hardware APIs.
+
+#### 🤖 Android Setup
+Open `android/app/src/main/AndroidManifest.xml` and add the following permissions inside the `<manifest>` tag:
+
+```xml
+<!-- Camera for scanning/preview -->
+<uses-permission android:name="android.permission.CAMERA" />
+
+<!-- Audio/Microphone for recording -->
+<uses-permission android:name="android.permission.RECORD_AUDIO" />
+
+<!-- Location features -->
+<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+<uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+
+<!-- Bluetooth scanning & connectivity -->
+<uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
+<uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+<uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+
+<!-- Health & Activity Tracking -->
+<uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
+```
+
+#### 🍎 iOS Setup
+Open `ios/Runner/Info.plist` and add the following usage descriptions inside the `<dict>` tag:
+
+```xml
+<!-- Camera -->
+<key>NSCameraUsageDescription</key>
+<string>This app requires camera access for preview and image scanning.</string>
+
+<!-- Microphone -->
+<key>NSMicrophoneUsageDescription</key>
+<string>This app requires microphone access for audio spectral analysis.</string>
+
+<!-- Location -->
+<key>NSLocationWhenInUseUsageDescription</key>
+<string>This app requires location access while active to provide location tracking.</string>
+<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+<string>This app requires background location access to trigger geofences.</string>
+
+<!-- Bluetooth -->
+<key>NSBluetoothAlwaysUsageDescription</key>
+<string>This app requires Bluetooth access to scan for and connect to BLE peripherals.</string>
+<key>NSBluetoothPeripheralUsageDescription</key>
+<string>This app requires Bluetooth access to connect to devices.</string>
+
+<!-- Motion/Health -->
+<key>NSMotionUsageDescription</key>
+<string>This app requires motion/health tracking for activity recognition metrics.</string>
+```
+
+---
+
+### Step 3: Complete Copy-Paste Example
+
+Here is a simple, complete `main.dart` that requests permission and starts a camera preview.
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:nexora_sdk/nexora_sdk.dart';
+
+void main() {
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      theme: ThemeData.dark(),
+      home: const HardwareHomeScreen(),
+    );
+  }
+}
+
+class HardwareHomeScreen extends StatefulWidget {
+  const HardwareHomeScreen({super.key});
+
+  @override
+  State<HardwareHomeScreen> createState() => _HardwareHomeScreenState();
+}
+
+class _HardwareHomeScreenState extends State<HardwareHomeScreen> {
+  final _sdk = NexoraSdk.instance;
+  int? _textureId;
+  bool _isCameraRunning = false;
+  String _status = "Ready";
+
+  Future<void> _startCamera() async {
+    setState(() => _status = "Checking permissions...");
+    
+    // Request all required hardware permissions
+    final granted = await _sdk.requestPermissions();
+    if (!granted) {
+      setState(() => _status = "Permissions denied.");
+      return;
+    }
+
+    setState(() => _status = "Starting camera...");
+    try {
+      final id = await _sdk.camera.start(quality: CameraQuality.hd);
+      setState(() {
+        _textureId = id;
+        _isCameraRunning = id != null;
+        _status = id != null ? "Camera Active" : "Failed to start camera";
+      });
+    } catch (e) {
+      setState(() => _status = "Error: $e");
+    }
+  }
+
+  Future<void> _stopCamera() async {
+    setState(() => _status = "Stopping camera...");
+    final stopped = await _sdk.camera.stop();
+    if (stopped) {
+      setState(() {
+        _textureId = null;
+        _isCameraRunning = false;
+        _status = "Camera stopped";
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _sdk.camera.stop();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Nexora SDK Beginner Quickstart')),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            Text('Status: $_status', style: const TextStyle(fontSize: 16)),
+            const SizedBox(height: 16),
+            Expanded(
+              child: Container(
+                color: Colors.black12,
+                child: _isCameraRunning && _textureId != null
+                    ? Texture(textureId: _textureId!)
+                    : const Center(child: Text("Camera Preview Area")),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ElevatedButton(
+                  onPressed: _isCameraRunning ? null : _startCamera,
+                  child: const Text('Start Camera'),
+                ),
+                ElevatedButton(
+                  onPressed: _isCameraRunning ? _stopCamera : null,
+                  child: const Text('Stop Camera'),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+
+---
+
 ## Platform Support
 
 | Platform | Status |

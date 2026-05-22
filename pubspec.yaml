@@ -1,6 +1,6 @@
 name: nexora_sdk
 description: "A cross-platform Flutter hardware SDK with native Android/iOS hardware APIs plus safe web and desktop fallbacks."
-version: 3.4.0
+version: 3.4.1
 homepage: https://github.com/sahil8822/my_hardware_plugin
 repository: https://github.com/sahil8822/my_hardware_plugin
 topics:
@@ -17,16 +17,12 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  nexora_sdk_android:
-    path: packages/nexora_sdk_android
-  nexora_sdk_desktop:
-    path: packages/nexora_sdk_desktop
-  nexora_sdk_ios:
-    path: packages/nexora_sdk_ios
-  nexora_sdk_platform_interface:
-    path: packages/nexora_sdk_platform_interface
-  nexora_sdk_web:
-    path: packages/nexora_sdk_web
+  meta: ^1.11.0
+  nexora_sdk_android: ^3.4.0
+  nexora_sdk_desktop: ^3.4.0
+  nexora_sdk_ios: ^3.4.0
+  nexora_sdk_platform_interface: ^3.4.0
+  nexora_sdk_web: ^3.4.0
 dev_dependencies:
   flutter_test:
     sdk: flutter
