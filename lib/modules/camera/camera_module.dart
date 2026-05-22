@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart' show Texture;
 import 'package:flutter/material.dart' show Texture;
 import 'package:flutter/widgets.dart' show Texture;
+import 'package:meta/meta.dart';
 import 'package:nexora_sdk_platform_interface/core/concurrency.dart';
 import 'package:nexora_sdk_platform_interface/models/hardware_models.dart';
 import 'package:nexora_sdk_platform_interface/nexora_sdk_platform_interface.dart';
@@ -113,6 +114,7 @@ class CameraModule {
   }
 
   /// Starts native video recording and returns the output file path.
+  @experimental
   Future<String?> startVideoRecording({String? fileName}) {
     if (!_isRunning) throw StateError('Camera is not running.');
     if (fileName != null && fileName.trim().isEmpty) {
@@ -122,6 +124,7 @@ class CameraModule {
   }
 
   /// Stops native video recording and returns the saved file path.
+  @experimental
   Future<String?> stopVideoRecording() {
     if (!_isRunning) throw StateError('Camera is not running.');
     return NexoraSdkPlatform.instance.stopVideoRecording();
@@ -157,6 +160,7 @@ class CameraModule {
 
   /// Applies a real-time GPU fragment shader filter to the camera preview.
   /// Supported types: 'none', 'chromaKey', 'monochrome', 'sepia'
+  @experimental
   Future<bool> applyFilterShader(String shaderType) {
     if (!_isRunning) throw StateError('Camera is not running.');
     if (shaderType.trim().isEmpty) {

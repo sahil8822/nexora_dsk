@@ -246,7 +246,7 @@ final settings = await sdk.storage.readJson<Map<String, dynamic>>(
 await sdk.storage.appendFile('session.log', 'Started\n');
 ```
 
-## Advanced Features (v3.2.1)
+## Advanced Features (v3.4.0)
 
 ### 1. Smart Sync & Telemetry Logging
 Enables background logging of battery, connectivity, and custom metrics into rolled files, with automatic upload retry and exponential backoff.

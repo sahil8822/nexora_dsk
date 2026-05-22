@@ -1,9 +1,8 @@
 name: nexora_sdk
 description: "A cross-platform Flutter hardware SDK with native Android/iOS hardware APIs plus safe web and desktop fallbacks."
-publish_to: "none"
-version: 4.0.0
-homepage: https://github.com/sahil8822/nexora_dsk
-repository: https://github.com/sahil8822/nexora_dsk
+version: 3.4.0
+homepage: https://github.com/sahil8822/my_hardware_plugin
+repository: https://github.com/sahil8822/my_hardware_plugin
 topics:
   - hardware
   - camera

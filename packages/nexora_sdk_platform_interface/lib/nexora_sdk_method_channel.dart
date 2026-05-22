@@ -6,6 +6,7 @@ import 'package:nexora_sdk_platform_interface/models/hardware_exception.dart';
 import 'package:nexora_sdk_platform_interface/models/hardware_models.dart';
 import 'package:nexora_sdk_platform_interface/models/permission_models.dart';
 import 'package:nexora_sdk_platform_interface/nexora_sdk_platform_interface.dart';
+import 'package:nexora_sdk_platform_interface/src/pigeon/hardware_api.g.dart';
 
 /// An implementation of [NexoraSdkPlatform] that uses method channels.
 class MethodChannelNexoraSdk extends NexoraSdkPlatform {
@@ -18,6 +19,9 @@ class MethodChannelNexoraSdk extends NexoraSdkPlatform {
   /// API Documentation for EventChannel.
   final eventChannel = const EventChannel('nexora_sdk/events');
 
+  final HardwareApi _hardwareApi = HardwareApi();
+  final AudioApi _audioApi = AudioApi();
+
   Stream<HardwareEvent>? _cachedUnifiedStream;
 
   Future<T?> _invoke<T>(String method, [Object? arguments]) async {
@@ -25,6 +29,13 @@ class MethodChannelNexoraSdk extends NexoraSdkPlatform {
       return await methodChannel.invokeMethod<T>(method, arguments);
     } on PlatformException catch (error) {
       throw HardwareException.fromPlatformException(error);
+    } on MissingPluginException {
+      throw HardwareException(
+        code: HardwareErrorCode.notSupported,
+        message: 'MODULE_DISABLED',
+        details:
+            'You called a feature ($method) that is disabled in your native build settings. Please enable it in your Podfile or gradle.properties.',
+      );
     }
   }
 
@@ -33,6 +44,13 @@ class MethodChannelNexoraSdk extends NexoraSdkPlatform {
       return await methodChannel.invokeListMethod<T>(method, arguments);
     } on PlatformException catch (error) {
       throw HardwareException.fromPlatformException(error);
+    } on MissingPluginException {
+      throw HardwareException(
+        code: HardwareErrorCode.notSupported,
+        message: 'MODULE_DISABLED',
+        details:
+            'You called a feature ($method) that is disabled in your native build settings. Please enable it in your Podfile or gradle.properties.',
+      );
     }
   }
 
@@ -44,10 +62,16 @@ class MethodChannelNexoraSdk extends NexoraSdkPlatform {
       return await methodChannel.invokeMapMethod<K, V>(method, arguments);
     } on PlatformException catch (error) {
       throw HardwareException.fromPlatformException(error);
+    } on MissingPluginException {
+      throw HardwareException(
+        code: HardwareErrorCode.notSupported,
+        message: 'MODULE_DISABLED',
+        details:
+            'You called a feature ($method) that is disabled in your native build settings. Please enable it in your Podfile or gradle.properties.',
+      );
     }
   }
 
-  
   @override
   Future<String?> getPlatformVersion() async {
     return _invoke<String>('getPlatformVersion');
@@ -55,7 +79,8 @@ class MethodChannelNexoraSdk extends NexoraSdkPlatform {
 
   @override
   Future<bool> startBlePeripheral(String uuid) async {
-    final result = await methodChannel.invokeMethod<bool>('startBlePeripheral', {'uuid': uuid});
+    final result = await methodChannel
+        .invokeMethod<bool>('startBlePeripheral', {'uuid': uuid});
     return result ?? false;
   }
 
@@ -66,19 +91,22 @@ class MethodChannelNexoraSdk extends NexoraSdkPlatform {
 
   @override
   Future<bool> enterPictureInPicture() async {
-    final result = await methodChannel.invokeMethod<bool>('enterPictureInPicture');
+    final result =
+        await methodChannel.invokeMethod<bool>('enterPictureInPicture');
     return result ?? false;
   }
 
   @override
   Future<List<String>> getConnectedUsbDevices() async {
-    final result = await methodChannel.invokeListMethod<String>('connectUsbDevice');
+    final result =
+        await methodChannel.invokeListMethod<String>('connectUsbDevice');
     return result ?? [];
   }
 
   @override
   Future<bool> updateForegroundService(String title, String text) async {
-    final result = await methodChannel.invokeMethod<bool>('updateForegroundService', {
+    final result =
+        await methodChannel.invokeMethod<bool>('updateForegroundService', {
       'title': title,
       'text': text,
     });
@@ -150,29 +178,30 @@ class MethodChannelNexoraSdk extends NexoraSdkPlatform {
   // --- Camera & Vision ---
   @override
   Future<int?> startCamera({int width = 1280, int height = 720}) async {
-    return _invoke<int>('startCamera', {
-      'width': width,
-      'height': height,
-    });
+    return await _hardwareApi.startCamera(width, height);
   }
 
   @override
   Future<int?> startCameraWithOptions(CameraOptions options) async {
-    return _invoke<int>('startCameraWithOptions', options.toMap());
+    final pigeonOptions = PigeonCameraOptions(
+      resolution: options.resolution.name,
+      focusMode: options.focusMode.name,
+      exposureMode: options.exposureMode.name,
+      exposureCompensation: options.exposureCompensation,
+      mirrorFrontCamera: options.mirrorFrontCamera,
+    );
+    return await _hardwareApi.startCameraWithOptions(pigeonOptions);
   }
 
   @override
   Future<bool> stopCamera() async {
-    return await _invoke<bool>('stopCamera') ?? false;
+    return await _hardwareApi.stopCamera();
   }
 
   @override
   Future<bool> setVisionMode({bool barcode = false, bool face = false}) async {
-    return await _invoke<bool>('setVisionMode', {
-          'barcode': barcode,
-          'face': face,
-        }) ??
-        false;
+    final options = VisionModeOptions(barcode: barcode, face: face);
+    return await _hardwareApi.setVisionMode(options);
   }
 
   @override
@@ -181,42 +210,42 @@ class MethodChannelNexoraSdk extends NexoraSdkPlatform {
     required List<String> labels,
     double threshold = 0.5,
   }) async {
-    return await _invoke<bool>('registerCustomClassifier', {
-          'modelAssetPath': modelAssetPath,
-          'labels': labels,
-          'threshold': threshold,
-        }) ??
-        false;
+    final options = CustomClassifierOptions(
+      modelAssetPath: modelAssetPath,
+      labels: labels,
+      threshold: threshold,
+    );
+    return await _hardwareApi.registerCustomClassifier(options);
   }
 
   @override
   Future<bool> setFlash(bool on) async {
-    return await _invoke<bool>('setFlash', {'on': on}) ?? false;
+    return await _hardwareApi.setFlash(on);
   }
 
   @override
   Future<bool> setZoom(double level) async {
-    return await _invoke<bool>('setZoom', {'level': level}) ?? false;
+    return await _hardwareApi.setZoom(level);
   }
 
   @override
   Future<bool> flipCamera() async {
-    return await _invoke<bool>('flipCamera') ?? false;
+    return await _hardwareApi.flipCamera();
   }
 
   @override
   Future<String?> takePhoto({String? fileName}) async {
-    return _invoke<String>('takePhoto', {'fileName': fileName});
+    return await _hardwareApi.takePhoto(fileName);
   }
 
   @override
   Future<String?> startVideoRecording({String? fileName}) async {
-    return _invoke<String>('startVideoRecording', {'fileName': fileName});
+    return await _hardwareApi.startVideoRecording(fileName);
   }
 
   @override
   Future<String?> stopVideoRecording() async {
-    return _invoke<String>('stopVideoRecording');
+    return await _hardwareApi.stopVideoRecording();
   }
 
   // --- Audio ---
@@ -226,60 +255,53 @@ class MethodChannelNexoraSdk extends NexoraSdkPlatform {
     bool streamBytes = false,
     int updateIntervalMs = 80,
   }) async {
-    return await _invoke<bool>('startAudio', {
-          'enableFFT': enableFFT,
-          'streamBytes': streamBytes,
-          'updateIntervalMs': updateIntervalMs,
-        }) ??
-        false;
+    final options = BasicAudioOptions(
+      enableFFT: enableFFT,
+      streamBytes: streamBytes,
+      updateIntervalMs: updateIntervalMs,
+    );
+    return await _audioApi.startAudio(options);
   }
 
   @override
   Future<bool> startAudioWithOptions(AudioOptions options) async {
-    return await _invoke<bool>('startAudioWithOptions', options.toMap()) ??
-        false;
+    final pigeonOptions = PigeonAudioOptions(
+      sampleRate: options.sampleRate,
+      channels: options.channels.name,
+      enableEchoCancellation: options.enableEchoCancellation,
+      enableNoiseSuppression: options.enableNoiseSuppression,
+    );
+    return await _audioApi.startAudioWithOptions(pigeonOptions);
   }
 
   @override
   Future<bool> stopAudio() async {
-    return await _invoke<bool>('stopAudio') ?? false;
+    return await _audioApi.stopAudio();
   }
 
   @override
   Future<bool> routeAudioOutput(AudioOutputRoute route) async {
-    return await _invoke<bool>('routeAudioOutput', {
-          'route': route.name,
-        }) ??
-        false;
+    return await _audioApi.routeAudioOutput(route.name);
   }
 
   @override
   Future<double> getAudioVolume() async {
-    return await _invoke<double>('getAudioVolume') ?? 0.5;
+    return await _audioApi.getAudioVolume();
   }
 
   @override
   Future<bool> setAudioVolume(double level) async {
-    return await _invoke<bool>('setAudioVolume', {
-          'level': level,
-        }) ??
-        false;
+    return await _audioApi.setAudioVolume(level);
   }
 
   @override
   Future<bool> selectAudioInput(AudioInputDevice device) async {
-    return await _invoke<bool>('selectAudioInput', {
-          'device': device.name,
-        }) ??
-        false;
+    return await _audioApi.selectAudioInput(device.name);
   }
 
   @override
   Future<bool> setAudioGain(double gain) async {
-    return await _invoke<bool>('setAudioGain', {
-          'gain': gain,
-        }) ??
-        false;
+    return await _audioApi.setAudioGain(gain);
   }
 
   // --- Intelligence & Logging ---
@@ -614,10 +636,7 @@ class MethodChannelNexoraSdk extends NexoraSdkPlatform {
 
   @override
   Future<bool> applyCameraFilterShader(String shaderType) async {
-    return await _invoke<bool>('applyCameraFilterShader', {
-          'shaderType': shaderType,
-        }) ??
-        false;
+    return await _hardwareApi.applyCameraFilterShader(shaderType);
   }
 
   @override

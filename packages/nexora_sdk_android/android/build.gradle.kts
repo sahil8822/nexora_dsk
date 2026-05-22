@@ -27,6 +27,13 @@ plugins {
     id("kotlin-android")
 }
 
+val enableCamera = project.findProperty("nexora.camera.enabled")?.toString()?.toBoolean() ?: true
+val enableBluetooth = project.findProperty("nexora.bluetooth.enabled")?.toString()?.toBoolean() ?: true
+val enableLocation = project.findProperty("nexora.location.enabled")?.toString()?.toBoolean() ?: true
+val enableAudio = project.findProperty("nexora.audio.enabled")?.toString()?.toBoolean() ?: true
+val enableBiometric = project.findProperty("nexora.biometric.enabled")?.toString()?.toBoolean() ?: true
+val enableNfc = project.findProperty("nexora.nfc.enabled")?.toString()?.toBoolean() ?: true
+
 android {
     namespace = "com.nexora.sdk"
     compileSdk = 34
@@ -47,7 +54,21 @@ android {
     }
 
     sourceSets {
-        getByName("main") { java.srcDirs("src/main/kotlin") }
+        getByName("main") {
+            java.srcDirs("src/main/kotlin")
+            if (!enableCamera) java.exclude("com/nexora/sdk/CameraManager.kt")
+            if (!enableBluetooth) {
+                java.exclude("com/nexora/sdk/HardwareBluetoothManager.kt")
+                java.exclude("com/nexora/sdk/HardwareBlePeripheralManager.kt")
+            }
+            if (!enableLocation) {
+                java.exclude("com/nexora/sdk/HardwareLocationManager.kt")
+                java.exclude("com/nexora/sdk/HardwareGeofenceReceiver.kt")
+            }
+            if (!enableAudio) java.exclude("com/nexora/sdk/HardwareAudioModule.kt")
+            if (!enableBiometric) java.exclude("com/nexora/sdk/HardwareBiometricManager.kt")
+            if (!enableNfc) java.exclude("com/nexora/sdk/HardwareNfcManager.kt")
+        }
     }
 
     defaultConfig {
@@ -59,16 +80,23 @@ dependencies {
     compileOnly("org.tensorflow:tensorflow-lite:2.14.0")
     implementation("androidx.work:work-runtime-ktx:2.9.0")
 
-    // Core Hardware
-    implementation("com.google.android.gms:play-services-location:21.3.0")
-    implementation("androidx.biometric:biometric:1.2.0-alpha05")
+    if (enableLocation) {
+        implementation("com.google.android.gms:play-services-location:21.3.0")
+    }
+    if (enableBiometric) {
+        implementation("androidx.biometric:biometric:1.2.0-alpha05")
+    }
     
     // ML Kit (Vision) - Efficient & Lightweight - Optional
-    compileOnly("com.google.mlkit:barcode-scanning:17.3.0")
-    compileOnly("com.google.mlkit:face-detection:16.1.7")
+    if (enableCamera) {
+        compileOnly("com.google.mlkit:barcode-scanning:17.3.0")
+        compileOnly("com.google.mlkit:face-detection:16.1.7")
+    }
     
     // Audio Analysis (Native FFT Helper) - Hosted on JitPack
-    implementation("com.github.paramsen:noise:2.0.0")
+    if (enableAudio) {
+        implementation("com.github.paramsen:noise:2.0.0")
+    }
     
     implementation("androidx.core:core-ktx:1.12.0")
 }

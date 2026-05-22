@@ -1,7 +1,8 @@
 name: nexora_sdk_desktop
 description: The desktop implementation of nexora_sdk.
-version: 1.0.0
-publish_to: 'none'
+version: 3.4.0
+homepage: https://github.com/sahil8822/my_hardware_plugin
+repository: https://github.com/sahil8822/my_hardware_plugin/tree/master/packages/nexora_sdk_desktop
 
 environment:
   sdk: '>=3.3.0 <4.0.0'

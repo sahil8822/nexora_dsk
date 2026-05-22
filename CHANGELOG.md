@@ -1,6 +1,6 @@
 # Changelog
 
-## 4.0.0
+## 3.4.0
 
 **Massive Architecture & Quality Update**
 

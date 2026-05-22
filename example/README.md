@@ -1,17 +1,31 @@
-# nexora_sdk_example
+# Nexora SDK Example Application
 
-Demonstrates how to use the nexora_sdk plugin.
+This example application demonstrates how to use the `nexora_sdk` package to interact with device hardware APIs (Camera, Audio FFT, GPS, Storage, Telemetry, and Pro features) under a unified, cross-platform interface.
 
-## Getting Started
+## Features Demonstrated
 
-This project is a starting point for a Flutter application.
+- **Vision AI Dashboard:** Run real-time face detection, barcode scanning, and capture photos using the native camera.
+- **Audio FFT Visualizer:** Capture microphone audio stream and visualize it via real-time Fast Fourier Transform (FFT) bars.
+- **Geospatial Tracking:** Stream GPS coordinate updates (latitude, longitude, altitude).
+- **Device Storage & Sandboxing:** Perform read/write file I/O operations, list files, and view available disk space.
+- **Diagnostics & Telemetry Logging:** Collect a system diagnostics snapshot or toggle periodic background CSV telemetry logging.
+- **Native Pro Utilities:** Share text, open URLs, copy/paste from the system clipboard, and launch app settings.
+- **Advanced API Helpers:** Run storage migrations and demonstrate stream throttling and retry policies.
 
-A few resources to get you started if this is your first Flutter project:
+## How to Run
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+1. Make sure you have a Flutter environment configured on your machine.
+2. From the root directory of the plugin, navigate to the example project:
+   ```bash
+   cd example
+   ```
+3. Fetch dependencies:
+   ```bash
+   flutter pub get
+   ```
+4. Run the app on a connected device or simulator:
+   ```bash
+   flutter run
+   ```
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+*Note: For full hardware features like camera preview, audio capture, and location tracking, running on a physical Android or iOS device is recommended.*

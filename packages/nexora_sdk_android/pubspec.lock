@@ -113,7 +113,7 @@ packages:
       path: "../nexora_sdk_platform_interface"
       relative: true
     source: path
-    version: "1.0.0"
+    version: "3.4.0"
   path:
     dependency: transitive
     description:
