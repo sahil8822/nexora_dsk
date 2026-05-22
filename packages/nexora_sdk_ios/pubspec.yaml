@@ -18,8 +18,7 @@ flutter:
 dependencies:
   flutter:
     sdk: flutter
-  nexora_sdk_platform_interface:
-    path: ../nexora_sdk_platform_interface
+  nexora_sdk_platform_interface: ^3.4.0
 
 dev_dependencies:
   flutter_test:

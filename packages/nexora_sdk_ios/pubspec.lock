@@ -110,9 +110,10 @@ packages:
   nexora_sdk_platform_interface:
     dependency: "direct main"
     description:
-      path: "../nexora_sdk_platform_interface"
-      relative: true
-    source: path
+      name: nexora_sdk_platform_interface
+      sha256: "03dc159dfa2aba904a65a464bc10b7512238617c283553a3ff0c81f6d56f24f2"
+      url: "https://pub.dev"
+    source: hosted
     version: "3.4.0"
   path:
     dependency: transitive
