@@ -77,7 +77,7 @@ class HardwareLocationManager(private val context: Context) {
         override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
     }
 
-    private val locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 1000).build()
+    private var locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 1000).build()
     private val locationCallback = object : LocationCallback() {
         override fun onLocationResult(result: LocationResult) {
             val location = result.lastLocation ?: return
@@ -97,6 +97,20 @@ class HardwareLocationManager(private val context: Context) {
 
     fun setEventSink(sink: EventChannel.EventSink?) {
         this.eventSink = sink
+    }
+
+    fun configure(options: Map<String, Any?>) {
+        val updateIntervalMs = (options["updateIntervalMs"] as? Number)?.toLong() ?: 1000L
+        val fastestIntervalMs = (options["fastestIntervalMs"] as? Number)?.toLong() ?: 500L
+        val maxWaitTimeMs = (options["maxWaitTimeMs"] as? Number)?.toLong()
+        val builder = LocationRequest.Builder(
+            Priority.PRIORITY_HIGH_ACCURACY,
+            updateIntervalMs.coerceAtLeast(100L)
+        ).setMinUpdateIntervalMillis(fastestIntervalMs.coerceAtLeast(50L))
+        if (maxWaitTimeMs != null) {
+            builder.setMaxUpdateDelayMillis(maxWaitTimeMs.coerceAtLeast(updateIntervalMs))
+        }
+        locationRequest = builder.build()
     }
 
     @SuppressLint("MissingPermission")

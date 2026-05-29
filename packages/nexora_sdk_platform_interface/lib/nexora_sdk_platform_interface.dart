@@ -28,6 +28,9 @@ abstract class NexoraSdkPlatform extends PlatformInterface {
   /// API Documentation for getPlatformVersion.
   Future<String?> getPlatformVersion();
 
+  /// Applies global SDK configuration to Dart and native platform code.
+  Future<bool> configure(NexoraSdkConfig config) async => true;
+
   Future<bool> startBlePeripheral(String uuid) {
     throw UnimplementedError('startBlePeripheral() has not been implemented.');
   }
@@ -37,15 +40,18 @@ abstract class NexoraSdkPlatform extends PlatformInterface {
   }
 
   Future<bool> enterPictureInPicture() {
-    throw UnimplementedError('enterPictureInPicture() has not been implemented.');
+    throw UnimplementedError(
+        'enterPictureInPicture() has not been implemented.');
   }
 
   Future<List<String>> getConnectedUsbDevices() {
-    throw UnimplementedError('getConnectedUsbDevices() has not been implemented.');
+    throw UnimplementedError(
+        'getConnectedUsbDevices() has not been implemented.');
   }
 
   Future<bool> updateForegroundService(String title, String text) {
-    throw UnimplementedError('updateForegroundService() has not been implemented.');
+    throw UnimplementedError(
+        'updateForegroundService() has not been implemented.');
   }
 
   /// API Documentation for requestPermissions.

@@ -18,6 +18,18 @@ public class HardwareLocationManager: NSObject, CLLocationManagerDelegate {
 
     public func setEventSink(_ sink: FlutterEventSink?) { self.eventSink = sink }
 
+    public func configure(options: [String: Any]) {
+        locationManager.allowsBackgroundLocationUpdates =
+            options["allowsBackgroundLocationUpdates"] as? Bool ?? backgroundEnabled
+        if #available(iOS 11.0, *) {
+            locationManager.showsBackgroundLocationIndicator =
+                options["showsBackgroundLocationIndicator"] as? Bool ?? false
+        }
+        locationManager.pausesLocationUpdatesAutomatically =
+            options["pausesLocationUpdatesAutomatically"] as? Bool ?? true
+        locationManager.activityType = activityType(options["activityType"] as? String)
+    }
+
     public func setBackgroundEnabled(_ enabled: Bool) {
         backgroundEnabled = enabled
         locationManager.allowsBackgroundLocationUpdates = enabled
@@ -39,6 +51,18 @@ public class HardwareLocationManager: NSObject, CLLocationManagerDelegate {
         region.notifyOnExit = true
         locationManager.startMonitoring(for: region)
         return true
+    }
+
+    private func activityType(_ value: String?) -> CLActivityType {
+        switch value {
+        case "automotiveNavigation": return .automotiveNavigation
+        case "fitness": return .fitness
+        case "otherNavigation": return .otherNavigation
+        case "airborne":
+            if #available(iOS 12.0, *) { return .airborne }
+            return .other
+        default: return .other
+        }
     }
 
     public func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {

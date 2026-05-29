@@ -217,6 +217,131 @@ if (!support.isAvailable) {
 }
 ```
 
+## Configure Once, Use Everywhere
+
+For beginner-friendly apps, initialize the SDK with the default configuration
+and call module helpers as usual:
+
+```dart
+final sdk = NexoraSdk.instance;
+
+await sdk.initialize();
+await sdk.camera.start();
+```
+
+For advanced native customization, configure global defaults during startup.
+These defaults are forwarded to Android/iOS and reused by the cross-platform
+Flutter helpers.
+
+```dart
+await NexoraSdk.instance.initialize(
+  config: NexoraSdkConfig.beginner.copyWith(
+    logNativeCalls: true,
+    camera: const CameraOptions(
+      resolution: CameraQuality.fullHd,
+      focusMode: CameraFocusMode.continuous,
+      mirrorFrontCamera: false,
+    ),
+    audio: const AudioOptions(
+      sampleRate: 48000,
+      channels: AudioChannelFormat.stereo,
+    ),
+    bluetooth: const BluetoothScanOptions(
+      scanMode: BluetoothScanMode.lowLatency,
+      allowDuplicates: true,
+    ),
+    location: const LocationOptions(
+      accuracy: LocationAccuracy.navigation,
+      distanceFilterMeters: 5,
+    ),
+    nativeFlags: {
+      'androidForegroundServiceChannelId': 'hardware_tracking',
+      'iosShowsBackgroundLocationIndicator': true,
+    },
+  ),
+);
+
+final startup = await NexoraSdk.instance.startConfigured(
+  camera: true,
+  audio: true,
+  bluetoothScan: true,
+);
+
+if (!startup.success) {
+  debugPrint('Failed modules: ${startup.failedModules}');
+}
+```
+
+### Android/iOS Native-Level Options
+
+For Android and iOS apps, use typed platform options instead of loose strings.
+Unsupported or device-specific settings are accepted safely and ignored until the
+native manager can apply them on that OS/device.
+
+```dart
+await NexoraSdk.instance.initialize(
+  config: NexoraSdkConfig.advanced.copyWith(
+    android: const AndroidNativeOptions(
+      camera: AndroidCameraOptions(
+        lens: NativeCameraLens.ultraWide,
+        fps: NativeCameraFps.fps60,
+        imageFormat: NativeImageFormat.yuv,
+        videoBitrate: 8000000,
+      ),
+      audio: AndroidAudioOptions(
+        source: AndroidAudioSource.voiceRecognition,
+        bufferSize: 2048,
+        allowBluetoothSco: true,
+      ),
+      bluetooth: AndroidBluetoothOptions(
+        connectionPriority: AndroidBleConnectionPriority.high,
+        defaultMtu: 247,
+        filters: {
+          'deviceName': 'Nexora',
+          'manufacturerId': 76,
+        },
+      ),
+      location: AndroidLocationOptions(
+        updateIntervalMs: 1000,
+        fastestIntervalMs: 500,
+        foregroundServiceType: 'location',
+        notificationChannelId: 'tracking',
+      ),
+      system: AndroidSystemOptions(
+        keepScreenOn: true,
+        orientationLock: NativeOrientationLock.portrait,
+      ),
+    ),
+    ios: const IosNativeOptions(
+      camera: IosCameraOptions(
+        lens: NativeCameraLens.telephoto,
+        fps: NativeCameraFps.fps60,
+        sessionPreset: IosCameraSessionPreset.hd1920x1080,
+      ),
+      audio: IosAudioOptions(
+        category: IosAudioSessionCategory.playAndRecord,
+        mode: IosAudioSessionMode.voiceChat,
+        preferredSampleRate: 48000,
+        allowBluetooth: true,
+      ),
+      bluetooth: IosBluetoothOptions(
+        restoreIdentifier: 'com.example.app.ble.restore',
+        allowDuplicates: false,
+      ),
+      location: IosLocationOptions(
+        allowsBackgroundLocationUpdates: true,
+        showsBackgroundLocationIndicator: true,
+        activityType: 'fitness',
+      ),
+      system: IosSystemOptions(
+        keepScreenOn: true,
+        orientationLock: NativeOrientationLock.portrait,
+      ),
+    ),
+  ),
+);
+```
+
 | Feature group | Android/iOS | Web | Desktop |
 | --- | --- | --- | --- |
 | Camera, audio, BLE, GPS, biometrics, sensors, haptics, health | Native | Unsupported fallback | Unsupported fallback |

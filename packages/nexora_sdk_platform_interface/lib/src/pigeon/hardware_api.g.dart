@@ -120,11 +120,11 @@ class _HardwareApiCodec extends StandardMessageCodec {
   @override
   Object? readValueOfType(int type, ReadBuffer buffer) {
     switch (type) {
-      case 128: 
+      case 128:
         return CustomClassifierOptions.decode(readValue(buffer)!);
-      case 129: 
+      case 129:
         return PigeonCameraOptions.decode(readValue(buffer)!);
-      case 130: 
+      case 130:
         return VisionModeOptions.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);
@@ -136,9 +136,11 @@ class HardwareApi {
   /// Constructor for [HardwareApi].  The [binaryMessenger] named argument is
   /// available for dependency injection.  If it is left null, the default
   /// BinaryMessenger will be used which routes to the host platform.
-  HardwareApi({BinaryMessenger? binaryMessenger, String messageChannelSuffix = ''})
+  HardwareApi(
+      {BinaryMessenger? binaryMessenger, String messageChannelSuffix = ''})
       : __pigeon_binaryMessenger = binaryMessenger,
-        __pigeon_messageChannelSuffix = messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
+        __pigeon_messageChannelSuffix =
+            messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
   final BinaryMessenger? __pigeon_binaryMessenger;
 
   static const MessageCodec<Object?> pigeonChannelCodec = _HardwareApiCodec();
@@ -146,8 +148,10 @@ class HardwareApi {
   final String __pigeon_messageChannelSuffix;
 
   Future<int> startCamera(int width, int height) async {
-    final String __pigeon_channelName = 'dev.flutter.pigeon.my_hardware_plugin.HardwareApi.startCamera$__pigeon_messageChannelSuffix';
-    final BasicMessageChannel<Object?> __pigeon_channel = BasicMessageChannel<Object?>(
+    final String __pigeon_channelName =
+        'dev.flutter.pigeon.my_hardware_plugin.HardwareApi.startCamera$__pigeon_messageChannelSuffix';
+    final BasicMessageChannel<Object?> __pigeon_channel =
+        BasicMessageChannel<Object?>(
       __pigeon_channelName,
       pigeonChannelCodec,
       binaryMessenger: __pigeon_binaryMessenger,
@@ -176,8 +180,10 @@ class HardwareApi {
   }
 
   Future<int> startCameraWithOptions(PigeonCameraOptions options) async {
-    final String __pigeon_channelName = 'dev.flutter.pigeon.my_hardware_plugin.HardwareApi.startCameraWithOptions$__pigeon_messageChannelSuffix';
-    final BasicMessageChannel<Object?> __pigeon_channel = BasicMessageChannel<Object?>(
+    final String __pigeon_channelName =
+        'dev.flutter.pigeon.my_hardware_plugin.HardwareApi.startCameraWithOptions$__pigeon_messageChannelSuffix';
+    final BasicMessageChannel<Object?> __pigeon_channel =
+        BasicMessageChannel<Object?>(
       __pigeon_channelName,
       pigeonChannelCodec,
       binaryMessenger: __pigeon_binaryMessenger,
@@ -206,8 +212,10 @@ class HardwareApi {
   }
 
   Future<bool> stopCamera() async {
-    final String __pigeon_channelName = 'dev.flutter.pigeon.my_hardware_plugin.HardwareApi.stopCamera$__pigeon_messageChannelSuffix';
-    final BasicMessageChannel<Object?> __pigeon_channel = BasicMessageChannel<Object?>(
+    final String __pigeon_channelName =
+        'dev.flutter.pigeon.my_hardware_plugin.HardwareApi.stopCamera$__pigeon_messageChannelSuffix';
+    final BasicMessageChannel<Object?> __pigeon_channel =
+        BasicMessageChannel<Object?>(
       __pigeon_channelName,
       pigeonChannelCodec,
       binaryMessenger: __pigeon_binaryMessenger,
@@ -236,8 +244,10 @@ class HardwareApi {
   }
 
   Future<bool> setVisionMode(VisionModeOptions options) async {
-    final String __pigeon_channelName = 'dev.flutter.pigeon.my_hardware_plugin.HardwareApi.setVisionMode$__pigeon_messageChannelSuffix';
-    final BasicMessageChannel<Object?> __pigeon_channel = BasicMessageChannel<Object?>(
+    final String __pigeon_channelName =
+        'dev.flutter.pigeon.my_hardware_plugin.HardwareApi.setVisionMode$__pigeon_messageChannelSuffix';
+    final BasicMessageChannel<Object?> __pigeon_channel =
+        BasicMessageChannel<Object?>(
       __pigeon_channelName,
       pigeonChannelCodec,
       binaryMessenger: __pigeon_binaryMessenger,
@@ -266,8 +276,10 @@ class HardwareApi {
   }
 
   Future<bool> registerCustomClassifier(CustomClassifierOptions options) async {
-    final String __pigeon_channelName = 'dev.flutter.pigeon.my_hardware_plugin.HardwareApi.registerCustomClassifier$__pigeon_messageChannelSuffix';
-    final BasicMessageChannel<Object?> __pigeon_channel = BasicMessageChannel<Object?>(
+    final String __pigeon_channelName =
+        'dev.flutter.pigeon.my_hardware_plugin.HardwareApi.registerCustomClassifier$__pigeon_messageChannelSuffix';
+    final BasicMessageChannel<Object?> __pigeon_channel =
+        BasicMessageChannel<Object?>(
       __pigeon_channelName,
       pigeonChannelCodec,
       binaryMessenger: __pigeon_binaryMessenger,
@@ -296,8 +308,10 @@ class HardwareApi {
   }
 
   Future<bool> setFlash(bool on) async {
-    final String __pigeon_channelName = 'dev.flutter.pigeon.my_hardware_plugin.HardwareApi.setFlash$__pigeon_messageChannelSuffix';
-    final BasicMessageChannel<Object?> __pigeon_channel = BasicMessageChannel<Object?>(
+    final String __pigeon_channelName =
+        'dev.flutter.pigeon.my_hardware_plugin.HardwareApi.setFlash$__pigeon_messageChannelSuffix';
+    final BasicMessageChannel<Object?> __pigeon_channel =
+        BasicMessageChannel<Object?>(
       __pigeon_channelName,
       pigeonChannelCodec,
       binaryMessenger: __pigeon_binaryMessenger,
@@ -326,8 +340,10 @@ class HardwareApi {
   }
 
   Future<bool> setZoom(double level) async {
-    final String __pigeon_channelName = 'dev.flutter.pigeon.my_hardware_plugin.HardwareApi.setZoom$__pigeon_messageChannelSuffix';
-    final BasicMessageChannel<Object?> __pigeon_channel = BasicMessageChannel<Object?>(
+    final String __pigeon_channelName =
+        'dev.flutter.pigeon.my_hardware_plugin.HardwareApi.setZoom$__pigeon_messageChannelSuffix';
+    final BasicMessageChannel<Object?> __pigeon_channel =
+        BasicMessageChannel<Object?>(
       __pigeon_channelName,
       pigeonChannelCodec,
       binaryMessenger: __pigeon_binaryMessenger,
@@ -356,8 +372,10 @@ class HardwareApi {
   }
 
   Future<bool> flipCamera() async {
-    final String __pigeon_channelName = 'dev.flutter.pigeon.my_hardware_plugin.HardwareApi.flipCamera$__pigeon_messageChannelSuffix';
-    final BasicMessageChannel<Object?> __pigeon_channel = BasicMessageChannel<Object?>(
+    final String __pigeon_channelName =
+        'dev.flutter.pigeon.my_hardware_plugin.HardwareApi.flipCamera$__pigeon_messageChannelSuffix';
+    final BasicMessageChannel<Object?> __pigeon_channel =
+        BasicMessageChannel<Object?>(
       __pigeon_channelName,
       pigeonChannelCodec,
       binaryMessenger: __pigeon_binaryMessenger,
@@ -386,8 +404,10 @@ class HardwareApi {
   }
 
   Future<String?> takePhoto(String? fileName) async {
-    final String __pigeon_channelName = 'dev.flutter.pigeon.my_hardware_plugin.HardwareApi.takePhoto$__pigeon_messageChannelSuffix';
-    final BasicMessageChannel<Object?> __pigeon_channel = BasicMessageChannel<Object?>(
+    final String __pigeon_channelName =
+        'dev.flutter.pigeon.my_hardware_plugin.HardwareApi.takePhoto$__pigeon_messageChannelSuffix';
+    final BasicMessageChannel<Object?> __pigeon_channel =
+        BasicMessageChannel<Object?>(
       __pigeon_channelName,
       pigeonChannelCodec,
       binaryMessenger: __pigeon_binaryMessenger,
@@ -411,8 +431,10 @@ class HardwareApi {
   }
 
   Future<String?> startVideoRecording(String? fileName) async {
-    final String __pigeon_channelName = 'dev.flutter.pigeon.my_hardware_plugin.HardwareApi.startVideoRecording$__pigeon_messageChannelSuffix';
-    final BasicMessageChannel<Object?> __pigeon_channel = BasicMessageChannel<Object?>(
+    final String __pigeon_channelName =
+        'dev.flutter.pigeon.my_hardware_plugin.HardwareApi.startVideoRecording$__pigeon_messageChannelSuffix';
+    final BasicMessageChannel<Object?> __pigeon_channel =
+        BasicMessageChannel<Object?>(
       __pigeon_channelName,
       pigeonChannelCodec,
       binaryMessenger: __pigeon_binaryMessenger,
@@ -436,8 +458,10 @@ class HardwareApi {
   }
 
   Future<String?> stopVideoRecording() async {
-    final String __pigeon_channelName = 'dev.flutter.pigeon.my_hardware_plugin.HardwareApi.stopVideoRecording$__pigeon_messageChannelSuffix';
-    final BasicMessageChannel<Object?> __pigeon_channel = BasicMessageChannel<Object?>(
+    final String __pigeon_channelName =
+        'dev.flutter.pigeon.my_hardware_plugin.HardwareApi.stopVideoRecording$__pigeon_messageChannelSuffix';
+    final BasicMessageChannel<Object?> __pigeon_channel =
+        BasicMessageChannel<Object?>(
       __pigeon_channelName,
       pigeonChannelCodec,
       binaryMessenger: __pigeon_binaryMessenger,
@@ -461,8 +485,10 @@ class HardwareApi {
   }
 
   Future<bool> applyCameraFilterShader(String shaderType) async {
-    final String __pigeon_channelName = 'dev.flutter.pigeon.my_hardware_plugin.HardwareApi.applyCameraFilterShader$__pigeon_messageChannelSuffix';
-    final BasicMessageChannel<Object?> __pigeon_channel = BasicMessageChannel<Object?>(
+    final String __pigeon_channelName =
+        'dev.flutter.pigeon.my_hardware_plugin.HardwareApi.applyCameraFilterShader$__pigeon_messageChannelSuffix';
+    final BasicMessageChannel<Object?> __pigeon_channel =
+        BasicMessageChannel<Object?>(
       __pigeon_channelName,
       pigeonChannelCodec,
       binaryMessenger: __pigeon_binaryMessenger,
@@ -571,9 +597,9 @@ class _AudioApiCodec extends StandardMessageCodec {
   @override
   Object? readValueOfType(int type, ReadBuffer buffer) {
     switch (type) {
-      case 128: 
+      case 128:
         return BasicAudioOptions.decode(readValue(buffer)!);
-      case 129: 
+      case 129:
         return PigeonAudioOptions.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);
@@ -584,7 +610,8 @@ class _AudioApiCodec extends StandardMessageCodec {
 class AudioApi {
   AudioApi({BinaryMessenger? binaryMessenger, String messageChannelSuffix = ''})
       : __pigeon_binaryMessenger = binaryMessenger,
-        __pigeon_messageChannelSuffix = messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
+        __pigeon_messageChannelSuffix =
+            messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
   final BinaryMessenger? __pigeon_binaryMessenger;
 
   static const MessageCodec<Object?> pigeonChannelCodec = _AudioApiCodec();
@@ -592,8 +619,10 @@ class AudioApi {
   final String __pigeon_messageChannelSuffix;
 
   Future<bool> startAudio(BasicAudioOptions options) async {
-    final String __pigeon_channelName = 'dev.flutter.pigeon.my_hardware_plugin.AudioApi.startAudio$__pigeon_messageChannelSuffix';
-    final BasicMessageChannel<Object?> __pigeon_channel = BasicMessageChannel<Object?>(
+    final String __pigeon_channelName =
+        'dev.flutter.pigeon.my_hardware_plugin.AudioApi.startAudio$__pigeon_messageChannelSuffix';
+    final BasicMessageChannel<Object?> __pigeon_channel =
+        BasicMessageChannel<Object?>(
       __pigeon_channelName,
       pigeonChannelCodec,
       binaryMessenger: __pigeon_binaryMessenger,
@@ -622,8 +651,10 @@ class AudioApi {
   }
 
   Future<bool> startAudioWithOptions(PigeonAudioOptions options) async {
-    final String __pigeon_channelName = 'dev.flutter.pigeon.my_hardware_plugin.AudioApi.startAudioWithOptions$__pigeon_messageChannelSuffix';
-    final BasicMessageChannel<Object?> __pigeon_channel = BasicMessageChannel<Object?>(
+    final String __pigeon_channelName =
+        'dev.flutter.pigeon.my_hardware_plugin.AudioApi.startAudioWithOptions$__pigeon_messageChannelSuffix';
+    final BasicMessageChannel<Object?> __pigeon_channel =
+        BasicMessageChannel<Object?>(
       __pigeon_channelName,
       pigeonChannelCodec,
       binaryMessenger: __pigeon_binaryMessenger,
@@ -652,8 +683,10 @@ class AudioApi {
   }
 
   Future<bool> stopAudio() async {
-    final String __pigeon_channelName = 'dev.flutter.pigeon.my_hardware_plugin.AudioApi.stopAudio$__pigeon_messageChannelSuffix';
-    final BasicMessageChannel<Object?> __pigeon_channel = BasicMessageChannel<Object?>(
+    final String __pigeon_channelName =
+        'dev.flutter.pigeon.my_hardware_plugin.AudioApi.stopAudio$__pigeon_messageChannelSuffix';
+    final BasicMessageChannel<Object?> __pigeon_channel =
+        BasicMessageChannel<Object?>(
       __pigeon_channelName,
       pigeonChannelCodec,
       binaryMessenger: __pigeon_binaryMessenger,
@@ -682,8 +715,10 @@ class AudioApi {
   }
 
   Future<bool> routeAudioOutput(String route) async {
-    final String __pigeon_channelName = 'dev.flutter.pigeon.my_hardware_plugin.AudioApi.routeAudioOutput$__pigeon_messageChannelSuffix';
-    final BasicMessageChannel<Object?> __pigeon_channel = BasicMessageChannel<Object?>(
+    final String __pigeon_channelName =
+        'dev.flutter.pigeon.my_hardware_plugin.AudioApi.routeAudioOutput$__pigeon_messageChannelSuffix';
+    final BasicMessageChannel<Object?> __pigeon_channel =
+        BasicMessageChannel<Object?>(
       __pigeon_channelName,
       pigeonChannelCodec,
       binaryMessenger: __pigeon_binaryMessenger,
@@ -712,8 +747,10 @@ class AudioApi {
   }
 
   Future<double> getAudioVolume() async {
-    final String __pigeon_channelName = 'dev.flutter.pigeon.my_hardware_plugin.AudioApi.getAudioVolume$__pigeon_messageChannelSuffix';
-    final BasicMessageChannel<Object?> __pigeon_channel = BasicMessageChannel<Object?>(
+    final String __pigeon_channelName =
+        'dev.flutter.pigeon.my_hardware_plugin.AudioApi.getAudioVolume$__pigeon_messageChannelSuffix';
+    final BasicMessageChannel<Object?> __pigeon_channel =
+        BasicMessageChannel<Object?>(
       __pigeon_channelName,
       pigeonChannelCodec,
       binaryMessenger: __pigeon_binaryMessenger,
@@ -742,8 +779,10 @@ class AudioApi {
   }
 
   Future<bool> setAudioVolume(double level) async {
-    final String __pigeon_channelName = 'dev.flutter.pigeon.my_hardware_plugin.AudioApi.setAudioVolume$__pigeon_messageChannelSuffix';
-    final BasicMessageChannel<Object?> __pigeon_channel = BasicMessageChannel<Object?>(
+    final String __pigeon_channelName =
+        'dev.flutter.pigeon.my_hardware_plugin.AudioApi.setAudioVolume$__pigeon_messageChannelSuffix';
+    final BasicMessageChannel<Object?> __pigeon_channel =
+        BasicMessageChannel<Object?>(
       __pigeon_channelName,
       pigeonChannelCodec,
       binaryMessenger: __pigeon_binaryMessenger,
@@ -772,8 +811,10 @@ class AudioApi {
   }
 
   Future<bool> selectAudioInput(String device) async {
-    final String __pigeon_channelName = 'dev.flutter.pigeon.my_hardware_plugin.AudioApi.selectAudioInput$__pigeon_messageChannelSuffix';
-    final BasicMessageChannel<Object?> __pigeon_channel = BasicMessageChannel<Object?>(
+    final String __pigeon_channelName =
+        'dev.flutter.pigeon.my_hardware_plugin.AudioApi.selectAudioInput$__pigeon_messageChannelSuffix';
+    final BasicMessageChannel<Object?> __pigeon_channel =
+        BasicMessageChannel<Object?>(
       __pigeon_channelName,
       pigeonChannelCodec,
       binaryMessenger: __pigeon_binaryMessenger,
@@ -802,8 +843,10 @@ class AudioApi {
   }
 
   Future<bool> setAudioGain(double gain) async {
-    final String __pigeon_channelName = 'dev.flutter.pigeon.my_hardware_plugin.AudioApi.setAudioGain$__pigeon_messageChannelSuffix';
-    final BasicMessageChannel<Object?> __pigeon_channel = BasicMessageChannel<Object?>(
+    final String __pigeon_channelName =
+        'dev.flutter.pigeon.my_hardware_plugin.AudioApi.setAudioGain$__pigeon_messageChannelSuffix';
+    final BasicMessageChannel<Object?> __pigeon_channel =
+        BasicMessageChannel<Object?>(
       __pigeon_channelName,
       pigeonChannelCodec,
       binaryMessenger: __pigeon_binaryMessenger,

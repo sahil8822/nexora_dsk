@@ -69,8 +69,24 @@ class NexoraSdk {
   /// The current SDK version.
   static const String version = '3.4.1';
 
+  NexoraSdkConfig _config = NexoraSdkConfig.beginner;
+
+  /// Current global SDK configuration.
+  NexoraSdkConfig get config => _config;
+
+  /// Applies global SDK defaults and forwards native flags to the host
+  /// platform.
+  Future<bool> configure([NexoraSdkConfig config = NexoraSdkConfig.beginner]) {
+    _config = config;
+    return NexoraSdkPlatform.instance.configure(config);
+  }
+
   /// Initializes the SDK by pre-warming capabilities/platform channel.
-  Future<void> initialize({bool logCapabilities = false}) async {
+  Future<void> initialize({
+    bool logCapabilities = false,
+    NexoraSdkConfig config = NexoraSdkConfig.beginner,
+  }) async {
+    await configure(config);
     final platform = await NexoraSdkPlatform.instance.getPlatformVersion();
     if (logCapabilities) {
       // ignore: avoid_print — SDK diagnostics output
@@ -302,6 +318,59 @@ class NexoraSdk {
       streamBytes: streamBytes,
       updateIntervalMs: updateIntervalMs,
     );
+  }
+
+  /// Starts camera, audio, BLE, location, and sensor modules with configured
+  /// defaults. Disable any module you do not need.
+  Future<HardwareStartupResult> startConfigured({
+    bool camera = false,
+    bool audio = false,
+    bool bluetoothScan = false,
+    bool location = false,
+    bool sensors = false,
+  }) async {
+    final tasks = <String, Future<bool>>{};
+    if (camera) {
+      tasks['camera'] = this.camera
+          .startWithOptions(
+            config.camera,
+            autoRequestPermission: config.autoRequestPermissions,
+          )
+          .then((textureId) => textureId != null);
+    }
+    if (audio) {
+      tasks['audio'] = this.audio.startWithOptions(
+        config.audio,
+        autoRequestPermission: config.autoRequestPermissions,
+      );
+    }
+    if (bluetoothScan) {
+      tasks['bluetoothScan'] = bluetooth.startScanWithOptions(
+        config.bluetooth,
+        autoRequestPermission: config.autoRequestPermissions,
+      );
+    }
+    if (location) {
+      tasks['location'] = this.location.startWithOptions(
+        config.location,
+        autoRequestPermission: config.autoRequestPermissions,
+      );
+    }
+    if (sensors) {
+      tasks['sensors'] = this.sensors.startWithOptions(config.sensors);
+    }
+
+    final entries = await Future.wait(
+      tasks.entries.map((entry) async {
+        try {
+          return MapEntry(entry.key, await entry.value);
+        } on Exception catch (_) {
+          return MapEntry(entry.key, false);
+        }
+      }),
+    );
+
+    return HardwareStartupResult(Map<String, bool>.fromEntries(entries));
   }
 
   /// Starts broadcasting this device as a BLE Peripheral

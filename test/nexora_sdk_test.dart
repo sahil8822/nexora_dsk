@@ -41,6 +41,27 @@ void main() {
       expect(report.toMap(), containsPair('camera', true));
     });
 
+    test(
+      'applies global configuration and starts configured modules',
+      () async {
+        final sdk = NexoraSdk.instance;
+        final config = NexoraSdkConfig.beginner.copyWith(
+          camera: const CameraOptions(resolution: CameraQuality.low),
+          audio: const AudioOptions(sampleRate: 48000),
+        );
+
+        expect(await sdk.configure(config), isTrue);
+        expect(sdk.config.camera.resolution, CameraQuality.low);
+        expect(sdk.config.audio.sampleRate, 48000);
+
+        final result = await sdk.startConfigured(camera: true, audio: true);
+        expect(result.results, containsPair('camera', true));
+        expect(result.results, containsPair('audio', true));
+        expect(result.failedModules, isEmpty);
+        await sdk.stopAll(audio: false, bluetoothScan: false, location: false);
+      },
+    );
+
     test('returns permission status snapshot and opens settings', () async {
       final sdk = NexoraSdk.instance;
       final status = await sdk.permissions.status(HardwarePermission.camera);

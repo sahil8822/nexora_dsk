@@ -11,10 +11,28 @@ import androidx.fragment.app.FragmentActivity
  * Manages native biometric authentication using AndroidX Biometric library.
  */
 class HardwareBiometricManager(private val context: Context) {
+    private var authenticators = BiometricManager.Authenticators.BIOMETRIC_STRONG
+    private var allowDeviceCredential = true
+    private var confirmationRequired = true
+
+    fun configure(options: Map<String, Any?>) {
+        allowDeviceCredential = options["allowDeviceCredential"] as? Boolean ?: true
+        confirmationRequired = options["confirmationRequired"] as? Boolean ?: true
+        val strength = when (options["strength"] as? String) {
+            "weak" -> BiometricManager.Authenticators.BIOMETRIC_WEAK
+            "strong" -> BiometricManager.Authenticators.BIOMETRIC_STRONG
+            else -> BiometricManager.Authenticators.BIOMETRIC_STRONG
+        }
+        authenticators = if (allowDeviceCredential) {
+            strength or BiometricManager.Authenticators.DEVICE_CREDENTIAL
+        } else {
+            strength
+        }
+    }
 
     fun canAuthenticate(): Boolean {
         val biometricManager = BiometricManager.from(context)
-        return biometricManager.canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_STRONG) == BiometricManager.BIOMETRIC_SUCCESS
+        return biometricManager.canAuthenticate(authenticators) == BiometricManager.BIOMETRIC_SUCCESS
     }
 
     fun authenticate(activity: Activity, reason: String, callback: (Boolean) -> Unit) {
@@ -44,9 +62,13 @@ class HardwareBiometricManager(private val context: Context) {
         val promptInfo = BiometricPrompt.PromptInfo.Builder()
             .setTitle("Authentication Required")
             .setSubtitle(reason)
-            .setNegativeButtonText("Cancel")
-            .build()
+            .setConfirmationRequired(confirmationRequired)
+            .setAllowedAuthenticators(authenticators)
 
-        biometricPrompt.authenticate(promptInfo)
+        if (!allowDeviceCredential) {
+            promptInfo.setNegativeButtonText("Cancel")
+        }
+
+        biometricPrompt.authenticate(promptInfo.build())
     }
 }

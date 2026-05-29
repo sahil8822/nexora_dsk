@@ -470,3 +470,25 @@ class HardwareShutdownResult {
   String toString() =>
       'HardwareShutdownResult(success: $success, failed: $failedModules)';
 }
+
+/// Result returned by configured startup helpers.
+class HardwareStartupResult {
+  /// Creates a startup result for one or more module start attempts.
+  const HardwareStartupResult(this.results);
+
+  /// Start result by module name.
+  final Map<String, bool> results;
+
+  /// Whether every requested module started successfully.
+  bool get success => results.values.every((value) => value);
+
+  /// Modules that failed to start.
+  List<String> get failedModules => results.entries
+      .where((entry) => !entry.value)
+      .map((entry) => entry.key)
+      .toList(growable: false);
+
+  @override
+  String toString() =>
+      'HardwareStartupResult(success: $success, failed: $failedModules)';
+}

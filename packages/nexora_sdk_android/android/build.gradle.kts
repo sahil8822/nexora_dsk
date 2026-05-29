@@ -37,6 +37,7 @@ val enableNfc = project.findProperty("nexora.nfc.enabled")?.toString()?.toBoolea
 android {
     namespace = "com.nexora.sdk"
     compileSdk = 34
+    ndkVersion = "28.2.13676358"
     externalNativeBuild {
         cmake {
             path("CMakeLists.txt")
@@ -56,24 +57,27 @@ android {
     sourceSets {
         getByName("main") {
             java.srcDirs("src/main/kotlin")
-            if (!enableCamera) java.exclude("com/nexora/sdk/CameraManager.kt")
-            if (!enableBluetooth) {
-                java.exclude("com/nexora/sdk/HardwareBluetoothManager.kt")
-                java.exclude("com/nexora/sdk/HardwareBlePeripheralManager.kt")
-            }
-            if (!enableLocation) {
-                java.exclude("com/nexora/sdk/HardwareLocationManager.kt")
-                java.exclude("com/nexora/sdk/HardwareGeofenceReceiver.kt")
-            }
-            if (!enableAudio) java.exclude("com/nexora/sdk/HardwareAudioModule.kt")
-            if (!enableBiometric) java.exclude("com/nexora/sdk/HardwareBiometricManager.kt")
-            if (!enableNfc) java.exclude("com/nexora/sdk/HardwareNfcManager.kt")
         }
     }
 
     defaultConfig {
         minSdk = 24
     }
+}
+
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+    if (!enableCamera) exclude("**/CameraManager.kt")
+    if (!enableBluetooth) {
+        exclude("**/HardwareBluetoothManager.kt")
+        exclude("**/HardwareBlePeripheralManager.kt")
+    }
+    if (!enableLocation) {
+        exclude("**/HardwareLocationManager.kt")
+        exclude("**/HardwareGeofenceReceiver.kt")
+    }
+    if (!enableAudio) exclude("**/HardwareAudioModule.kt")
+    if (!enableBiometric) exclude("**/HardwareBiometricManager.kt")
+    if (!enableNfc) exclude("**/HardwareNfcManager.kt")
 }
 
 dependencies {

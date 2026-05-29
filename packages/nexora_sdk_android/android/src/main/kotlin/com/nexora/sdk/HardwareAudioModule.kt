@@ -18,8 +18,9 @@ class HardwareAudioModule(private val context: Context) {
     private var audioRecord: AudioRecord? = null
     private var isRecording = false
     private var eventSink: EventChannel.EventSink? = null
-    private val sampleRate = 44100
-    private val bufferSize = 1024
+    private var sampleRate = 44100
+    private var bufferSize = 1024
+    private var audioSource = MediaRecorder.AudioSource.MIC
     
     private var fftEnabled = false
     private var streamBytes = false
@@ -29,6 +30,21 @@ class HardwareAudioModule(private val context: Context) {
 
     fun setEventSink(sink: EventChannel.EventSink?) {
         this.eventSink = sink
+    }
+
+    fun configure(options: Map<String, Any?>) {
+        audioSource = when (options["source"] as? String ?: "mic") {
+            "camcorder" -> MediaRecorder.AudioSource.CAMCORDER
+            "voiceRecognition" -> MediaRecorder.AudioSource.VOICE_RECOGNITION
+            "voiceCommunication" -> MediaRecorder.AudioSource.VOICE_COMMUNICATION
+            else -> MediaRecorder.AudioSource.MIC
+        }
+        sampleRate = (options["sampleRate"] as? Number)?.toInt()
+            ?: (options["preferredSampleRate"] as? Number)?.toInt()
+            ?: sampleRate
+        bufferSize = (options["bufferSize"] as? Number)?.toInt()
+            ?.coerceAtLeast(256)
+            ?: bufferSize
     }
 
     @SuppressLint("MissingPermission")
@@ -45,7 +61,7 @@ class HardwareAudioModule(private val context: Context) {
 
         try {
             audioRecord = AudioRecord(
-                MediaRecorder.AudioSource.MIC,
+                audioSource,
                 sampleRate,
                 AudioFormat.CHANNEL_IN_MONO,
                 AudioFormat.ENCODING_PCM_16BIT,

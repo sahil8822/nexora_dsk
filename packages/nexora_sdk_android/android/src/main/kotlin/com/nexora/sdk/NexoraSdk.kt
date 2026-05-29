@@ -49,6 +49,9 @@ class NexoraSdk: FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry
     private var textureRegistry: TextureRegistry? = null
     private var textureEntry: TextureRegistry.SurfaceTextureEntry? = null
     private var ecoModeUserEnabled = false
+    private var sdkConfig: Map<String, Any?> = emptyMap()
+    private var logNativeCalls = false
+    private var androidOptions: Map<String, Any?> = emptyMap()
 
     private lateinit var camera: HardwareCameraManager
     private lateinit var audio: HardwareAudioModule
@@ -63,6 +66,7 @@ class NexoraSdk: FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry
     private lateinit var smartSync: SmartSyncManager
     private lateinit var ai: HardwareAiManager
     private lateinit var usb: HardwareUsbManager
+    private lateinit var blePeripheralManager: HardwareBlePeripheralManager
     private lateinit var crypto: HardwareCryptoManager
     private lateinit var backgroundTasks: HardwareTaskManager
 
@@ -93,6 +97,7 @@ class NexoraSdk: FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry
         smartSync = SmartSyncManager(context)
         ai = HardwareAiManager(context)
         usb = HardwareUsbManager(context)
+        blePeripheralManager = HardwareBlePeripheralManager(context)
         crypto = HardwareCryptoManager()
         backgroundTasks = HardwareTaskManager(context)
 
@@ -144,7 +149,19 @@ class NexoraSdk: FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry
 
     private fun handleMethodCallSafe(call: MethodCall, result: Result) {
         try {
+        if (logNativeCalls) {
+            android.util.Log.d("NexoraSdk", "Native call: ${call.method}")
+        }
         when (call.method) {
+            "configureSdk" -> {
+                @Suppress("UNCHECKED_CAST")
+                sdkConfig = call.arguments as? Map<String, Any?> ?: emptyMap()
+                logNativeCalls = sdkConfig["logNativeCalls"] as? Boolean ?: false
+                @Suppress("UNCHECKED_CAST")
+                androidOptions = sdkConfig["android"] as? Map<String, Any?> ?: emptyMap()
+                applyAndroidOptions(androidOptions)
+                result.success(true)
+            }
             // ==================== Camera & Vision ====================
             "startCamera" -> {
                 if (!hasPermission(Manifest.permission.CAMERA)) {
@@ -458,7 +475,7 @@ class NexoraSdk: FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry
                     id,
                     lat,
                     lon,
-                    radius.toFloat()
+                    radius
                 )
                 result.success(added)
             }
@@ -660,11 +677,20 @@ class NexoraSdk: FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry
             
             // ==================== Foreground Service ====================
             "startForegroundService" -> {
-                val title = call.argument<String>("title") ?: "Nexora Background Service"
-                val content = call.argument<String>("content") ?: "Running hardware tasks in background"
+                val androidOptions = sdkConfig["android"] as? Map<String, Any?> ?: emptyMap()
+                val locationOptions = androidOptions["location"] as? Map<String, Any?> ?: emptyMap()
+                val channelId = locationOptions["notificationChannelId"] as? String ?: "NexoraHardwareChannel"
+                val title = call.argument<String>("title")
+                    ?: locationOptions["notificationTitle"] as? String
+                    ?: "Nexora Background Service"
+                val content = call.argument<String>("content")
+                    ?: locationOptions["notificationText"] as? String
+                    ?: "Running hardware tasks in background"
                 val intent = Intent(context, NexoraForegroundService::class.java).apply {
                     putExtra("title", title)
                     putExtra("content", content)
+                    putExtra("channelId", channelId)
+                    putExtra("channelName", title)
                 }
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     context.startForegroundService(intent)
@@ -776,7 +802,7 @@ class NexoraSdk: FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry
                 }
             }
             "connectUsbDevice" -> {
-                result.success(usbManager.getConnectedDevices())
+                result.success(usb.getConnectedDevices())
             }
             "sendUsbData" -> {
                 result.success(true)
@@ -1151,6 +1177,44 @@ class NexoraSdk: FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry
         }
     }
 
+    @Suppress("UNCHECKED_CAST")
+    private fun applyAndroidOptions(options: Map<String, Any?>) {
+        val cameraOptions = options["camera"] as? Map<String, Any?> ?: emptyMap()
+        camera.configure(cameraOptions)
+
+        val audioOptions = options["audio"] as? Map<String, Any?> ?: emptyMap()
+        val rootAudioOptions = sdkConfig["audio"] as? Map<String, Any?> ?: emptyMap()
+        audio.configure(rootAudioOptions + audioOptions)
+
+        val locationOptions = options["location"] as? Map<String, Any?> ?: emptyMap()
+        location.configure(locationOptions)
+
+        val bluetoothOptions = options["bluetooth"] as? Map<String, Any?> ?: emptyMap()
+        bluetooth.configure(bluetoothOptions)
+
+        val sensorOptions = options["sensors"] as? Map<String, Any?> ?: emptyMap()
+        sensors.configure(sensorOptions)
+
+        val biometricOptions = options["biometrics"] as? Map<String, Any?> ?: emptyMap()
+        biometrics.configure(biometricOptions)
+
+        val systemOptions = options["system"] as? Map<String, Any?> ?: emptyMap()
+        val keepScreenOn = systemOptions["keepScreenOn"] as? Boolean ?: false
+        activity?.window?.let { window ->
+            if (keepScreenOn) {
+                window.addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            } else {
+                window.clearFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            }
+        }
+
+        val rootLocationOptions = sdkConfig["location"] as? Map<String, Any?> ?: emptyMap()
+        val locationBackground = rootLocationOptions["enableBackgroundUpdates"] as? Boolean
+        if (locationBackground != null) {
+            location.setBackgroundEnabled(locationBackground)
+        }
+    }
+
     private fun isEmulator(): Boolean {
         return Build.FINGERPRINT.startsWith("generic") ||
             Build.FINGERPRINT.lowercase().contains("vbox") ||
@@ -1166,12 +1230,12 @@ class NexoraSdk: FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry
         activity = binding.activity
         activityBinding = binding
         binding.addRequestPermissionsResultListener(this)
-        binding.addNewIntentListener(this)
+        binding.addOnNewIntentListener(this)
     }
 
     override fun onDetachedFromActivityForConfigChanges() {
         activityBinding?.removeRequestPermissionsResultListener(this)
-        activityBinding?.removeNewIntentListener(this)
+        activityBinding?.removeOnNewIntentListener(this)
         activityBinding = null
         activity = null
     }
@@ -1180,12 +1244,12 @@ class NexoraSdk: FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry
         activity = binding.activity
         activityBinding = binding
         binding.addRequestPermissionsResultListener(this)
-        binding.addNewIntentListener(this)
+        binding.addOnNewIntentListener(this)
     }
 
     override fun onDetachedFromActivity() {
         activityBinding?.removeRequestPermissionsResultListener(this)
-        activityBinding?.removeNewIntentListener(this)
+        activityBinding?.removeOnNewIntentListener(this)
         activityBinding = null
         activity = null
     }

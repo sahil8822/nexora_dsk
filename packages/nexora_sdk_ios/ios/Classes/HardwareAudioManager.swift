@@ -25,6 +25,36 @@ public class HardwareAudioManager {
         self.updateIntervalMs = Double(max(16, min(interval, 1000)))
     }
 
+    public func configure(options: [String: Any]) {
+        let session = AVAudioSession.sharedInstance()
+        do {
+            if let sampleRate = options["preferredSampleRate"] as? Double {
+                try session.setPreferredSampleRate(sampleRate)
+            }
+            if let bufferDuration = options["preferredBufferDuration"] as? Double {
+                try session.setPreferredIOBufferDuration(bufferDuration)
+            }
+            var categoryOptions: AVAudioSession.CategoryOptions = []
+            if options["allowBluetooth"] as? Bool ?? true {
+                categoryOptions.insert(.allowBluetooth)
+            }
+            if options["allowAirPlay"] as? Bool ?? true {
+                categoryOptions.insert(.allowAirPlay)
+            }
+            if options["mixWithOthers"] as? Bool ?? false {
+                categoryOptions.insert(.mixWithOthers)
+            }
+            if options["defaultToSpeaker"] as? Bool ?? true {
+                categoryOptions.insert(.defaultToSpeaker)
+            }
+            let category = audioCategory(options["category"] as? String)
+            let mode = audioMode(options["mode"] as? String)
+            try session.setCategory(category, mode: mode, options: categoryOptions)
+        } catch {
+            // Keep existing session if the requested native combination is invalid.
+        }
+    }
+
     public func start() -> Bool {
         if audioEngine.isRunning { return true }
         let inputNode = audioEngine.inputNode
@@ -86,6 +116,26 @@ public class HardwareAudioManager {
     public func stop() {
         audioEngine.inputNode.removeTap(onBus: 0)
         audioEngine.stop()
+    }
+
+    private func audioCategory(_ value: String?) -> AVAudioSession.Category {
+        switch value {
+        case "ambient": return .ambient
+        case "playback": return .playback
+        case "record": return .record
+        case "multiRoute": return .multiRoute
+        default: return .playAndRecord
+        }
+    }
+
+    private func audioMode(_ value: String?) -> AVAudioSession.Mode {
+        switch value {
+        case "measurement": return .measurement
+        case "spokenAudio": return .spokenAudio
+        case "videoChat": return .videoChat
+        case "voiceChat": return .voiceChat
+        default: return .default
+        }
     }
     
     deinit {

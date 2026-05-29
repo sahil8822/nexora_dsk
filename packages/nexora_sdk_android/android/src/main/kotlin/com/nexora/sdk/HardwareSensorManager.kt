@@ -14,23 +14,34 @@ import io.flutter.plugin.common.EventChannel
  */
 class HardwareSensorManager(private val context: Context) : SensorEventListener {
     private val sensorManager: SensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
-    private val accelerometer: Sensor? = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
     private var eventSink: EventChannel.EventSink? = null
     private var sensorThread: HandlerThread? = null
     private var sensorHandler: Handler? = null
+    private var sensorTypes: List<Int> = listOf(Sensor.TYPE_ACCELEROMETER)
+    private var emitCalibration = false
 
     private var lastUpdate: Long = 0
     private var throttleIntervalMs: Long = 16 // Default ~60Hz
 
     fun setEventSink(sink: EventChannel.EventSink?) {
         this.eventSink = sink
-        if (accelerometer == null && sink != null) {
+        if (sensorTypes.none { sensorManager.getDefaultSensor(it) != null } && sink != null) {
             sink.error("HARDWARE_UNAVAILABLE", "Accelerometer not found on this device", null)
         }
     }
 
+    fun configure(options: Map<String, Any?>) {
+        @Suppress("UNCHECKED_CAST")
+        val names = options["sensorTypes"] as? List<String> ?: listOf("accelerometer")
+        sensorTypes = names.mapNotNull { sensorTypeForName(it) }.ifEmpty {
+            listOf(Sensor.TYPE_ACCELEROMETER)
+        }
+        emitCalibration = options["emitCalibration"] as? Boolean ?: false
+    }
+
     fun start(frequencyHz: Int = 60) {
-        if (accelerometer == null) return
+        val sensors = sensorTypes.mapNotNull { sensorManager.getDefaultSensor(it) }
+        if (sensors.isEmpty()) return
         if (sensorThread != null) return // Already running
 
         this.throttleIntervalMs = (1000 / frequencyHz).toLong()
@@ -45,7 +56,9 @@ class HardwareSensorManager(private val context: Context) : SensorEventListener 
             else -> SensorManager.SENSOR_DELAY_NORMAL
         }
         
-        sensorManager.registerListener(this, accelerometer, delay, sensorHandler)
+        sensors.forEach { sensor ->
+            sensorManager.registerListener(this, sensor, delay, sensorHandler)
+        }
     }
 
     fun stop() {
@@ -60,15 +73,17 @@ class HardwareSensorManager(private val context: Context) : SensorEventListener 
         if (currentTime - lastUpdate < throttleIntervalMs) return
         lastUpdate = currentTime
 
-        if (event?.sensor?.type == Sensor.TYPE_ACCELEROMETER) {
+        if (event != null) {
             val data = mapOf(
                 "module" to "sensor",
                 "type" to "data",
                 "timestamp" to currentTime,
                 "data" to mapOf(
+                    "sensorType" to sensorNameForType(event.sensor.type),
                     "x" to event.values[0],
                     "y" to event.values[1],
-                    "z" to event.values[2]
+                    "z" to event.values[2],
+                    "accuracy" to if (emitCalibration) event.accuracy else null
                 )
             )
             // Batch to main thread only when needed
@@ -83,4 +98,30 @@ class HardwareSensorManager(private val context: Context) : SensorEventListener 
     }
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
+
+    private fun sensorTypeForName(name: String): Int? {
+        return when (name) {
+            "accelerometer" -> Sensor.TYPE_ACCELEROMETER
+            "gyroscope" -> Sensor.TYPE_GYROSCOPE
+            "magnetometer" -> Sensor.TYPE_MAGNETIC_FIELD
+            "barometer" -> Sensor.TYPE_PRESSURE
+            "stepCounter" -> Sensor.TYPE_STEP_COUNTER
+            "gravity" -> Sensor.TYPE_GRAVITY
+            "linearAcceleration" -> Sensor.TYPE_LINEAR_ACCELERATION
+            else -> null
+        }
+    }
+
+    private fun sensorNameForType(type: Int): String {
+        return when (type) {
+            Sensor.TYPE_ACCELEROMETER -> "accelerometer"
+            Sensor.TYPE_GYROSCOPE -> "gyroscope"
+            Sensor.TYPE_MAGNETIC_FIELD -> "magnetometer"
+            Sensor.TYPE_PRESSURE -> "barometer"
+            Sensor.TYPE_STEP_COUNTER -> "stepCounter"
+            Sensor.TYPE_GRAVITY -> "gravity"
+            Sensor.TYPE_LINEAR_ACCELERATION -> "linearAcceleration"
+            else -> "unknown"
+        }
+    }
 }

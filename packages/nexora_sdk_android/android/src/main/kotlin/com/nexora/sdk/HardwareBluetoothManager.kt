@@ -3,10 +3,13 @@ package com.nexora.sdk
 import android.annotation.SuppressLint
 import android.bluetooth.*
 import android.bluetooth.le.ScanCallback
+import android.bluetooth.le.ScanFilter
 import android.bluetooth.le.ScanResult
+import android.bluetooth.le.ScanSettings
 import android.content.Context
 import android.os.Handler
 import android.os.Build
+import android.os.ParcelUuid
 import io.flutter.plugin.common.EventChannel
 import java.util.*
 
@@ -20,6 +23,14 @@ class HardwareBluetoothManager(private val context: Context) {
     private var bluetoothGatt: BluetoothGatt? = null
     private var discoveredServicesCallback: ((List<String>) -> Unit)? = null
     private var readCallback: ((ByteArray?) -> Unit)? = null
+    private var scanTimeoutMs: Long? = null
+    private var defaultMtu: Int? = null
+    private var autoReconnect = true
+    private var connectionPriority = BluetoothGatt.CONNECTION_PRIORITY_BALANCED
+    private var scanFilters: List<ScanFilter> = emptyList()
+    private var scanSettings: ScanSettings = ScanSettings.Builder()
+        .setScanMode(ScanSettings.SCAN_MODE_BALANCED)
+        .build()
 
     init {
         val manager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
@@ -30,12 +41,32 @@ class HardwareBluetoothManager(private val context: Context) {
         this.eventSink = sink
     }
 
+    fun configure(options: Map<String, Any?>) {
+        scanTimeoutMs = (options["scanTimeoutMs"] as? Number)?.toLong()
+        defaultMtu = (options["defaultMtu"] as? Number)?.toInt()
+        autoReconnect = options["autoReconnect"] as? Boolean ?: true
+        connectionPriority = when (options["connectionPriority"] as? String) {
+            "high" -> BluetoothGatt.CONNECTION_PRIORITY_HIGH
+            "lowPower" -> BluetoothGatt.CONNECTION_PRIORITY_LOW_POWER
+            else -> BluetoothGatt.CONNECTION_PRIORITY_BALANCED
+        }
+        @Suppress("UNCHECKED_CAST")
+        val filters = options["filters"] as? Map<String, Any?> ?: emptyMap()
+        scanFilters = buildScanFilters(filters)
+        scanSettings = ScanSettings.Builder()
+            .setScanMode(ScanSettings.SCAN_MODE_BALANCED)
+            .build()
+    }
+
     @SuppressLint("MissingPermission")
     fun startScan(): Boolean {
         val adapter = bluetoothAdapter ?: return false
         if (!adapter.isEnabled) return false
         val scanner = adapter.bluetoothLeScanner ?: return false
-        scanner.startScan(scanCallback)
+        scanner.startScan(scanFilters, scanSettings, scanCallback)
+        scanTimeoutMs?.let { timeout ->
+            Handler(context.mainLooper).postDelayed({ stopScan() }, timeout)
+        }
         return true
     }
 
@@ -55,7 +86,7 @@ class HardwareBluetoothManager(private val context: Context) {
             return false
         }
         bluetoothGatt?.close()
-        bluetoothGatt = device.connectGatt(context, false, gattCallback)
+        bluetoothGatt = device.connectGatt(context, autoReconnect, gattCallback)
         return bluetoothGatt != null
     }
 
@@ -102,8 +133,6 @@ class HardwareBluetoothManager(private val context: Context) {
         return success
     }
 
-    @SuppressLint("MissingPermission")
-    
     @SuppressLint("MissingPermission")
     fun requestMtu(deviceId: String, mtu: Int, callback: (Boolean) -> Unit) {
         val gatt = bluetoothGatt ?: run { callback(false); return }
@@ -171,6 +200,10 @@ class HardwareBluetoothManager(private val context: Context) {
                 )
             )
             Handler(context.mainLooper).post { eventSink?.success(statusData) }
+            if (newState == BluetoothProfile.STATE_CONNECTED) {
+                gatt.requestConnectionPriority(connectionPriority)
+                defaultMtu?.let { gatt.requestMtu(it) }
+            }
         }
 
         override fun onServicesDiscovered(gatt: BluetoothGatt, status: Int) {
@@ -199,9 +232,7 @@ class HardwareBluetoothManager(private val context: Context) {
                 readCallback = null
             }
         }
-    }
 
-    
         @Suppress("DEPRECATION")
         override fun onCharacteristicChanged(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic) {
             val data = mapOf(
@@ -230,6 +261,7 @@ class HardwareBluetoothManager(private val context: Context) {
             )
             Handler(context.mainLooper).post { eventSink?.success(data) }
         }
+    }
 
     private val scanCallback = object : ScanCallback() {
         @SuppressLint("MissingPermission")
@@ -245,6 +277,35 @@ class HardwareBluetoothManager(private val context: Context) {
                 )
             )
             Handler(context.mainLooper).post { eventSink?.success(scanData) }
+        }
+    }
+
+    private fun buildScanFilters(filters: Map<String, Any?>): List<ScanFilter> {
+        val builder = ScanFilter.Builder()
+        (filters["deviceName"] as? String)?.takeIf { it.isNotBlank() }?.let {
+            builder.setDeviceName(it)
+        }
+        (filters["serviceUuid"] as? String)?.let { uuid ->
+            parseUuid(uuid)?.let { builder.setServiceUuid(ParcelUuid(it)) }
+        }
+        val manufacturerId = (filters["manufacturerId"] as? Number)?.toInt()
+        val manufacturerData = filters["manufacturerData"] as? List<*>
+        if (manufacturerId != null && manufacturerData != null) {
+            builder.setManufacturerData(
+                manufacturerId,
+                manufacturerData.mapNotNull { (it as? Number)?.toByte() }
+                    .toByteArray()
+            )
+        }
+        val filter = builder.build()
+        return if (
+            filters["deviceName"] == null &&
+            filters["serviceUuid"] == null &&
+            manufacturerId == null
+        ) {
+            emptyList()
+        } else {
+            listOf(filter)
         }
     }
 }

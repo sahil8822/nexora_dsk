@@ -17,6 +17,9 @@ public class NexoraSdk: NSObject, FlutterPlugin, CLLocationManagerDelegate {
     private let health = HardwareHealthManager()
     private let storage = HardwareStorageManager()
     private var ecoModeUserEnabled = false
+    private var sdkConfig: [String: Any] = [:]
+    private var logNativeCalls = false
+    private var iosOptions: [String: Any] = [:]
     
     private var registrar: FlutterPluginRegistrar?
     private var textureId: Int64 = -1
@@ -50,8 +53,18 @@ public class NexoraSdk: NSObject, FlutterPlugin, CLLocationManagerDelegate {
 
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         let args = call.arguments as? [String: Any]
+        if logNativeCalls {
+            NSLog("NexoraSdk native call: \(call.method)")
+        }
 
         switch call.method {
+        case "configureSdk":
+            sdkConfig = args ?? [:]
+            logNativeCalls = sdkConfig["logNativeCalls"] as? Bool ?? false
+            iosOptions = sdkConfig["ios"] as? [String: Any] ?? [:]
+            applyIosOptions(iosOptions)
+            result(true)
+
         // ==================== Camera & Vision ====================
         case "startCamera":
             guard AVCaptureDevice.authorizationStatus(for: .video) == .authorized else {
@@ -866,6 +879,34 @@ public class NexoraSdk: NSObject, FlutterPlugin, CLLocationManagerDelegate {
         }
 
         monitor.start(queue: queue)
+    }
+
+    private func applyIosOptions(_ options: [String: Any]) {
+        let cameraOptions = options["camera"] as? [String: Any] ?? [:]
+        camera.configure(options: cameraOptions)
+
+        let rootAudio = sdkConfig["audio"] as? [String: Any] ?? [:]
+        let audioOptions = options["audio"] as? [String: Any] ?? [:]
+        audio.configure(options: rootAudio.merging(audioOptions) { _, new in new })
+
+        let locationOptions = options["location"] as? [String: Any] ?? [:]
+        location.configure(options: locationOptions)
+        if let backgroundEnabled = locationOptions["allowsBackgroundLocationUpdates"] as? Bool {
+            location.setBackgroundEnabled(backgroundEnabled)
+        }
+
+        let bluetoothOptions = options["bluetooth"] as? [String: Any] ?? [:]
+        bluetooth.configure(options: bluetoothOptions)
+
+        let sensorOptions = options["sensors"] as? [String: Any] ?? [:]
+        sensors.configure(options: sensorOptions)
+
+        let biometricOptions = options["biometrics"] as? [String: Any] ?? [:]
+        biometrics.configure(options: biometricOptions)
+
+        let systemOptions = options["system"] as? [String: Any] ?? [:]
+        UIApplication.shared.isIdleTimerDisabled =
+            systemOptions["keepScreenOn"] as? Bool ?? false
     }
 
     private func cpuArchitecture() -> String {

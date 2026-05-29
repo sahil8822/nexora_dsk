@@ -43,6 +43,18 @@ dev_dependencies:
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
 
+dependency_overrides:
+  nexora_sdk_android:
+    path: ../packages/nexora_sdk_android
+  nexora_sdk_desktop:
+    path: ../packages/nexora_sdk_desktop
+  nexora_sdk_ios:
+    path: ../packages/nexora_sdk_ios
+  nexora_sdk_platform_interface:
+    path: ../packages/nexora_sdk_platform_interface
+  nexora_sdk_web:
+    path: ../packages/nexora_sdk_web
+
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 

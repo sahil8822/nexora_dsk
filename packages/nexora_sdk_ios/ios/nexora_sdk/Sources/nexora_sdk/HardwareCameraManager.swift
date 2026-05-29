@@ -20,9 +20,14 @@ public class HardwareCameraManager: NSObject, FlutterTexture, AVCaptureVideoData
     private var faceEnabled = false
     private var barcodeEnabled = false
     private var currentPosition: AVCaptureDevice.Position = .back
+    private var preferredDeviceType: AVCaptureDevice.DeviceType = .builtInWideAngleCamera
+    private var preferredSessionPreset: AVCaptureSession.Preset = .hd1280x720
+    private var preferredFps: Double?
+    private var manualControls: [String: Any] = [:]
     private var lastWidth: Int = 640
     private var lastHeight: Int = 480
     private var lastVisionFrameTime = CACurrentMediaTime()
+    private var visionFrameIntervalSeconds = 0.12
 
     private var customModelAssetPath: String?
     private var customLabels: [String]?
@@ -38,6 +43,39 @@ public class HardwareCameraManager: NSObject, FlutterTexture, AVCaptureVideoData
     }
 
     public func setEventSink(_ sink: FlutterEventSink?) { self.eventSink = sink }
+
+    public func configure(options: [String: Any]) {
+        switch options["lens"] as? String {
+        case "front":
+            currentPosition = .front
+            preferredDeviceType = .builtInWideAngleCamera
+        case "ultraWide":
+            currentPosition = .back
+            if #available(iOS 13.0, *) {
+                preferredDeviceType = .builtInUltraWideCamera
+            } else {
+                preferredDeviceType = .builtInWideAngleCamera
+            }
+        case "telephoto":
+            currentPosition = .back
+            preferredDeviceType = .builtInTelephotoCamera
+        default:
+            currentPosition = .back
+            preferredDeviceType = .builtInWideAngleCamera
+        }
+
+        preferredFps = fpsValue(options["fps"] as? String)
+        preferredSessionPreset = sessionPreset(options["sessionPreset"] as? String)
+        manualControls = options["manualControls"] as? [String: Any] ?? [:]
+        switch options["visionPerformanceMode"] as? String {
+        case "accurate":
+            visionFrameIntervalSeconds = 0.22
+        case "fast":
+            visionFrameIntervalSeconds = 0.08
+        default:
+            visionFrameIntervalSeconds = 0.12
+        }
+    }
     
     public func setVisionMode(face: Bool, barcode: Bool) {
         self.faceEnabled = face
@@ -50,13 +88,17 @@ public class HardwareCameraManager: NSObject, FlutterTexture, AVCaptureVideoData
         lastHeight = height
 
         captureSession = AVCaptureSession()
-        captureSession?.sessionPreset = width >= 1280 || height >= 720 ? .hd1280x720 : .vga640x480
+        captureSession?.sessionPreset = preferredSessionPreset
 
-        guard let device = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: currentPosition),
+        let selectedDevice = AVCaptureDevice.default(preferredDeviceType, for: .video, position: currentPosition)
+            ?? AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: currentPosition)
+        guard let device = selectedDevice,
               let input = try? AVCaptureDeviceInput(device: device) else { return }
 
         currentDevice = device
         currentInput = input
+        applyPreferredFrameRate(to: device)
+        applyManualControls(to: device)
 
         let output = AVCaptureVideoDataOutput()
         let photoOutput = AVCapturePhotoOutput()
@@ -140,7 +182,8 @@ public class HardwareCameraManager: NSObject, FlutterTexture, AVCaptureVideoData
         bufferLock.unlock()
         
         let now = CACurrentMediaTime()
-        if (faceEnabled || barcodeEnabled) && now - lastVisionFrameTime >= 0.12 {
+        if (faceEnabled || barcodeEnabled) &&
+            now - lastVisionFrameTime >= visionFrameIntervalSeconds {
             lastVisionFrameTime = now
             let visionData = processVision(sampleBuffer)
             if let data = visionData {
@@ -170,6 +213,109 @@ public class HardwareCameraManager: NSObject, FlutterTexture, AVCaptureVideoData
         }
         
         return results.isEmpty ? nil : results
+    }
+
+    private func fpsValue(_ value: String?) -> Double? {
+        switch value {
+        case "fps24": return 24
+        case "fps30": return 30
+        case "fps60": return 60
+        default: return nil
+        }
+    }
+
+    private func sessionPreset(_ value: String?) -> AVCaptureSession.Preset {
+        switch value {
+        case "low": return .low
+        case "medium": return .medium
+        case "hd1920x1080": return .hd1920x1080
+        case "photo": return .photo
+        default: return .hd1280x720
+        }
+    }
+
+    private func applyPreferredFrameRate(to device: AVCaptureDevice) {
+        guard let fps = preferredFps else { return }
+        do {
+            try device.lockForConfiguration()
+            let duration = CMTime(value: 1, timescale: CMTimeScale(fps))
+            device.activeVideoMinFrameDuration = duration
+            device.activeVideoMaxFrameDuration = duration
+            device.unlockForConfiguration()
+        } catch {}
+    }
+
+    private func applyManualControls(to device: AVCaptureDevice) {
+        do {
+            try device.lockForConfiguration()
+
+            if let focusDistance = doubleValue(manualControls["focusDistance"]),
+               device.isFocusModeSupported(.locked) {
+                let lensPosition = Float(max(0.0, min(focusDistance, 1.0)))
+                device.setFocusModeLocked(lensPosition: lensPosition, completionHandler: nil)
+            } else if let focusMode = manualControls["focusMode"] as? String,
+                      focusMode == "continuous",
+                      device.isFocusModeSupported(.continuousAutoFocus) {
+                device.focusMode = .continuousAutoFocus
+            }
+
+            let exposureSeconds = doubleValue(manualControls["exposureDuration"])
+                ?? doubleValue(manualControls["exposureTime"]).map { $0 / 1_000_000_000.0 }
+            let iso = doubleValue(manualControls["iso"])
+            if exposureSeconds != nil || iso != nil {
+                let duration = exposureSeconds.map {
+                    CMTimeMakeWithSeconds(max($0, 0.000001), preferredTimescale: 1_000_000_000)
+                } ?? device.exposureDuration
+                let clampedIso = Float(max(
+                    Double(device.activeFormat.minISO),
+                    min(iso ?? Double(device.iso), Double(device.activeFormat.maxISO))
+                ))
+                device.setExposureModeCustom(duration: duration, iso: clampedIso, completionHandler: nil)
+            } else if let exposureMode = manualControls["exposureMode"] as? String,
+                      exposureMode == "continuous",
+                      device.isExposureModeSupported(.continuousAutoExposure) {
+                device.exposureMode = .continuousAutoExposure
+            }
+
+            if let temperature = doubleValue(manualControls["whiteBalanceTemperature"]),
+               device.isWhiteBalanceModeSupported(.locked) {
+                let tint = doubleValue(manualControls["whiteBalanceTint"]) ?? 0.0
+                let values = AVCaptureDevice.WhiteBalanceTemperatureAndTintValues(
+                    temperature: Float(temperature),
+                    tint: Float(tint)
+                )
+                let gains = device.deviceWhiteBalanceGains(for: values)
+                device.setWhiteBalanceModeLocked(
+                    with: normalizedWhiteBalanceGains(gains, device: device),
+                    completionHandler: nil
+                )
+            } else if let whiteBalanceMode = manualControls["whiteBalanceMode"] as? String,
+                      whiteBalanceMode == "continuous",
+                      device.isWhiteBalanceModeSupported(.continuousAutoWhiteBalance) {
+                device.whiteBalanceMode = .continuousAutoWhiteBalance
+            }
+
+            device.unlockForConfiguration()
+        } catch {}
+    }
+
+    private func doubleValue(_ value: Any?) -> Double? {
+        if let number = value as? NSNumber { return number.doubleValue }
+        if let double = value as? Double { return double }
+        if let int = value as? Int { return Double(int) }
+        return nil
+    }
+
+    private func normalizedWhiteBalanceGains(
+        _ gains: AVCaptureDevice.WhiteBalanceGains,
+        device: AVCaptureDevice
+    ) -> AVCaptureDevice.WhiteBalanceGains {
+        let maxGain = device.maxWhiteBalanceGain
+        return AVCaptureDevice.WhiteBalanceGains(
+            redGain: max(1.0, min(gains.redGain, maxGain)),
+            greenGain: max(1.0, min(gains.greenGain, maxGain)),
+            blueGain: max(1.0, min(gains.blueGain, maxGain))
+        )
     }
 
     public func stop() {

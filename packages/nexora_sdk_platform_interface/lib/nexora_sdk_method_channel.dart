@@ -78,6 +78,11 @@ class MethodChannelNexoraSdk extends NexoraSdkPlatform {
   }
 
   @override
+  Future<bool> configure(NexoraSdkConfig config) async {
+    return await _invoke<bool>('configureSdk', config.toMap()) ?? true;
+  }
+
+  @override
   Future<bool> startBlePeripheral(String uuid) async {
     final result = await methodChannel
         .invokeMethod<bool>('startBlePeripheral', {'uuid': uuid});

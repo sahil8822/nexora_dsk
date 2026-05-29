@@ -266,5 +266,65 @@ void main() {
       expect(hap.copyWith(durationMs: 200).durationMs, 200);
       expect(hap.toString(), contains('duration'));
     });
+
+    test('Native Android and iOS config round-trip', () {
+      const config = NexoraSdkConfig(
+        android: AndroidNativeOptions(
+          camera: AndroidCameraOptions(
+            lens: NativeCameraLens.ultraWide,
+            fps: NativeCameraFps.fps60,
+            imageFormat: NativeImageFormat.yuv,
+            videoBitrate: 8000000,
+          ),
+          audio: AndroidAudioOptions(
+            source: AndroidAudioSource.voiceRecognition,
+            bufferSize: 2048,
+          ),
+          bluetooth: AndroidBluetoothOptions(
+            connectionPriority: AndroidBleConnectionPriority.high,
+            defaultMtu: 247,
+          ),
+          location: AndroidLocationOptions(
+            updateIntervalMs: 2500,
+            notificationChannelId: 'tracking',
+          ),
+        ),
+        ios: IosNativeOptions(
+          camera: IosCameraOptions(
+            sessionPreset: IosCameraSessionPreset.hd1920x1080,
+          ),
+          audio: IosAudioOptions(
+            mode: IosAudioSessionMode.voiceChat,
+            preferredSampleRate: 48000,
+          ),
+          bluetooth: IosBluetoothOptions(
+            restoreIdentifier: 'com.nexora.ble.restore',
+          ),
+          location: IosLocationOptions(
+            allowsBackgroundLocationUpdates: true,
+            activityType: 'fitness',
+          ),
+        ),
+      );
+
+      final roundTrip = NexoraSdkConfig.fromMap(config.toMap());
+
+      expect(roundTrip.android.camera.lens, NativeCameraLens.ultraWide);
+      expect(roundTrip.android.camera.fps, NativeCameraFps.fps60);
+      expect(
+        roundTrip.android.audio.source,
+        AndroidAudioSource.voiceRecognition,
+      );
+      expect(roundTrip.android.bluetooth.defaultMtu, 247);
+      expect(roundTrip.android.location.notificationChannelId, 'tracking');
+      expect(
+        roundTrip.ios.camera.sessionPreset,
+        IosCameraSessionPreset.hd1920x1080,
+      );
+      expect(roundTrip.ios.audio.mode, IosAudioSessionMode.voiceChat);
+      expect(roundTrip.ios.audio.preferredSampleRate, 48000);
+      expect(roundTrip.ios.bluetooth.restoreIdentifier, contains('restore'));
+      expect(roundTrip.ios.location.activityType, 'fitness');
+    });
   });
 }

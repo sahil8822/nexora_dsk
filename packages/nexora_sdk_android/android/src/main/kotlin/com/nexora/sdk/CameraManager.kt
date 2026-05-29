@@ -6,8 +6,10 @@ import android.graphics.ImageFormat
 import android.graphics.Rect
 import android.hardware.camera2.*
 import android.media.ImageReader
+import android.os.Build
 import android.os.Handler
 import android.os.HandlerThread
+import android.util.Range
 import android.view.Surface
 import io.flutter.plugin.common.EventChannel
 import java.io.File
@@ -44,6 +46,9 @@ class HardwareCameraManager(private val context: Context) {
     private var lastHeight: Int = 480
     private var lastSurface: Surface? = null
     private var lastVisionFrameMs: Long = 0
+    private var visionFrameIntervalMs: Long = 120
+    private var targetFpsRange: Range<Int>? = null
+    private var manualControls: Map<String, Any?> = emptyMap()
 
     // Intelligence
     private var visionFaceEnabled: Boolean = false
@@ -67,6 +72,18 @@ class HardwareCameraManager(private val context: Context) {
     }
 
     fun setEventSink(sink: EventChannel.EventSink?) { this.eventSink = sink }
+
+    fun configure(options: Map<String, Any?>) {
+        val lens = options["lens"] as? String ?: "defaultLens"
+        currentCameraId = findCameraIdForLens(lens) ?: currentCameraId
+        targetFpsRange = fpsRangeFor(options["fps"] as? String, currentCameraId)
+        manualControls = options["manualControls"] as? Map<String, Any?> ?: emptyMap()
+        visionFrameIntervalMs = when (options["visionPerformanceMode"] as? String) {
+            "accurate" -> 220L
+            "fast" -> 80L
+            else -> 120L
+        }
+    }
     
     fun setVisionMode(face: Boolean, barcode: Boolean) {
         this.visionFaceEnabled = face
@@ -92,7 +109,9 @@ class HardwareCameraManager(private val context: Context) {
                 val image = reader.acquireLatestImage()
                 if (image != null) {
                     val now = android.os.SystemClock.elapsedRealtime()
-                    if ((visionFaceEnabled || visionBarcodeEnabled) && now - lastVisionFrameMs >= 120) {
+                    if ((visionFaceEnabled || visionBarcodeEnabled) &&
+                        now - lastVisionFrameMs >= visionFrameIntervalMs
+                    ) {
                         lastVisionFrameMs = now
                         processImageWithIntelligence(image)
                     }
@@ -147,10 +166,33 @@ class HardwareCameraManager(private val context: Context) {
         try {
             val builder = previewRequestBuilder ?: return
             builder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE)
+            targetFpsRange?.let {
+                builder.set(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, it)
+            }
+            applyManualControls(builder)
             builder.set(CaptureRequest.FLASH_MODE, if (isFlashOn) CaptureRequest.FLASH_MODE_TORCH else CaptureRequest.FLASH_MODE_OFF)
             applyActiveShaderToRequest(builder)
             captureSession?.setRepeatingRequest(builder.build(), null, backgroundHandler)
         } catch (e: Exception) {}
+    }
+
+    private fun applyManualControls(builder: CaptureRequest.Builder) {
+        val focusDistance = (manualControls["focusDistance"] as? Number)?.toFloat()
+        if (focusDistance != null) {
+            builder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_OFF)
+            builder.set(CaptureRequest.LENS_FOCUS_DISTANCE, focusDistance.coerceAtLeast(0f))
+        }
+
+        val exposureTime = (manualControls["exposureTime"] as? Number)?.toLong()
+        val iso = (manualControls["iso"] as? Number)?.toInt()
+        if (exposureTime != null || iso != null) {
+            builder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_OFF)
+            exposureTime?.let { builder.set(CaptureRequest.SENSOR_EXPOSURE_TIME, it.coerceAtLeast(1L)) }
+            iso?.let { builder.set(CaptureRequest.SENSOR_SENSITIVITY, it.coerceAtLeast(1)) }
+        }
+
+        val whiteBalance = manualControls["whiteBalanceMode"] as? String ?: return
+        builder.set(CaptureRequest.CONTROL_AWB_MODE, whiteBalanceMode(whiteBalance))
     }
 
     private fun processImageWithIntelligence(image: android.media.Image) {
@@ -171,6 +213,53 @@ class HardwareCameraManager(private val context: Context) {
         val data = mapOf("module" to "camera", "type" to "data", "data" to mapOf("vision" to vision))
         Handler(context.mainLooper).post { 
             try { eventSink?.success(data) } catch (e: Exception) {}
+        }
+    }
+
+    private fun findCameraIdForLens(lens: String): String? {
+        val manager = context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
+        val preferredFacing = when (lens) {
+            "front" -> CameraCharacteristics.LENS_FACING_FRONT
+            "back", "ultraWide", "telephoto", "defaultLens" -> CameraCharacteristics.LENS_FACING_BACK
+            else -> CameraCharacteristics.LENS_FACING_BACK
+        }
+        return manager.cameraIdList.firstOrNull { id ->
+            val characteristics = manager.getCameraCharacteristics(id)
+            characteristics.get(CameraCharacteristics.LENS_FACING) == preferredFacing
+        }
+    }
+
+    private fun fpsRangeFor(fps: String?, cameraId: String): Range<Int>? {
+        val value = when (fps) {
+            "fps24" -> 24
+            "fps30" -> 30
+            "fps60" -> 60
+            else -> return null
+        }
+        return try {
+            val manager = context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
+            val characteristics = manager.getCameraCharacteristics(cameraId)
+            val ranges = characteristics.get(
+                CameraCharacteristics.CONTROL_AE_AVAILABLE_TARGET_FPS_RANGES
+            ) ?: return null
+            ranges.firstOrNull { it.lower == value && it.upper == value }
+                ?: ranges.firstOrNull { it.lower <= value && it.upper >= value }
+        } catch (_: Exception) {
+            null
+        }
+    }
+
+    private fun whiteBalanceMode(value: String): Int {
+        return when (value) {
+            "off", "locked" -> CaptureRequest.CONTROL_AWB_MODE_OFF
+            "incandescent" -> CaptureRequest.CONTROL_AWB_MODE_INCANDESCENT
+            "fluorescent" -> CaptureRequest.CONTROL_AWB_MODE_FLUORESCENT
+            "warmFluorescent" -> CaptureRequest.CONTROL_AWB_MODE_WARM_FLUORESCENT
+            "daylight" -> CaptureRequest.CONTROL_AWB_MODE_DAYLIGHT
+            "cloudy" -> CaptureRequest.CONTROL_AWB_MODE_CLOUDY_DAYLIGHT
+            "twilight" -> CaptureRequest.CONTROL_AWB_MODE_TWILIGHT
+            "shade" -> CaptureRequest.CONTROL_AWB_MODE_SHADE
+            else -> CaptureRequest.CONTROL_AWB_MODE_AUTO
         }
     }
 

@@ -10,15 +10,18 @@ import android.os.IBinder
 import androidx.core.app.NotificationCompat
 
 class NexoraForegroundService : Service() {
-    private val CHANNEL_ID = "NexoraHardwareChannel"
+    private val defaultChannelId = "NexoraHardwareChannel"
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val title = intent?.getStringExtra("title") ?: "Background Processing"
         val content = intent?.getStringExtra("content") ?: "Hardware streams active"
+        val channelId = intent?.getStringExtra("channelId")?.takeIf { it.isNotBlank() } ?: defaultChannelId
+        val channelName = intent?.getStringExtra("channelName")?.takeIf { it.isNotBlank() }
+            ?: "Hardware Background Service"
 
-        createNotificationChannel()
+        createNotificationChannel(channelId, channelName)
 
-        val notification = NotificationCompat.Builder(this, CHANNEL_ID)
+        val notification = NotificationCompat.Builder(this, channelId)
             .setContentTitle(title)
             .setContentText(content)
             .setSmallIcon(android.R.drawable.ic_dialog_info)
@@ -31,11 +34,11 @@ class NexoraForegroundService : Service() {
 
     override fun onBind(intent: Intent?): IBinder? = null
 
-    private fun createNotificationChannel() {
+    private fun createNotificationChannel(channelId: String, channelName: String) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val serviceChannel = NotificationChannel(
-                CHANNEL_ID,
-                "Hardware Background Service",
+                channelId,
+                channelName,
                 NotificationManager.IMPORTANCE_LOW
             )
             val manager = getSystemService(NotificationManager::class.java)
