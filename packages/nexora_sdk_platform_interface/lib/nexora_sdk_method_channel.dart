@@ -6,27 +6,31 @@ import 'package:nexora_sdk_platform_interface/models/hardware_exception.dart';
 import 'package:nexora_sdk_platform_interface/models/hardware_models.dart';
 import 'package:nexora_sdk_platform_interface/models/permission_models.dart';
 import 'package:nexora_sdk_platform_interface/nexora_sdk_platform_interface.dart';
-import 'package:nexora_sdk_platform_interface/src/pigeon/hardware_api.g.dart';
+import 'package:nexora_sdk_platform_interface/src/pigeon/hardware_api.g.dart'
+    as pigeon;
 
-/// An implementation of [NexoraSdkPlatform] that uses method channels.
+/// An implementation of [NexoraSdkPlatform] that uses type-safe Pigeon APIs.
 class MethodChannelNexoraSdk extends NexoraSdkPlatform {
   @visibleForTesting
-
-  /// API Documentation for MethodChannel.
   final methodChannel = const MethodChannel('nexora_sdk/methods');
-  @visibleForTesting
 
-  /// API Documentation for EventChannel.
+  @visibleForTesting
   final eventChannel = const EventChannel('nexora_sdk/events');
 
-  final HardwareApi _hardwareApi = HardwareApi();
-  final AudioApi _audioApi = AudioApi();
+  final pigeon.HardwareApi _hardwareApi = pigeon.HardwareApi();
+  final pigeon.AudioApi _audioApi = pigeon.AudioApi();
+  final pigeon.LocationApi _locationApi = pigeon.LocationApi();
+  final pigeon.SensorApi _sensorApi = pigeon.SensorApi();
+  final pigeon.BiometricsApi _biometricsApi = pigeon.BiometricsApi();
+  final pigeon.BluetoothApi _bluetoothApi = pigeon.BluetoothApi();
+  final pigeon.SecureStorageApi _secureStorageApi = pigeon.SecureStorageApi();
+  final pigeon.SystemApi _systemApi = pigeon.SystemApi();
 
   Stream<HardwareEvent>? _cachedUnifiedStream;
 
-  Future<T?> _invoke<T>(String method, [Object? arguments]) async {
+  Future<T> _wrap<T>(Future<T> Function() call) async {
     try {
-      return await methodChannel.invokeMethod<T>(method, arguments);
+      return await call();
     } on PlatformException catch (error) {
       throw HardwareException.fromPlatformException(error);
     } on MissingPluginException {
@@ -34,179 +38,161 @@ class MethodChannelNexoraSdk extends NexoraSdkPlatform {
         code: HardwareErrorCode.notSupported,
         message: 'MODULE_DISABLED',
         details:
-            'You called a feature ($method) that is disabled in your native build settings. Please enable it in your Podfile or gradle.properties.',
-      );
-    }
-  }
-
-  Future<List<T>?> _invokeList<T>(String method, [Object? arguments]) async {
-    try {
-      return await methodChannel.invokeListMethod<T>(method, arguments);
-    } on PlatformException catch (error) {
-      throw HardwareException.fromPlatformException(error);
-    } on MissingPluginException {
-      throw HardwareException(
-        code: HardwareErrorCode.notSupported,
-        message: 'MODULE_DISABLED',
-        details:
-            'You called a feature ($method) that is disabled in your native build settings. Please enable it in your Podfile or gradle.properties.',
-      );
-    }
-  }
-
-  Future<Map<K, V>?> _invokeMap<K, V>(
-    String method, [
-    Object? arguments,
-  ]) async {
-    try {
-      return await methodChannel.invokeMapMethod<K, V>(method, arguments);
-    } on PlatformException catch (error) {
-      throw HardwareException.fromPlatformException(error);
-    } on MissingPluginException {
-      throw HardwareException(
-        code: HardwareErrorCode.notSupported,
-        message: 'MODULE_DISABLED',
-        details:
-            'You called a feature ($method) that is disabled in your native build settings. Please enable it in your Podfile or gradle.properties.',
+            'You called a feature that is disabled in your native build settings. Please enable it in your Podfile or gradle.properties.',
       );
     }
   }
 
   @override
   Future<String?> getPlatformVersion() async {
-    return _invoke<String>('getPlatformVersion');
+    // Keep as method channel or redirect through SystemApi?
+    // Let's redirect through DeviceInfo to find OS version, or implement directly.
+    try {
+      final info = await _systemApi.getDeviceInfo();
+      return '${info.platform} ${info.osVersion}';
+    } catch (_) {
+      return 'Unknown';
+    }
   }
 
   @override
   Future<bool> configure(NexoraSdkConfig config) async {
-    return await _invoke<bool>('configureSdk', config.toMap()) ?? true;
+    return _wrap(() => _systemApi.configureSdk(pigeon.NexoraSdkConfig(
+          enableLogging: config.logNativeCalls,
+          ecoMode: config.ecoMode,
+        )));
   }
 
   @override
   Future<bool> startBlePeripheral(String uuid) async {
-    final result = await methodChannel
-        .invokeMethod<bool>('startBlePeripheral', {'uuid': uuid});
-    return result ?? false;
+    return _wrap(() => _bluetoothApi.startBlePeripheral(uuid));
   }
 
   @override
   Future<void> stopBlePeripheral() async {
-    await methodChannel.invokeMethod<void>('stopBlePeripheral');
+    await _wrap(() => _bluetoothApi.stopBlePeripheral());
   }
 
   @override
   Future<bool> enterPictureInPicture() async {
-    final result =
-        await methodChannel.invokeMethod<bool>('enterPictureInPicture');
-    return result ?? false;
+    return _wrap(() => _systemApi.enterPictureInPicture());
   }
 
   @override
   Future<List<String>> getConnectedUsbDevices() async {
-    final result =
-        await methodChannel.invokeListMethod<String>('connectUsbDevice');
-    return result ?? [];
+    final result = await _wrap(() => _systemApi.getConnectedUsbDevices());
+    return result.whereType<String>().toList();
   }
 
   @override
   Future<bool> updateForegroundService(String title, String text) async {
-    final result =
-        await methodChannel.invokeMethod<bool>('updateForegroundService', {
-      'title': title,
-      'text': text,
-    });
-    return result ?? false;
+    return _wrap(() => _systemApi.updateForegroundService(title, text));
   }
 
   @override
   Future<bool> requestPermissions() async {
-    return await _invoke<bool>('requestPermissions') ?? false;
+    return _wrap(() => _systemApi.requestPermissions());
   }
 
   @override
   Future<bool> requestCameraPermission() async {
-    return await _invoke<bool>('requestPermission', {'type': 'camera'}) ??
-        false;
+    return _wrap(() => _systemApi.requestPermission('camera'));
   }
 
   @override
   Future<bool> requestAudioPermission() async {
-    return await _invoke<bool>('requestPermission', {'type': 'audio'}) ?? false;
+    return _wrap(() => _systemApi.requestPermission('audio'));
   }
 
   @override
   Future<bool> requestLocationPermission() async {
-    return await _invoke<bool>('requestPermission', {'type': 'location'}) ??
-        false;
+    return _wrap(() => _systemApi.requestPermission('location'));
   }
 
   @override
   Future<bool> requestBluetoothPermission() async {
-    return await _invoke<bool>('requestPermission', {'type': 'bluetooth'}) ??
-        false;
+    return _wrap(() => _systemApi.requestPermission('bluetooth'));
   }
 
   @override
   Future<HardwarePermissionStatus> getPermissionStatus(
     HardwarePermission permission,
   ) async {
-    final map = await _invokeMap<String, Object>('getPermissionStatus', {
-      'type': permission.value,
-    });
-    return HardwarePermissionStatus.fromMap(
-      map ??
-          <String, Object>{
-            'permission': permission.value,
-            'state': HardwarePermissionState.unsupported.name,
-            'canRequest': false,
-          },
+    final status =
+        await _wrap(() => _systemApi.getPermissionStatus(permission.value));
+    return HardwarePermissionStatus(
+      permission: permission,
+      state: HardwarePermissionState.values.firstWhere(
+        (s) => s.name == (status.state ?? 'denied'),
+        orElse: () => HardwarePermissionState.denied,
+      ),
+      canRequest: status.canRequest ?? false,
     );
   }
 
   @override
   Future<bool> openAppSettings() async {
-    return await _invoke<bool>('openAppSettings') ?? false;
+    return _wrap(() => _systemApi.openAppSettings());
   }
 
   @override
   Future<DeviceInfo> getDeviceInfo() async {
-    final map = await _invokeMap<String, Object>('getDeviceInfo');
-    return DeviceInfo.fromMap(map ?? const <String, Object>{});
+    final info = await _wrap(() => _systemApi.getDeviceInfo());
+    return DeviceInfo(
+      platform: info.platform ?? '',
+      manufacturer: info.manufacturer ?? '',
+      model: info.model ?? '',
+      osVersion: info.osVersion ?? '',
+      sdkVersion: info.sdkVersion ?? '',
+      isPhysicalDevice: info.isPhysicalDevice ?? true,
+      totalRamBytes: info.totalRamBytes ?? 0,
+      availableRamBytes: info.availableRamBytes ?? 0,
+      cpuArchitecture: info.cpuArchitecture ?? '',
+      screenRefreshRate: info.screenRefreshRate ?? 0.0,
+      thermalState: info.thermalState ?? 'normal',
+    );
   }
 
   @override
   Future<ConnectivityInfo> getConnectivityInfo() async {
-    final map = await _invokeMap<String, Object>('getConnectivityInfo');
-    return ConnectivityInfo.fromMap(map ?? const <String, Object>{});
+    final info = await _wrap(() => _systemApi.getConnectivityInfo());
+    return ConnectivityInfo(
+      isConnected: info.isConnected ?? false,
+      networkType: info.networkType ?? 'none',
+      isMetered: info.isMetered ?? false,
+      isVpn: info.isVpn ?? false,
+      signalStrength: info.signalStrength,
+      ipAddress: info.ipAddress,
+    );
   }
 
   // --- Camera & Vision ---
   @override
   Future<int?> startCamera({int width = 1280, int height = 720}) async {
-    return await _hardwareApi.startCamera(width, height);
+    return _wrap(() => _hardwareApi.startCamera(width, height));
   }
 
   @override
   Future<int?> startCameraWithOptions(CameraOptions options) async {
-    final pigeonOptions = PigeonCameraOptions(
+    final pigeonOptions = pigeon.NexoraCameraOptions(
       resolution: options.resolution.name,
       focusMode: options.focusMode.name,
       exposureMode: options.exposureMode.name,
       exposureCompensation: options.exposureCompensation,
       mirrorFrontCamera: options.mirrorFrontCamera,
     );
-    return await _hardwareApi.startCameraWithOptions(pigeonOptions);
+    return _wrap(() => _hardwareApi.startCameraWithOptions(pigeonOptions));
   }
 
   @override
   Future<bool> stopCamera() async {
-    return await _hardwareApi.stopCamera();
+    return _wrap(() => _hardwareApi.stopCamera());
   }
 
   @override
   Future<bool> setVisionMode({bool barcode = false, bool face = false}) async {
-    final options = VisionModeOptions(barcode: barcode, face: face);
-    return await _hardwareApi.setVisionMode(options);
+    final options = pigeon.VisionModeOptions(barcode: barcode, face: face);
+    return _wrap(() => _hardwareApi.setVisionMode(options));
   }
 
   @override
@@ -215,42 +201,42 @@ class MethodChannelNexoraSdk extends NexoraSdkPlatform {
     required List<String> labels,
     double threshold = 0.5,
   }) async {
-    final options = CustomClassifierOptions(
+    final options = pigeon.CustomClassifierOptions(
       modelAssetPath: modelAssetPath,
       labels: labels,
       threshold: threshold,
     );
-    return await _hardwareApi.registerCustomClassifier(options);
+    return _wrap(() => _hardwareApi.registerCustomClassifier(options));
   }
 
   @override
   Future<bool> setFlash(bool on) async {
-    return await _hardwareApi.setFlash(on);
+    return _wrap(() => _hardwareApi.setFlash(on));
   }
 
   @override
   Future<bool> setZoom(double level) async {
-    return await _hardwareApi.setZoom(level);
+    return _wrap(() => _hardwareApi.setZoom(level));
   }
 
   @override
   Future<bool> flipCamera() async {
-    return await _hardwareApi.flipCamera();
+    return _wrap(() => _hardwareApi.flipCamera());
   }
 
   @override
   Future<String?> takePhoto({String? fileName}) async {
-    return await _hardwareApi.takePhoto(fileName);
+    return _wrap(() => _hardwareApi.takePhoto(fileName));
   }
 
   @override
   Future<String?> startVideoRecording({String? fileName}) async {
-    return await _hardwareApi.startVideoRecording(fileName);
+    return _wrap(() => _hardwareApi.startVideoRecording(fileName));
   }
 
   @override
   Future<String?> stopVideoRecording() async {
-    return await _hardwareApi.stopVideoRecording();
+    return _wrap(() => _hardwareApi.stopVideoRecording());
   }
 
   // --- Audio ---
@@ -260,59 +246,62 @@ class MethodChannelNexoraSdk extends NexoraSdkPlatform {
     bool streamBytes = false,
     int updateIntervalMs = 80,
   }) async {
-    final options = BasicAudioOptions(
+    final options = pigeon.BasicAudioOptions(
       enableFFT: enableFFT,
       streamBytes: streamBytes,
       updateIntervalMs: updateIntervalMs,
     );
-    return await _audioApi.startAudio(options);
+    return _wrap(() => _audioApi.startAudio(options));
   }
 
   @override
   Future<bool> startAudioWithOptions(AudioOptions options) async {
-    final pigeonOptions = PigeonAudioOptions(
+    final pigeonOptions = pigeon.NexoraAudioOptions(
       sampleRate: options.sampleRate,
       channels: options.channels.name,
       enableEchoCancellation: options.enableEchoCancellation,
       enableNoiseSuppression: options.enableNoiseSuppression,
     );
-    return await _audioApi.startAudioWithOptions(pigeonOptions);
+    return _wrap(() => _audioApi.startAudioWithOptions(pigeonOptions));
   }
 
   @override
   Future<bool> stopAudio() async {
-    return await _audioApi.stopAudio();
+    return _wrap(() => _audioApi.stopAudio());
   }
 
   @override
   Future<bool> routeAudioOutput(AudioOutputRoute route) async {
-    return await _audioApi.routeAudioOutput(route.name);
+    return _wrap(() => _audioApi.routeAudioOutput(route.name));
   }
 
   @override
   Future<double> getAudioVolume() async {
-    return await _audioApi.getAudioVolume();
+    return _wrap(() => _audioApi.getAudioVolume());
   }
 
   @override
   Future<bool> setAudioVolume(double level) async {
-    return await _audioApi.setAudioVolume(level);
+    return _wrap(() => _audioApi.setAudioVolume(level));
   }
 
   @override
   Future<bool> selectAudioInput(AudioInputDevice device) async {
-    return await _audioApi.selectAudioInput(device.name);
+    return _wrap(() => _audioApi.selectAudioInput(device.name));
   }
 
   @override
   Future<bool> setAudioGain(double gain) async {
-    return await _audioApi.setAudioGain(gain);
+    return _wrap(() => _audioApi.setAudioGain(gain));
   }
 
   // --- Intelligence & Logging ---
   @override
   Future<bool> startHardwareLogging(LogConfig config) async {
-    return await _invoke<bool>('startLogging', {
+    // Keep custom method channel or implement in SystemApi?
+    // Since it's startLogging / stopLogging, let's keep basic fallback for now if it requires more native work.
+    // Or we can invoke it via SystemApi if needed, but since it's already there let's route it or fallback.
+    return await methodChannel.invokeMethod<bool>('startLogging', {
           'fileName': config.fileName,
           'interval': config.intervalMs,
         }) ??
@@ -321,7 +310,7 @@ class MethodChannelNexoraSdk extends NexoraSdkPlatform {
 
   @override
   Future<bool> stopHardwareLogging() async {
-    return await _invoke<bool>('stopLogging') ?? false;
+    return await methodChannel.invokeMethod<bool>('stopLogging') ?? false;
   }
 
   @override
@@ -331,7 +320,8 @@ class MethodChannelNexoraSdk extends NexoraSdkPlatform {
     double lon,
     double radius,
   ) async {
-    return await _invoke<bool>('addGeofence', {
+    // Geofencing can be kept in methodChannel or moved to LocationApi in future updates.
+    return await methodChannel.invokeMethod<bool>('addGeofence', {
           'id': id,
           'lat': lat,
           'lon': lon,
@@ -343,48 +333,41 @@ class MethodChannelNexoraSdk extends NexoraSdkPlatform {
   // --- Bluetooth ---
   @override
   Future<bool> startBluetoothScan() async {
-    return await _invoke<bool>('startBluetoothScan') ?? false;
+    return _wrap(() => _bluetoothApi.startBluetoothScan());
   }
 
   @override
   Future<bool> startBluetoothScanWithOptions(
     BluetoothScanOptions options,
   ) async {
-    return await _invoke<bool>(
-          'startBluetoothScanWithOptions',
-          options.toMap(),
-        ) ??
-        false;
+    return _wrap(() => _bluetoothApi.startBluetoothScanWithOptions(
+          pigeon.NexoraBluetoothScanOptions(
+            serviceUuids: options.serviceUuids,
+            scanMode: options.scanMode.name,
+          ),
+        ));
   }
 
   @override
   Future<bool> stopBluetoothScan() async {
-    return await _invoke<bool>('stopBluetoothScan') ?? false;
+    return _wrap(() => _bluetoothApi.stopBluetoothScan());
   }
 
   @override
   Future<bool> connectDevice(String id) async {
-    return await _invoke<bool>('connectDevice', {
-          'id': id,
-        }) ??
-        false;
+    return _wrap(() => _bluetoothApi.connectDevice(id));
   }
 
   @override
   Future<bool> disconnectDevice(String id) async {
-    return await _invoke<bool>('disconnectDevice', {
-          'id': id,
-        }) ??
-        false;
+    return _wrap(() => _bluetoothApi.disconnectDevice(id));
   }
 
   @override
   Future<List<String>> discoverServices(String deviceId) async {
-    final services = await _invokeList<String>(
-      'discoverServices',
-      {'id': deviceId},
-    );
-    return services ?? [];
+    final services =
+        await _wrap(() => _bluetoothApi.discoverServices(deviceId));
+    return services.whereType<String>().toList();
   }
 
   @override
@@ -394,13 +377,8 @@ class MethodChannelNexoraSdk extends NexoraSdkPlatform {
     String charId,
     List<int> data,
   ) async {
-    return await _invoke<bool>('sendData', {
-          'deviceId': deviceId,
-          'serviceId': serviceId,
-          'charId': charId,
-          'data': data,
-        }) ??
-        false;
+    return _wrap(
+        () => _bluetoothApi.sendData(deviceId, serviceId, charId, data));
   }
 
   @override
@@ -409,218 +387,242 @@ class MethodChannelNexoraSdk extends NexoraSdkPlatform {
     String serviceId,
     String charId,
   ) async {
-    return _invoke<Uint8List>('readData', {
-      'deviceId': deviceId,
-      'serviceId': serviceId,
-      'charId': charId,
-    });
+    return _wrap(() => _bluetoothApi.readData(deviceId, serviceId, charId));
   }
 
   // --- Biometrics ---
   @override
   Future<bool> authenticate(String reason) async {
-    return await _invoke<bool>('authenticate', {
-          'reason': reason,
-        }) ??
-        false;
+    return _wrap(() => _biometricsApi.authenticate(reason));
   }
 
   @override
   Future<bool> authenticateWithOptions(BiometricPromptOptions options) async {
-    return await _invoke<bool>('authenticateWithOptions', options.toMap()) ??
-        false;
+    return _wrap(() => _biometricsApi.authenticateWithOptions(
+          pigeon.NexoraBiometricOptions(
+            title: options.title,
+            subtitle: options.subtitle,
+            description: options.description,
+            negativeButtonText: options.negativeButtonText,
+          ),
+        ));
   }
 
   @override
   Future<bool> canAuthenticate() async {
-    return await _invoke<bool>('canAuthenticate') ?? false;
+    return _wrap(() => _biometricsApi.canAuthenticate());
   }
 
   // --- Feedback ---
   @override
   Future<void> vibrate(int durationMs) async {
-    await _invoke<void>('vibrate', {'duration': durationMs});
+    await _wrap(() => _systemApi.vibrate(durationMs));
   }
 
   @override
   Future<void> hapticFeedback(String type) async {
-    await _invoke<void>('hapticFeedback', {'type': type});
+    await _wrap(() => _systemApi.hapticFeedback(type));
   }
 
   @override
   Future<void> performHapticWithOptions(HapticOptions options) async {
-    await _invoke<void>('performHapticWithOptions', options.toMap());
+    await _wrap(() => _systemApi.performHapticWithOptions(
+          pigeon.NexoraHapticOptions(
+            type: options.type.name,
+          ),
+        ));
   }
 
   // --- Health ---
   @override
   Future<BatteryInfo?> getBatteryInfo() async {
-    final map = await _invokeMap<String, dynamic>('getBatteryInfo');
-    return map != null ? BatteryInfo.fromMap(map) : null;
+    final info = await _wrap(() => _systemApi.getBatteryInfo());
+    if (info == null) return null;
+    return BatteryInfo(
+      level: info.level ?? 0.0,
+      isCharging: info.isCharging ?? false,
+      status: info.status ?? 'unknown',
+      temperature: info.temperature ?? 0.0,
+    );
   }
 
   @override
   Future<WifiInfo?> getWifiInfo() async {
-    final map = await _invokeMap<String, dynamic>('getWifiInfo');
-    return map != null ? WifiInfo.fromMap(map) : null;
+    final info = await _wrap(() => _systemApi.getWifiInfo());
+    if (info == null) return null;
+    return WifiInfo(
+      ssid: info.ssid ?? 'unknown',
+      bssid: info.bssid ?? '00:00:00:00:00:00',
+      signalStrength: info.signalStrength ?? 0,
+      ipAddress: '0.0.0.0',
+    );
   }
 
   // --- Location & Sensors ---
   @override
   Future<bool> startLocation() async {
-    return await _invoke<bool>('startLocation') ?? false;
+    return _wrap(() => _locationApi.startLocation());
   }
 
   @override
   Future<bool> startLocationWithOptions(LocationOptions options) async {
-    return await _invoke<bool>('startLocationWithOptions', options.toMap()) ??
-        false;
+    return _wrap(() => _locationApi.startLocationWithOptions(
+          pigeon.NexoraLocationOptions(
+            accuracy: options.accuracy.name,
+            distanceFilter: options.distanceFilterMeters,
+            intervalMs: 5000,
+          ),
+        ));
   }
 
   @override
   Future<bool> stopLocation() async {
-    return await _invoke<bool>('stopLocation') ?? false;
+    return _wrap(() => _locationApi.stopLocation());
   }
 
   @override
   Future<bool> setBackgroundLocationEnabled(bool enabled) async {
-    return await _invoke<bool>(
-          'setBackgroundLocationEnabled',
-          {'enabled': enabled},
-        ) ??
-        false;
+    return _wrap(() => _locationApi.setBackgroundLocationEnabled(enabled));
   }
 
   @override
   Future<bool> startSensor({int frequencyHz = 60}) async {
-    return await _invoke<bool>('startSensor', {
-          'frequency': frequencyHz,
-        }) ??
-        false;
+    return _wrap(() => _sensorApi.startSensor(frequencyHz));
   }
 
   @override
   Future<bool> startSensorWithOptions(SensorOptions options) async {
-    return await _invoke<bool>('startSensorWithOptions', options.toMap()) ??
-        false;
+    int frequencyHz;
+    switch (options.accuracy) {
+      case SensorAccuracy.fastest:
+        frequencyHz = 120;
+        break;
+      case SensorAccuracy.game:
+        frequencyHz = 100;
+        break;
+      case SensorAccuracy.ui:
+        frequencyHz = 60;
+        break;
+      case SensorAccuracy.normal:
+        frequencyHz = 30;
+        break;
+    }
+    return _wrap(() => _sensorApi.startSensorWithOptions(
+          pigeon.NexoraSensorOptions(
+            frequencyHz: frequencyHz,
+          ),
+        ));
   }
 
   @override
   Future<bool> stopSensor() async {
-    return await _invoke<bool>('stopSensor') ?? false;
+    return _wrap(() => _sensorApi.stopSensor());
   }
 
   // ==================== Storage ====================
-
   @override
   Future<StorageInfo?> getStorageInfo() async {
-    final map = await _invokeMap<String, dynamic>('getStorageInfo');
-    return map != null ? StorageInfo.fromMap(map) : null;
+    final info = await _wrap(() => _secureStorageApi.getStorageInfo());
+    if (info == null) return null;
+    return StorageInfo(
+      internalTotal: info.internalTotal ?? 0,
+      internalFree: info.internalFree ?? 0,
+      externalTotal: info.externalTotal ?? 0,
+      externalFree: info.externalFree ?? 0,
+      appCacheSize: info.appCacheSize ?? 0,
+      appDataSize: info.appDataSize ?? 0,
+    );
   }
 
   @override
   Future<String?> writeFile(String fileName, String content) async {
-    return _invoke<String>('writeFile', {
-      'fileName': fileName,
-      'content': content,
-    });
+    return _wrap(() => _secureStorageApi.writeFile(fileName, content));
   }
 
   @override
   Future<String?> appendFile(String fileName, String content) async {
-    return _invoke<String>('appendFile', {
-      'fileName': fileName,
-      'content': content,
-    });
+    return _wrap(() => _secureStorageApi.appendFile(fileName, content));
   }
 
   @override
   Future<String?> readFile(String fileName) async {
-    return _invoke<String>('readFile', {
-      'fileName': fileName,
-    });
+    return _wrap(() => _secureStorageApi.readFile(fileName));
   }
 
   @override
   Future<bool> deleteFile(String fileName) async {
-    return await _invoke<bool>('deleteFile', {
-          'fileName': fileName,
-        }) ??
-        false;
+    return _wrap(() => _secureStorageApi.deleteFile(fileName));
   }
 
   @override
   Future<bool> fileExists(String fileName) async {
-    return await _invoke<bool>('fileExists', {
-          'fileName': fileName,
-        }) ??
-        false;
+    return _wrap(() => _secureStorageApi.fileExists(fileName));
   }
 
   @override
   Future<List<FileInfo>> listFiles() async {
-    final list = await _invokeList<dynamic>('listFiles');
-    if (list == null) return [];
-    return list.map((item) => FileInfo.fromMap(item as Map)).toList();
+    final result = await _wrap(() => _secureStorageApi.listFiles());
+    return result
+        .whereType<pigeon.NexoraFileInfo>()
+        .map((info) => FileInfo(
+              name: info.name ?? '',
+              size: info.size ?? 0,
+              isDirectory: info.isDirectory ?? false,
+              lastModified: DateTime.fromMillisecondsSinceEpoch(
+                info.lastModifiedMs ?? 0,
+              ),
+            ))
+        .toList();
   }
 
   @override
   Future<String?> writeBytes(String fileName, Uint8List bytes) async {
-    return _invoke<String>('writeBytes', {
-      'fileName': fileName,
-      'bytes': bytes,
-    });
+    return _wrap(() => _secureStorageApi.writeBytes(fileName, bytes));
   }
 
   @override
   Future<Uint8List?> readBytes(String fileName) async {
-    return _invoke<Uint8List>('readBytes', {
-      'fileName': fileName,
-    });
+    return _wrap(() => _secureStorageApi.readBytes(fileName));
   }
 
   @override
   Future<bool> clearCache() async {
-    return await _invoke<bool>('clearCache') ?? false;
+    return _wrap(() => _secureStorageApi.clearCache());
   }
 
   @override
   Future<String?> getAppDirectory() async {
-    return _invoke<String>('getAppDirectory');
+    return _wrap(() => _secureStorageApi.getAppDirectory());
   }
 
   @override
   Future<String?> getCacheDirectory() async {
-    return _invoke<String>('getCacheDirectory');
+    return _wrap(() => _secureStorageApi.getCacheDirectory());
   }
 
   @override
   Future<String?> getExternalDirectory() async {
-    return _invoke<String>('getExternalDirectory');
+    return _wrap(() => _secureStorageApi.getExternalDirectory());
   }
 
   @override
   Future<bool> copyText(String text) async {
-    return await _invoke<bool>('copyText', {'text': text}) ?? false;
+    return _wrap(() => _systemApi.copyText(text));
   }
 
   @override
   Future<String?> pasteText() async {
-    return _invoke<String>('pasteText');
+    return _wrap(() => _systemApi.pasteText());
   }
 
   @override
   Future<bool> openUrl(String url) async {
-    return await _invoke<bool>('openUrl', {'url': url}) ?? false;
+    return _wrap(() => _systemApi.openUrl(url));
   }
 
   @override
   Future<bool> shareText(String text, {String? subject}) async {
-    return await _invoke<bool>('shareText', {
-          'text': text,
-          'subject': subject,
-        }) ??
-        false;
+    return _wrap(() => _systemApi.shareText(text, subject));
   }
 
   @override
@@ -630,22 +632,29 @@ class MethodChannelNexoraSdk extends NexoraSdkPlatform {
     int rollLimitBytes = 2 * 1024 * 1024,
     bool requireWifi = true,
   }) async {
-    return await _invoke<bool>('enableSmartSync', {
-          'uploadEndpointUrl': uploadEndpointUrl,
-          'headers': headers,
-          'rollLimitBytes': rollLimitBytes,
-          'requireWifi': requireWifi,
-        }) ??
-        false;
+    final castedHeaders =
+        headers.map((key, value) => MapEntry<String?, String?>(key, value));
+    return _wrap(() => _systemApi.enableSmartSync(
+          uploadEndpointUrl,
+          castedHeaders,
+          rollLimitBytes,
+          requireWifi,
+        ));
   }
 
   @override
   Future<bool> applyCameraFilterShader(String shaderType) async {
-    return await _hardwareApi.applyCameraFilterShader(shaderType);
+    return _wrap(() => _hardwareApi.applyCameraFilterShader(shaderType));
   }
 
   @override
   Stream<Uint8List> openL2capStream(String deviceId, int psm) {
+    // Trigger the native L2CAP connection
+    methodChannel.invokeMethod<bool>('connectL2cap', {
+      'deviceId': deviceId,
+      'psm': psm,
+    });
+
     return unifiedStream
         .where(
           (e) =>
@@ -663,23 +672,22 @@ class MethodChannelNexoraSdk extends NexoraSdkPlatform {
 
   @override
   Future<bool> enableDeadReckoning(bool enabled) async {
-    return await _invoke<bool>('enableDeadReckoning', {'enabled': enabled}) ??
-        false;
+    return _wrap(() => _sensorApi.enableDeadReckoning(enabled));
   }
 
   @override
   Future<void> setEcoModeEnabled(bool enabled) async {
-    await _invoke<void>('setEcoModeEnabled', {'enabled': enabled});
+    await _wrap(() => _systemApi.setEcoModeEnabled(enabled));
   }
 
   @override
   Future<bool> isEcoModeActive() async {
-    return await _invoke<bool>('isEcoModeActive') ?? false;
+    return _wrap(() => _systemApi.isEcoModeActive());
   }
 
   @override
   Future<DeviceThermalState> getThermalState() async {
-    final stateStr = await _invoke<String>('getThermalState') ?? 'normal';
+    final stateStr = await _wrap(() => _systemApi.getThermalState());
     return DeviceThermalState.values.firstWhere(
       (s) => s.name == stateStr,
       orElse: () => DeviceThermalState.normal,
@@ -706,32 +714,22 @@ class MethodChannelNexoraSdk extends NexoraSdkPlatform {
     String charId, {
     required bool enable,
   }) async {
-    final result = await methodChannel.invokeMethod<bool>(
-      'subscribeToCharacteristic',
-      {
-        'deviceId': deviceId,
-        'serviceId': serviceId,
-        'charId': charId,
-        'enable': enable,
-      },
-    );
-    return result ?? false;
+    return _wrap(() => _bluetoothApi.subscribeToCharacteristic(
+          deviceId,
+          serviceId,
+          charId,
+          enable,
+        ));
   }
 
   @override
   Future<bool> requestMtu(String deviceId, int mtu) async {
-    final result = await methodChannel.invokeMethod<bool>('requestMtu', {
-      'deviceId': deviceId,
-      'mtu': mtu,
-    });
-    return result ?? false;
+    return _wrap(() => _bluetoothApi.requestMtu(deviceId, mtu));
   }
 
   @override
   Future<String?> saveToGallery(String filePath) async {
-    return methodChannel.invokeMethod<String>('saveToGallery', {
-      'filePath': filePath,
-    });
+    return _wrap(() => _systemApi.saveToGallery(filePath));
   }
 
   @override
@@ -739,17 +737,11 @@ class MethodChannelNexoraSdk extends NexoraSdkPlatform {
     required String title,
     required String content,
   }) async {
-    final result = await methodChannel.invokeMethod<bool>(
-      'startForegroundService',
-      {'title': title, 'content': content},
-    );
-    return result ?? false;
+    return _wrap(() => _systemApi.startForegroundService(title, content));
   }
 
   @override
   Future<bool> stopForegroundService() async {
-    final result =
-        await methodChannel.invokeMethod<bool>('stopForegroundService');
-    return result ?? false;
+    return _wrap(() => _systemApi.stopForegroundService());
   }
 }

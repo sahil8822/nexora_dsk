@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 /// A native-like camera preview widget.
@@ -11,6 +12,9 @@ class NexoraCameraPreview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (kIsWeb) {
+      return HtmlElementView(viewType: 'nexora_camera_preview_$textureId');
+    }
     return Texture(textureId: textureId);
   }
 }

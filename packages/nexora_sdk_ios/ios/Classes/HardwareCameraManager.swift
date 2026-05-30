@@ -36,6 +36,7 @@ public class HardwareCameraManager: NSObject, FlutterTexture, AVCaptureVideoData
     private var lastVisionFrameTime = CACurrentMediaTime()
     private var visionFrameIntervalSeconds = 0.12
 
+    private let ai = HardwareAiManager()
     private var customModelAssetPath: String?
     private var customLabels: [String]?
     private var customThreshold: Float = 0.5
@@ -45,8 +46,8 @@ public class HardwareCameraManager: NSObject, FlutterTexture, AVCaptureVideoData
         self.customModelAssetPath = modelAssetPath
         self.customLabels = labels
         self.customThreshold = threshold
-        self.isCustomClassifierRegistered = true
-        return true
+        self.isCustomClassifierRegistered = ai.loadCustomModel(modelPath: modelAssetPath)
+        return self.isCustomClassifierRegistered
     }
 
     public func setEventSink(_ sink: FlutterEventSink?) { self.eventSink = sink }
@@ -257,6 +258,22 @@ public class HardwareCameraManager: NSObject, FlutterTexture, AVCaptureVideoData
             let request = VNDetectBarcodesRequest()
             try? handler.perform([request])
             results["barcodes"] = request.results?.map { $0.payloadStringValue ?? "" } ?? []
+        }
+
+        if isCustomClassifierRegistered, let model = ai.model {
+            let request = VNCoreMLRequest(model: model) { [weak self] request, error in
+                guard let self = self else { return }
+                guard let classifications = request.results as? [VNClassificationObservation],
+                      let best = classifications.first else { return }
+                
+                if best.confidence >= self.customThreshold {
+                    results["classification"] = [
+                        "label": best.identifier,
+                        "confidence": Double(best.confidence)
+                    ]
+                }
+            }
+            try? handler.perform([request])
         }
         
         return results.isEmpty ? nil : results

@@ -5,18 +5,32 @@ import CoreLocation
 import CoreBluetooth
 import Network
 
-/// Nexora SDK v3.1.2 — Complete iOS Plugin with all method handlers.
-public class NexoraSdk: NSObject, FlutterPlugin, CLLocationManagerDelegate {
+/// Nexora SDK v3.1.2 — Complete iOS Plugin with type-safe Pigeon host APIs.
+public class NexoraSdk: NSObject, FlutterPlugin, CLLocationManagerDelegate,
+    HardwareApi,
+    AudioApi,
+    LocationApi,
+    SensorApi,
+    BiometricsApi,
+    BluetoothApi,
+    SecureStorageApi,
+    SystemApi {
+
     private let camera = HardwareCameraManager()
     private let audio = HardwareAudioManager()
     private let sensors = HardwareSensorManager()
     private let bluetooth = HardwareBluetoothManager()
+    private let blePeripheral = HardwareBlePeripheralManager()
     private let location = HardwareLocationManager()
     private let biometrics = HardwareBiometricManager()
     private let feedback = HardwareFeedbackManager()
     private let health = HardwareHealthManager()
     private let storage = HardwareStorageManager()
     private let nfc = HardwareNfcManager()
+    private let ai = HardwareAiManager()
+    private let crypto = HardwareCryptoManager()
+    private let backgroundTasks = HardwareTaskManager()
+
     private var ecoModeUserEnabled = false
     private var sdkConfig: [String: Any] = [:]
     private var logNativeCalls = false
@@ -24,11 +38,12 @@ public class NexoraSdk: NSObject, FlutterPlugin, CLLocationManagerDelegate {
     
     private var registrar: FlutterPluginRegistrar?
     private var textureId: Int64 = -1
-    private var permissionResult: FlutterResult?
+    private var permissionResult: ((Any?) -> Void)?
     private var permissionLocationManager: CLLocationManager?
     private var pendingCameraPermission = false
     private var pendingMicrophonePermission = false
     private var pendingPermissionType: String?
+    private var eventSink: FlutterEventSink?
 
     public override init() {
         super.init()
@@ -39,6 +54,7 @@ public class NexoraSdk: NSObject, FlutterPlugin, CLLocationManagerDelegate {
         let instance = NexoraSdk()
         instance.registrar = registrar
 
+        // Register legacy MethodChannel for backward compatibility
         let channel = FlutterMethodChannel(name: "nexora_sdk/methods", binaryMessenger: registrar.messenger())
         registrar.addMethodCallDelegate(instance, channel: channel)
 
@@ -52,6 +68,16 @@ public class NexoraSdk: NSObject, FlutterPlugin, CLLocationManagerDelegate {
             name: UIApplication.didReceiveMemoryWarningNotification,
             object: nil
         )
+
+        // Set up Pigeon host APIs
+        HardwareApiSetup.setUp(binaryMessenger: registrar.messenger(), api: instance)
+        AudioApiSetup.setUp(binaryMessenger: registrar.messenger(), api: instance)
+        LocationApiSetup.setUp(binaryMessenger: registrar.messenger(), api: instance)
+        SensorApiSetup.setUp(binaryMessenger: registrar.messenger(), api: instance)
+        BiometricsApiSetup.setUp(binaryMessenger: registrar.messenger(), api: instance)
+        BluetoothApiSetup.setUp(binaryMessenger: registrar.messenger(), api: instance)
+        SecureStorageApiSetup.setUp(binaryMessenger: registrar.messenger(), api: instance)
+        SystemApiSetup.setUp(binaryMessenger: registrar.messenger(), api: instance)
     }
 
     deinit {
@@ -68,6 +94,7 @@ public class NexoraSdk: NSObject, FlutterPlugin, CLLocationManagerDelegate {
             sdk?.eventSink = events
             sdk?.camera.setEventSink(events)
             sdk?.bluetooth.setEventSink(events)
+            sdk?.blePeripheral.setEventSink(events)
             sdk?.location.setEventSink(events)
             sdk?.sensors.setEventSink(events)
             sdk?.audio.setEventSink(events)
@@ -78,6 +105,7 @@ public class NexoraSdk: NSObject, FlutterPlugin, CLLocationManagerDelegate {
             sdk?.eventSink = nil
             sdk?.camera.setEventSink(nil)
             sdk?.bluetooth.setEventSink(nil)
+            sdk?.blePeripheral.setEventSink(nil)
             sdk?.location.setEventSink(nil)
             sdk?.sensors.setEventSink(nil)
             sdk?.audio.setEventSink(nil)
@@ -85,8 +113,6 @@ public class NexoraSdk: NSObject, FlutterPlugin, CLLocationManagerDelegate {
             return nil
         }
     }
-
-    private var eventSink: FlutterEventSink?
 
     @objc private func didReceiveMemoryWarning() {
         storage.clearCache()
@@ -102,114 +128,11 @@ public class NexoraSdk: NSObject, FlutterPlugin, CLLocationManagerDelegate {
         }
     }
 
-    private func shouldRunInBackground(_ method: String) -> Bool {
-        switch method {
-        case "getStorageInfo", "writeFile", "appendFile", "readFile", "deleteFile", "fileExists",
-             "listFiles", "writeBytes", "readBytes", "clearCache", "getAppDirectory", "getCacheDirectory", "getExternalDirectory",
-             "writeSecureFile", "readSecureFile", "deleteSecureFile",
-             "startBluetoothScan", "startBluetoothScanWithOptions", "stopBluetoothScan", "connectDevice",
-             "disconnectDevice", "discoverServices", "sendData", "readData",
-             "startLogging", "stopLogging", "addGeofence",
-             "enableSmartSync", "enableDeadReckoning",
-             "getBatteryInfo", "getWifiInfo", "getDeviceInfo", "getConnectivityInfo":
-            return true
-        
-        case "startForegroundService":
-            // iOS background tasks are handled via Info.plist and Background Fetch, so this is mostly a no-op
-            // but we can register a background task to keep the app alive slightly longer
-            let title = args["title"] as? String ?? "Background Task"
-            result(true)
-            
-        case "stopForegroundService":
-            result(true)
-            
-        case "subscribeToCharacteristic":
-            guard let deviceId = args["deviceId"] as? String,
-                  let serviceId = args["serviceId"] as? String,
-                  let charId = args["charId"] as? String,
-                  let enable = args["enable"] as? Bool else {
-                result(FlutterError(code: "INVALID_ARGUMENT", message: "Missing arguments", details: nil))
-                return
-            }
-            bluetooth.subscribeToCharacteristic(deviceId: deviceId, serviceId: serviceId, charId: charId, enable: enable) { res in
-                result(res)
-            }
-            
-        case "requestMtu":
-            // iOS negotiates MTU automatically
-            result(true)
-            
-        case "saveToGallery":
-            guard let filePath = args["filePath"] as? String else {
-                result(FlutterError(code: "INVALID_ARGUMENT", message: "Missing filePath", details: nil))
-                return
-            }
-            storage.saveToGallery(filePath: filePath) { path in
-                if let p = path {
-                    result(p)
-                } else {
-                    result(FlutterError(code: "STORAGE_ERROR", message: "Failed to save to Gallery", details: nil))
-                }
-            }
-
-        
-        case "loadCustomModel":
-            let path = args["modelPath"] as? String ?? ""
-            result(ai.loadCustomModel(modelPath: path))
-            
-        case "runInference":
-            let input = args["input"] as? [String: Any] ?? [:]
-            result(ai.runInference(input: input))
-            
-        case "getConnectedUsbDevices":
-            // USB OTG not fully supported on iOS without MFi
-            result([])
-            
-        case "openUsbConnection", "writeUsbData":
-            result(false)
-            
-        case "startDepthCamera":
-            result(false)
-            
-        case "generateSecureKeyPair":
-            let alias = args["alias"] as? String ?? ""
-            result(crypto.generateSecureKeyPair(alias: alias))
-            
-        case "signData":
-            guard let alias = args["alias"] as? String, let data = args["data"] as? FlutterStandardTypedData else {
-                result(nil)
-                return
-            }
-            if let signature = crypto.signData(alias: alias, data: data.data) {
-                result(signature)
-            } else {
-                result(nil)
-            }
-            
-        case "scheduleBackgroundTask":
-            let taskId = args["taskId"] as? String ?? ""
-            let interval = args["intervalSeconds"] as? Int ?? 900
-            result(backgroundTasks.scheduleBackgroundTask(taskId: taskId, intervalSeconds: interval))
-
-        default:
-            return false
-        }
-    }
-
+    // Legacy routing mapping (kept for binary backward compatibility)
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
-        if shouldRunInBackground(call.method) {
-            DispatchQueue.global(qos: .userInitiated).async {
-                self.handleSafe(call, result: result)
-            }
-        } else {
-            self.handleSafe(call, result: result)
-        }
-    }
-
-    private func handleSafe(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         let args = call.arguments as? [String: Any]
         if logNativeCalls {
-            NSLog("NexoraSdk native call: \(call.method)")
+            NSLog("NexoraSdk legacy call: \(call.method)")
         }
 
         switch call.method {
@@ -219,636 +142,13 @@ public class NexoraSdk: NSObject, FlutterPlugin, CLLocationManagerDelegate {
             iosOptions = sdkConfig["ios"] as? [String: Any] ?? [:]
             applyIosOptions(iosOptions)
             result(true)
-
-        // ==================== Camera & Vision ====================
-        case "startCamera":
-            guard AVCaptureDevice.authorizationStatus(for: .video) == .authorized else {
-                result(FlutterError(code: "PERMISSION_DENIED", message: "Camera permission is required.", details: nil))
-                return
-            }
-            textureId = registrar?.textures().register(camera) ?? -1
-            camera.start(width: args?["width"] as? Int ?? 1280, height: args?["height"] as? Int ?? 720)
-            result(textureId)
-
-        case "stopCamera":
-            camera.stop()
-            if textureId != -1 { registrar?.textures().unregisterTexture(textureId) }
-            textureId = -1
-            result(true)
-
-        case "setVisionMode":
-            camera.setVisionMode(face: args?["face"] as? Bool ?? false, barcode: args?["barcode"] as? Bool ?? false)
-            result(true)
-
-        case "registerCustomClassifier":
-            guard let modelAssetPath = args?["modelAssetPath"] as? String,
-                  let labels = args?["labels"] as? [String] else {
-                result(FlutterError(code: "INVALID_ARGUMENT", message: "registerCustomClassifier requires modelAssetPath and labels.", details: nil))
-                return
-            }
-            let threshold = args?["threshold"] as? Double ?? 0.5
-            let success = camera.registerCustomClassifier(modelAssetPath: modelAssetPath, labels: labels, threshold: Float(threshold))
-            result(success)
-
-        case "startCameraWithOptions":
-            textureId = registrar?.textures().register(camera) ?? -1
-            let size = cameraSize(for: args?["resolution"] as? String)
-            camera.start(width: size.width, height: size.height)
-            result(textureId)
-
-        case "startAudioWithOptions":
-            let success = audio.start(enableFFT: false, streamBytes: false, interval: 80.0)
-            result(success)
-
-        case "enableSmartSync":
-            guard let uploadEndpointUrl = args?["uploadEndpointUrl"] as? String else {
-                result(FlutterError(code: "INVALID_ARGUMENT", message: "enableSmartSync requires uploadEndpointUrl.", details: nil))
-                return
-            }
-            let headers = args?["headers"] as? [String: String] ?? [:]
-            let rollLimitBytes = args?["rollLimitBytes"] as? Int ?? (2 * 1024 * 1024)
-            let requireWifi = args?["requireWifi"] as? Bool ?? true
-            SmartSyncManager.shared.enable(url: uploadEndpointUrl, headers: headers, limit: rollLimitBytes, wifiOnly: requireWifi)
-            result(true)
-
-        case "applyCameraFilterShader":
-            guard let shaderType = args?["shaderType"] as? String else {
-                result(FlutterError(code: "INVALID_ARGUMENT", message: "applyCameraFilterShader requires shaderType.", details: nil))
-                return
-            }
-            result(camera.applyCameraFilterShader(shaderType: shaderType))
-
-        case "enableDeadReckoning":
-            let enabled = args?["enabled"] as? Bool ?? false
-            location.enableDeadReckoning(enabled)
-            result(true)
-
-        case "setFlash":
-            camera.setFlash(on: args?["on"] as? Bool ?? false)
-            result(true)
-
-        case "setZoom":
-            camera.setZoom(level: args?["level"] as? Double ?? 1.0)
-            result(true)
-
-        case "flipCamera":
-            camera.flipCamera()
-            // Re-register texture after flip
-            if textureId != -1 { registrar?.textures().unregisterTexture(textureId) }
-            textureId = registrar?.textures().register(camera) ?? -1
-            result(true)
-
-        case "takePhoto":
-            camera.takePhoto(fileName: args?["fileName"] as? String) { path in
-                if let path = path {
-                    result(path)
-                } else {
-                    result(FlutterError(code: "CAMERA_UNAVAILABLE", message: "Camera is not running or photo capture failed.", details: nil))
-                }
-            }
-
-        case "startVideoRecording":
-            camera.startVideoRecording(fileName: args?["fileName"] as? String) { path in
-                if let path = path {
-                    result(path)
-                } else {
-                    result(FlutterError(code: "CAMERA_ERROR", message: "Failed to start video recording.", details: nil))
-                }
-            }
-
-        case "stopVideoRecording":
-            camera.stopVideoRecording { path in
-                if let path = path {
-                    result(path)
-                } else {
-                    result(FlutterError(code: "CAMERA_ERROR", message: "Failed to stop video recording.", details: nil))
-                }
-            }
-
-        // ==================== Audio & FFT ====================
-        case "startAudio":
-            guard AVAudioSession.sharedInstance().recordPermission == .granted else {
-                result(FlutterError(code: "PERMISSION_DENIED", message: "Microphone permission is required.", details: nil))
-                return
-            }
-            audio.setFFTEnabled(args?["enableFFT"] as? Bool ?? false)
-            audio.setStreamBytes(args?["streamBytes"] as? Bool ?? false)
-            audio.setUpdateIntervalMs(args?["updateIntervalMs"] as? Int ?? 80)
-            result(audio.start())
-
-        case "stopAudio":
-            audio.stop()
-            result(true)
-
-        case "routeAudioOutput":
-            let route = args?["route"] as? String ?? "defaultRoute"
-            do {
-                if route == "speakerphone" {
-                    try AVAudioSession.sharedInstance().overrideOutputAudioPort(.speaker)
-                } else {
-                    try AVAudioSession.sharedInstance().overrideOutputAudioPort(.none)
-                }
-                result(true)
-            } catch {
-                result(FlutterError(code: "AUDIO_ROUTE_FAILED", message: error.localizedDescription, details: nil))
-            }
-
-        case "getAudioVolume":
-            result(Double(AVAudioSession.sharedInstance().outputVolume))
-
-        case "setAudioVolume":
-            result(true)
-
-        case "selectAudioInput":
-            let targetDevice = args?["device"] as? String ?? "defaultMic"
-            let session = AVAudioSession.sharedInstance()
-            if let inputs = session.availableInputs {
-                for input in inputs {
-                    if targetDevice == "bluetoothMic" && input.portType == .bluetoothHFP {
-                        do {
-                            try session.setPreferredInput(input)
-                            result(true)
-                            return
-                        } catch {}
-                    }
-                }
-            }
-            result(true)
-
-        case "setAudioGain":
-            let gain = args?["gain"] as? Double ?? 1.0
-            do {
-                let session = AVAudioSession.sharedInstance()
-                if session.isInputGainSettable {
-                    try session.setInputGain(Float(gain))
-                }
-                result(true)
-            } catch {
-                result(FlutterError(code: "AUDIO_GAIN_FAILED", message: error.localizedDescription, details: nil))
-            }
-
-        case "setEcoModeEnabled":
-            let enabled = args?["enabled"] as? Bool ?? false
-            ecoModeUserEnabled = enabled
-            result(nil)
-
-        case "isEcoModeActive":
-            let active = ecoModeUserEnabled || ProcessInfo.processInfo.isLowPowerModeEnabled
-            result(active)
-
-        case "getThermalState":
-            let state = ProcessInfo.processInfo.thermalState
-            switch state {
-            case .nominal:
-                result("normal")
-            case .fair:
-                result("fair")
-            case .serious:
-                result("serious")
-            case .critical:
-                result("critical")
-            @unknown 
-        case "startForegroundService":
-            // iOS background tasks are handled via Info.plist and Background Fetch, so this is mostly a no-op
-            // but we can register a background task to keep the app alive slightly longer
-            let title = args["title"] as? String ?? "Background Task"
-            result(true)
-            
-        case "stopForegroundService":
-            result(true)
-            
-        case "subscribeToCharacteristic":
-            guard let deviceId = args["deviceId"] as? String,
-                  let serviceId = args["serviceId"] as? String,
-                  let charId = args["charId"] as? String,
-                  let enable = args["enable"] as? Bool else {
-                result(FlutterError(code: "INVALID_ARGUMENT", message: "Missing arguments", details: nil))
-                return
-            }
-            bluetooth.subscribeToCharacteristic(deviceId: deviceId, serviceId: serviceId, charId: charId, enable: enable) { res in
-                result(res)
-            }
-            
-        case "requestMtu":
-            // iOS negotiates MTU automatically
-            result(true)
-            
-        case "saveToGallery":
-            guard let filePath = args["filePath"] as? String else {
-                result(FlutterError(code: "INVALID_ARGUMENT", message: "Missing filePath", details: nil))
-                return
-            }
-            storage.saveToGallery(filePath: filePath) { path in
-                if let p = path {
-                    result(p)
-                } else {
-                    result(FlutterError(code: "STORAGE_ERROR", message: "Failed to save to Gallery", details: nil))
-                }
-            }
-
-        
-        case "loadCustomModel":
-            let path = args["modelPath"] as? String ?? ""
-            result(ai.loadCustomModel(modelPath: path))
-            
-        case "runInference":
-            let input = args["input"] as? [String: Any] ?? [:]
-            result(ai.runInference(input: input))
-            
-        case "getConnectedUsbDevices":
-            // USB OTG not fully supported on iOS without MFi
-            result([])
-            
-        case "openUsbConnection", "writeUsbData":
-            result(false)
-            
-        case "startDepthCamera":
-            result(false)
-            
-        case "generateSecureKeyPair":
-            let alias = args["alias"] as? String ?? ""
-            result(crypto.generateSecureKeyPair(alias: alias))
-            
-        case "signData":
-            guard let alias = args["alias"] as? String, let data = args["data"] as? FlutterStandardTypedData else {
-                result(nil)
-                return
-            }
-            if let signature = crypto.signData(alias: alias, data: data.data) {
-                result(signature)
-            } else {
-                result(nil)
-            }
-            
-        case "scheduleBackgroundTask":
-            let taskId = args["taskId"] as? String ?? ""
-            let interval = args["intervalSeconds"] as? Int ?? 900
-            result(backgroundTasks.scheduleBackgroundTask(taskId: taskId, intervalSeconds: interval))
-
-        default:
-                result("normal")
-            }
-
-        // ==================== Bluetooth ====================
-        case "startBluetoothScan":
-            guard bluetooth.startScan() else {
-                result(FlutterError(code: "BLUETOOTH_UNAVAILABLE", message: "Bluetooth is not powered on or not authorized.", details: nil))
-                return
-            }
-            result(true)
-
-        case "startBluetoothScanWithOptions":
-            guard bluetooth.startScan() else {
-                result(FlutterError(code: "BLUETOOTH_UNAVAILABLE", message: "Bluetooth is not powered on or not authorized.", details: nil))
-                return
-            }
-            result(true)
-
-        case "stopBluetoothScan":
-            result(bluetooth.stopScan())
-
-        case "connectDevice":
-            guard bluetooth.connect(deviceId: args?["id"] as? String ?? "") else {
-                result(FlutterError(code: "BLUETOOTH_UNAVAILABLE", message: "Bluetooth is unavailable or the device id is invalid.", details: nil))
-                return
-            }
-            result(true)
-
-        case "disconnectDevice":
-            bluetooth.disconnect()
-            result(true)
-
-        case "discoverServices":
-            bluetooth.discoverServices(deviceId: args?["id"] as? String ?? "") { services in
-                result(services)
-            }
-
-        case "sendData":
-            let deviceId = args?["deviceId"] as? String ?? ""
-            let serviceId = args?["serviceId"] as? String ?? ""
-            let charId = args?["charId"] as? String ?? ""
-            let dataArray = args?["data"] as? [Int] ?? []
-            let bytes = Data(dataArray.map { UInt8($0 & 0xFF) })
-            guard bluetooth.sendData(deviceId: deviceId, serviceId: serviceId, charId: charId, data: bytes) else {
-                result(FlutterError(code: "BLUETOOTH_WRITE_FAILED", message: "Unable to write to the requested BLE characteristic.", details: nil))
-                return
-            }
-            result(true)
-
-        case "readData":
-            let deviceId = args?["deviceId"] as? String ?? ""
-            let serviceId = args?["serviceId"] as? String ?? ""
-            let charId = args?["charId"] as? String ?? ""
-            guard bluetooth.readData(deviceId: deviceId, serviceId: serviceId, charId: charId, callback: { data in
-                if let data = data {
-                    result(FlutterStandardTypedData(bytes: data))
-                } else {
-                    result(nil)
-                }
-            }) else {
-                result(FlutterError(code: "BLUETOOTH_READ_FAILED", message: "Unable to read from the requested BLE characteristic.", details: nil))
-                return
-            }
-
-        // ==================== Location & Geofencing ====================
-        case "startLocation":
-            guard hasLocationPermission() else {
-                result(FlutterError(code: "PERMISSION_DENIED", message: "Location permission is required.", details: nil))
-                return
-            }
-            location.startUpdates()
-            result(true)
-
-        case "startLocationWithOptions":
-            guard hasLocationPermission() else {
-                result(FlutterError(code: "PERMISSION_DENIED", message: "Location permission is required.", details: nil))
-                return
-            }
-            location.startUpdates()
-            result(true)
-
-        case "stopLocation":
-            location.stopUpdates()
-            result(true)
-
-        case "setBackgroundLocationEnabled":
-            location.setBackgroundEnabled(args?["enabled"] as? Bool ?? false)
-            result(true)
-
-        case "addGeofence":
-            guard hasLocationPermission() else {
-                result(FlutterError(code: "PERMISSION_DENIED", message: "Location permission is required.", details: nil))
-                return
-            }
-            guard let id = args?["id"] as? String,
-                  let lat = args?["lat"] as? Double,
-                  let lon = args?["lon"] as? Double,
-                  let radius = args?["radius"] as? Double,
-                  !id.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
-                  radius > 0 else {
-                result(FlutterError(code: "INVALID_ARGUMENT", message: "Geofence requires id, lat, lon, and a positive radius.", details: nil))
-                return
-            }
-            result(location.addGeofence(id: id, lat: lat, lon: lon, radius: radius))
-
-        // ==================== Sensors ====================
-        case "startSensor":
-            sensors.start(frequencyHz: args?["frequency"] as? Int ?? 60)
-            result(true)
-
-        case "startSensorWithOptions":
-            sensors.start(frequencyHz: sensorFrequency(for: args?["accuracy"] as? String))
-            result(true)
-
-        case "stopSensor":
-            sensors.stop()
-            result(true)
-
-        // ==================== Biometrics ====================
-        case "authenticate":
-            biometrics.authenticate(reason: args?["reason"] as? String ?? "Authentication Required") { success in
-                result(success)
-            }
-
-        case "authenticateWithOptions":
-            let title = args?["title"] as? String ?? "Authentication Required"
-            biometrics.authenticate(reason: title) { success in
-                result(success)
-            }
-
-        case "canAuthenticate":
-            result(biometrics.canAuthenticate())
-
-        // ==================== Feedback ====================
-        case "vibrate":
-            feedback.vibrate(duration: args?["duration"] as? Int ?? 50)
-            result(nil)
-
-        case "hapticFeedback":
-            feedback.haptic(type: args?["type"] as? String ?? "impact")
-            result(nil)
-
-        case "performHapticWithOptions":
-            let type = args?["type"] as? String ?? "medium"
-            feedback.haptic(type: type)
-            result(nil)
-
-        // ==================== Health ====================
-        case "getBatteryInfo":
-            result(health.getBatteryInfo())
-
-        case "getWifiInfo":
-            result(health.getWifiInfo())
-
-        case "startLogging":
-            result(
-                health.startLogging(
-                    fileName: args?["fileName"] as? String ?? "log.csv",
-                    interval: args?["interval"] as? Double ?? 1000.0
-                )
-            )
-
-        case "stopLogging":
-            health.stopLogging()
-            result(true)
-
-        // ==================== Storage ====================
-        case "getStorageInfo":
-            result(storage.getStorageInfo())
-
-        case "writeFile":
-            result(storage.writeFile(fileName: args?["fileName"] as? String ?? "", content: args?["content"] as? String ?? ""))
-
-        case "appendFile":
-            result(storage.appendFile(fileName: args?["fileName"] as? String ?? "", content: args?["content"] as? String ?? ""))
-
-        case "readFile":
-            result(storage.readFile(fileName: args?["fileName"] as? String ?? ""))
-
-        case "deleteFile":
-            result(storage.deleteFile(fileName: args?["fileName"] as? String ?? ""))
-
-        case "fileExists":
-            result(storage.fileExists(fileName: args?["fileName"] as? String ?? ""))
-
-        case "listFiles":
-            result(storage.listFiles())
-
-        case "writeBytes":
-            if let bytes = args?["bytes"] as? FlutterStandardTypedData {
-                result(storage.writeBytes(fileName: args?["fileName"] as? String ?? "", bytes: bytes))
-            } else {
-                result(nil)
-            }
-
-        case "readBytes":
-            result(storage.readBytes(fileName: args?["fileName"] as? String ?? ""))
-
-        case "clearCache":
-            result(storage.clearCache())
-
-        case "getAppDirectory":
-            result(storage.getAppDirectory())
-
-        case "getCacheDirectory":
-            result(storage.getCacheDirectory())
-
-        case "getExternalDirectory":
-            result(storage.getExternalDirectory())
-
-        // ==================== NFC ====================
-        case "startNfcScan":
-            result(nfc.startScan())
-
-        case "stopNfcScan":
-            result(nfc.stopScan())
-
-        case "writeNdefRecord":
-            guard let type = args?["type"] as? String,
-                  let payload = args?["payload"] as? String else {
-                result(FlutterError(code: "INVALID_ARGUMENT", message: "writeNdefRecord requires type and payload.", details: nil))
-                return
-            }
-            nfc.writeNdef(type: type, payload: payload) { success in
-                result(success)
-            }
-
-        // ==================== Secure Storage ====================
-        case "writeSecureFile":
-            guard let fileName = args?["fileName"] as? String,
-                  let content = args?["content"] as? String else {
-                result(FlutterError(code: "INVALID_ARGUMENT", message: "writeSecureFile requires fileName and content.", details: nil))
-                return
-            }
-            result(storage.writeSecureFile(fileName: fileName, content: content))
-
-        case "readSecureFile":
-            guard let fileName = args?["fileName"] as? String else {
-                result(FlutterError(code: "INVALID_ARGUMENT", message: "readSecureFile requires fileName.", details: nil))
-                return
-            }
-            result(storage.readSecureFile(fileName: fileName))
-
-        case "deleteSecureFile":
-            guard let fileName = args?["fileName"] as? String else {
-                result(FlutterError(code: "INVALID_ARGUMENT", message: "deleteSecureFile requires fileName.", details: nil))
-                return
-            }
-            result(storage.deleteSecureFile(fileName: fileName))
-
-        // ==================== Base ====================
         case "getPlatformVersion":
             result("iOS " + UIDevice.current.systemVersion)
-
-        case "getDeviceInfo":
-            result(getDeviceInfo())
-
-        case "getConnectivityInfo":
-            getConnectivityInfo(result: result)
-
-        case "getPermissionStatus":
-            result(getPermissionStatus(type: args?["type"] as? String))
-
-        case "openAppSettings":
-            openAppSettings(result: result)
-
-        case "copyText":
-            UIPasteboard.general.string = args?["text"] as? String ?? ""
-            result(true)
-
-        case "pasteText":
-            result(UIPasteboard.general.string)
-
-        case "openUrl":
-            openUrl(args?["url"] as? String ?? "", result: result)
-
-        case "shareText":
-            shareText(args?["text"] as? String ?? "", subject: args?["subject"] as? String, result: result)
-
-        case "requestPermissions":
-            requestNativePermissions(result: result)
-
-        case "requestPermission":
-            requestNativePermission(type: args?["type"] as? String, result: result)
-
-        
-        case "startForegroundService":
-            // iOS background tasks are handled via Info.plist and Background Fetch, so this is mostly a no-op
-            // but we can register a background task to keep the app alive slightly longer
-            let title = args["title"] as? String ?? "Background Task"
-            result(true)
-            
-        case "stopForegroundService":
-            result(true)
-            
-        case "subscribeToCharacteristic":
-            guard let deviceId = args["deviceId"] as? String,
-                  let serviceId = args["serviceId"] as? String,
-                  let charId = args["charId"] as? String,
-                  let enable = args["enable"] as? Bool else {
-                result(FlutterError(code: "INVALID_ARGUMENT", message: "Missing arguments", details: nil))
-                return
-            }
-            bluetooth.subscribeToCharacteristic(deviceId: deviceId, serviceId: serviceId, charId: charId, enable: enable) { res in
-                result(res)
-            }
-            
-        case "requestMtu":
-            // iOS negotiates MTU automatically
-            result(true)
-            
-        case "saveToGallery":
-            guard let filePath = args["filePath"] as? String else {
-                result(FlutterError(code: "INVALID_ARGUMENT", message: "Missing filePath", details: nil))
-                return
-            }
-            storage.saveToGallery(filePath: filePath) { path in
-                if let p = path {
-                    result(p)
-                } else {
-                    result(FlutterError(code: "STORAGE_ERROR", message: "Failed to save to Gallery", details: nil))
-                }
-            }
-
-        
-        case "loadCustomModel":
-            let path = args["modelPath"] as? String ?? ""
-            result(ai.loadCustomModel(modelPath: path))
-            
-        case "runInference":
-            let input = args["input"] as? [String: Any] ?? [:]
-            result(ai.runInference(input: input))
-            
-        case "getConnectedUsbDevices":
-            // USB OTG not fully supported on iOS without MFi
-            result([])
-            
-        case "openUsbConnection", "writeUsbData":
-            result(false)
-            
-        case "startDepthCamera":
-            result(false)
-            
-        case "generateSecureKeyPair":
-            let alias = args["alias"] as? String ?? ""
-            result(crypto.generateSecureKeyPair(alias: alias))
-            
-        case "signData":
-            guard let alias = args["alias"] as? String, let data = args["data"] as? FlutterStandardTypedData else {
-                result(nil)
-                return
-            }
-            if let signature = crypto.signData(alias: alias, data: data.data) {
-                result(signature)
-            } else {
-                result(nil)
-            }
-            
-        case "scheduleBackgroundTask":
-            let taskId = args["taskId"] as? String ?? ""
-            let interval = args["intervalSeconds"] as? Int ?? 900
-            result(backgroundTasks.scheduleBackgroundTask(taskId: taskId, intervalSeconds: interval))
-
+        case "connectL2cap":
+            let deviceId = args?["deviceId"] as? String ?? ""
+            let psm = args?["psm"] as? Int ?? 0
+            let success = bluetooth.connectL2cap(deviceId: deviceId, psm: psm)
+            result(success)
         default:
             result(FlutterMethodNotImplemented)
         }
@@ -867,320 +167,8 @@ public class NexoraSdk: NSObject, FlutterPlugin, CLLocationManagerDelegate {
         }
     }
 
-    private func requestNativePermissions(result: @escaping FlutterResult) {
-        if permissionResult != nil {
-            result(FlutterError(code: "PERMISSION_REQUEST_IN_PROGRESS", message: "A permission request is already running.", details: nil))
-            return
-        }
-
-        permissionResult = result
-        pendingPermissionType = nil
-        let group = DispatchGroup()
-
-        switch AVCaptureDevice.authorizationStatus(for: .video) {
-        case .authorized:
-            pendingCameraPermission = true
-        case .notDetermined:
-            group.enter()
-            AVCaptureDevice.requestAccess(for: .video) { granted in
-                self.pendingCameraPermission = granted
-                group.leave()
-            }
-        
-        case "startForegroundService":
-            // iOS background tasks are handled via Info.plist and Background Fetch, so this is mostly a no-op
-            // but we can register a background task to keep the app alive slightly longer
-            let title = args["title"] as? String ?? "Background Task"
-            result(true)
-            
-        case "stopForegroundService":
-            result(true)
-            
-        case "subscribeToCharacteristic":
-            guard let deviceId = args["deviceId"] as? String,
-                  let serviceId = args["serviceId"] as? String,
-                  let charId = args["charId"] as? String,
-                  let enable = args["enable"] as? Bool else {
-                result(FlutterError(code: "INVALID_ARGUMENT", message: "Missing arguments", details: nil))
-                return
-            }
-            bluetooth.subscribeToCharacteristic(deviceId: deviceId, serviceId: serviceId, charId: charId, enable: enable) { res in
-                result(res)
-            }
-            
-        case "requestMtu":
-            // iOS negotiates MTU automatically
-            result(true)
-            
-        case "saveToGallery":
-            guard let filePath = args["filePath"] as? String else {
-                result(FlutterError(code: "INVALID_ARGUMENT", message: "Missing filePath", details: nil))
-                return
-            }
-            storage.saveToGallery(filePath: filePath) { path in
-                if let p = path {
-                    result(p)
-                } else {
-                    result(FlutterError(code: "STORAGE_ERROR", message: "Failed to save to Gallery", details: nil))
-                }
-            }
-
-        
-        case "loadCustomModel":
-            let path = args["modelPath"] as? String ?? ""
-            result(ai.loadCustomModel(modelPath: path))
-            
-        case "runInference":
-            let input = args["input"] as? [String: Any] ?? [:]
-            result(ai.runInference(input: input))
-            
-        case "getConnectedUsbDevices":
-            // USB OTG not fully supported on iOS without MFi
-            result([])
-            
-        case "openUsbConnection", "writeUsbData":
-            result(false)
-            
-        case "startDepthCamera":
-            result(false)
-            
-        case "generateSecureKeyPair":
-            let alias = args["alias"] as? String ?? ""
-            result(crypto.generateSecureKeyPair(alias: alias))
-            
-        case "signData":
-            guard let alias = args["alias"] as? String, let data = args["data"] as? FlutterStandardTypedData else {
-                result(nil)
-                return
-            }
-            if let signature = crypto.signData(alias: alias, data: data.data) {
-                result(signature)
-            } else {
-                result(nil)
-            }
-            
-        case "scheduleBackgroundTask":
-            let taskId = args["taskId"] as? String ?? ""
-            let interval = args["intervalSeconds"] as? Int ?? 900
-            result(backgroundTasks.scheduleBackgroundTask(taskId: taskId, intervalSeconds: interval))
-
-        default:
-            pendingCameraPermission = false
-        }
-
-        switch AVAudioSession.sharedInstance().recordPermission {
-        case .granted:
-            pendingMicrophonePermission = true
-        case .undetermined:
-            group.enter()
-            AVAudioSession.sharedInstance().requestRecordPermission { granted in
-                self.pendingMicrophonePermission = granted
-                group.leave()
-            }
-        
-        case "startForegroundService":
-            // iOS background tasks are handled via Info.plist and Background Fetch, so this is mostly a no-op
-            // but we can register a background task to keep the app alive slightly longer
-            let title = args["title"] as? String ?? "Background Task"
-            result(true)
-            
-        case "stopForegroundService":
-            result(true)
-            
-        case "subscribeToCharacteristic":
-            guard let deviceId = args["deviceId"] as? String,
-                  let serviceId = args["serviceId"] as? String,
-                  let charId = args["charId"] as? String,
-                  let enable = args["enable"] as? Bool else {
-                result(FlutterError(code: "INVALID_ARGUMENT", message: "Missing arguments", details: nil))
-                return
-            }
-            bluetooth.subscribeToCharacteristic(deviceId: deviceId, serviceId: serviceId, charId: charId, enable: enable) { res in
-                result(res)
-            }
-            
-        case "requestMtu":
-            // iOS negotiates MTU automatically
-            result(true)
-            
-        case "saveToGallery":
-            guard let filePath = args["filePath"] as? String else {
-                result(FlutterError(code: "INVALID_ARGUMENT", message: "Missing filePath", details: nil))
-                return
-            }
-            storage.saveToGallery(filePath: filePath) { path in
-                if let p = path {
-                    result(p)
-                } else {
-                    result(FlutterError(code: "STORAGE_ERROR", message: "Failed to save to Gallery", details: nil))
-                }
-            }
-
-        
-        case "loadCustomModel":
-            let path = args["modelPath"] as? String ?? ""
-            result(ai.loadCustomModel(modelPath: path))
-            
-        case "runInference":
-            let input = args["input"] as? [String: Any] ?? [:]
-            result(ai.runInference(input: input))
-            
-        case "getConnectedUsbDevices":
-            // USB OTG not fully supported on iOS without MFi
-            result([])
-            
-        case "openUsbConnection", "writeUsbData":
-            result(false)
-            
-        case "startDepthCamera":
-            result(false)
-            
-        case "generateSecureKeyPair":
-            let alias = args["alias"] as? String ?? ""
-            result(crypto.generateSecureKeyPair(alias: alias))
-            
-        case "signData":
-            guard let alias = args["alias"] as? String, let data = args["data"] as? FlutterStandardTypedData else {
-                result(nil)
-                return
-            }
-            if let signature = crypto.signData(alias: alias, data: data.data) {
-                result(signature)
-            } else {
-                result(nil)
-            }
-            
-        case "scheduleBackgroundTask":
-            let taskId = args["taskId"] as? String ?? ""
-            let interval = args["intervalSeconds"] as? Int ?? 900
-            result(backgroundTasks.scheduleBackgroundTask(taskId: taskId, intervalSeconds: interval))
-
-        default:
-            pendingMicrophonePermission = false
-        }
-
-        group.notify(queue: .main) {
-            let status = CLLocationManager.authorizationStatus()
-            if status == .notDetermined {
-                let manager = CLLocationManager()
-                self.permissionLocationManager = manager
-                manager.delegate = self
-                manager.requestWhenInUseAuthorization()
-            } else {
-                self.finishNativePermissionRequest()
-            }
-        }
-    }
-
-    private func requestNativePermission(type: String?, result: @escaping FlutterResult) {
-        if permissionResult != nil {
-            result(FlutterError(code: "PERMISSION_REQUEST_IN_PROGRESS", message: "A permission request is already running.", details: nil))
-            return
-        }
-
-        switch type {
-        case "camera":
-            requestCameraPermission(result: result)
-        case "audio":
-            requestAudioPermission(result: result)
-        case "location":
-            pendingPermissionType = type
-            permissionResult = result
-            let status = CLLocationManager.authorizationStatus()
-            if status == .notDetermined {
-                let manager = CLLocationManager()
-                permissionLocationManager = manager
-                manager.delegate = self
-                manager.requestWhenInUseAuthorization()
-            } else {
-                finishNativePermissionRequest()
-            }
-        case "bluetooth":
-            result(hasBluetoothPermission())
-        
-        case "startForegroundService":
-            // iOS background tasks are handled via Info.plist and Background Fetch, so this is mostly a no-op
-            // but we can register a background task to keep the app alive slightly longer
-            let title = args["title"] as? String ?? "Background Task"
-            result(true)
-            
-        case "stopForegroundService":
-            result(true)
-            
-        case "subscribeToCharacteristic":
-            guard let deviceId = args["deviceId"] as? String,
-                  let serviceId = args["serviceId"] as? String,
-                  let charId = args["charId"] as? String,
-                  let enable = args["enable"] as? Bool else {
-                result(FlutterError(code: "INVALID_ARGUMENT", message: "Missing arguments", details: nil))
-                return
-            }
-            bluetooth.subscribeToCharacteristic(deviceId: deviceId, serviceId: serviceId, charId: charId, enable: enable) { res in
-                result(res)
-            }
-            
-        case "requestMtu":
-            // iOS negotiates MTU automatically
-            result(true)
-            
-        case "saveToGallery":
-            guard let filePath = args["filePath"] as? String else {
-                result(FlutterError(code: "INVALID_ARGUMENT", message: "Missing filePath", details: nil))
-                return
-            }
-            storage.saveToGallery(filePath: filePath) { path in
-                if let p = path {
-                    result(p)
-                } else {
-                    result(FlutterError(code: "STORAGE_ERROR", message: "Failed to save to Gallery", details: nil))
-                }
-            }
-
-        
-        case "loadCustomModel":
-            let path = args["modelPath"] as? String ?? ""
-            result(ai.loadCustomModel(modelPath: path))
-            
-        case "runInference":
-            let input = args["input"] as? [String: Any] ?? [:]
-            result(ai.runInference(input: input))
-            
-        case "getConnectedUsbDevices":
-            // USB OTG not fully supported on iOS without MFi
-            result([])
-            
-        case "openUsbConnection", "writeUsbData":
-            result(false)
-            
-        case "startDepthCamera":
-            result(false)
-            
-        case "generateSecureKeyPair":
-            let alias = args["alias"] as? String ?? ""
-            result(crypto.generateSecureKeyPair(alias: alias))
-            
-        case "signData":
-            guard let alias = args["alias"] as? String, let data = args["data"] as? FlutterStandardTypedData else {
-                result(nil)
-                return
-            }
-            if let signature = crypto.signData(alias: alias, data: data.data) {
-                result(signature)
-            } else {
-                result(nil)
-            }
-            
-        case "scheduleBackgroundTask":
-            let taskId = args["taskId"] as? String ?? ""
-            let interval = args["intervalSeconds"] as? Int ?? 900
-            result(backgroundTasks.scheduleBackgroundTask(taskId: taskId, intervalSeconds: interval))
-
-        default:
-            result(FlutterError(code: "INVALID_ARGUMENT", message: "Unknown permission type: \(type ?? "nil")", details: nil))
-        }
-    }
-
-    private func requestCameraPermission(result: @escaping FlutterResult) {
+    // ==================== Helper Permission Methods ====================
+    private func requestCameraPermission(result: @escaping (Any?) -> Void) {
         switch AVCaptureDevice.authorizationStatus(for: .video) {
         case .authorized:
             result(true)
@@ -1188,90 +176,12 @@ public class NexoraSdk: NSObject, FlutterPlugin, CLLocationManagerDelegate {
             AVCaptureDevice.requestAccess(for: .video) { granted in
                 DispatchQueue.main.async { result(granted) }
             }
-        
-        case "startForegroundService":
-            // iOS background tasks are handled via Info.plist and Background Fetch, so this is mostly a no-op
-            // but we can register a background task to keep the app alive slightly longer
-            let title = args["title"] as? String ?? "Background Task"
-            result(true)
-            
-        case "stopForegroundService":
-            result(true)
-            
-        case "subscribeToCharacteristic":
-            guard let deviceId = args["deviceId"] as? String,
-                  let serviceId = args["serviceId"] as? String,
-                  let charId = args["charId"] as? String,
-                  let enable = args["enable"] as? Bool else {
-                result(FlutterError(code: "INVALID_ARGUMENT", message: "Missing arguments", details: nil))
-                return
-            }
-            bluetooth.subscribeToCharacteristic(deviceId: deviceId, serviceId: serviceId, charId: charId, enable: enable) { res in
-                result(res)
-            }
-            
-        case "requestMtu":
-            // iOS negotiates MTU automatically
-            result(true)
-            
-        case "saveToGallery":
-            guard let filePath = args["filePath"] as? String else {
-                result(FlutterError(code: "INVALID_ARGUMENT", message: "Missing filePath", details: nil))
-                return
-            }
-            storage.saveToGallery(filePath: filePath) { path in
-                if let p = path {
-                    result(p)
-                } else {
-                    result(FlutterError(code: "STORAGE_ERROR", message: "Failed to save to Gallery", details: nil))
-                }
-            }
-
-        
-        case "loadCustomModel":
-            let path = args["modelPath"] as? String ?? ""
-            result(ai.loadCustomModel(modelPath: path))
-            
-        case "runInference":
-            let input = args["input"] as? [String: Any] ?? [:]
-            result(ai.runInference(input: input))
-            
-        case "getConnectedUsbDevices":
-            // USB OTG not fully supported on iOS without MFi
-            result([])
-            
-        case "openUsbConnection", "writeUsbData":
-            result(false)
-            
-        case "startDepthCamera":
-            result(false)
-            
-        case "generateSecureKeyPair":
-            let alias = args["alias"] as? String ?? ""
-            result(crypto.generateSecureKeyPair(alias: alias))
-            
-        case "signData":
-            guard let alias = args["alias"] as? String, let data = args["data"] as? FlutterStandardTypedData else {
-                result(nil)
-                return
-            }
-            if let signature = crypto.signData(alias: alias, data: data.data) {
-                result(signature)
-            } else {
-                result(nil)
-            }
-            
-        case "scheduleBackgroundTask":
-            let taskId = args["taskId"] as? String ?? ""
-            let interval = args["intervalSeconds"] as? Int ?? 900
-            result(backgroundTasks.scheduleBackgroundTask(taskId: taskId, intervalSeconds: interval))
-
         default:
             result(false)
         }
     }
 
-    private func requestAudioPermission(result: @escaping FlutterResult) {
+    private func requestAudioPermission(result: @escaping (Any?) -> Void) {
         switch AVAudioSession.sharedInstance().recordPermission {
         case .granted:
             result(true)
@@ -1279,84 +189,6 @@ public class NexoraSdk: NSObject, FlutterPlugin, CLLocationManagerDelegate {
             AVAudioSession.sharedInstance().requestRecordPermission { granted in
                 DispatchQueue.main.async { result(granted) }
             }
-        
-        case "startForegroundService":
-            // iOS background tasks are handled via Info.plist and Background Fetch, so this is mostly a no-op
-            // but we can register a background task to keep the app alive slightly longer
-            let title = args["title"] as? String ?? "Background Task"
-            result(true)
-            
-        case "stopForegroundService":
-            result(true)
-            
-        case "subscribeToCharacteristic":
-            guard let deviceId = args["deviceId"] as? String,
-                  let serviceId = args["serviceId"] as? String,
-                  let charId = args["charId"] as? String,
-                  let enable = args["enable"] as? Bool else {
-                result(FlutterError(code: "INVALID_ARGUMENT", message: "Missing arguments", details: nil))
-                return
-            }
-            bluetooth.subscribeToCharacteristic(deviceId: deviceId, serviceId: serviceId, charId: charId, enable: enable) { res in
-                result(res)
-            }
-            
-        case "requestMtu":
-            // iOS negotiates MTU automatically
-            result(true)
-            
-        case "saveToGallery":
-            guard let filePath = args["filePath"] as? String else {
-                result(FlutterError(code: "INVALID_ARGUMENT", message: "Missing filePath", details: nil))
-                return
-            }
-            storage.saveToGallery(filePath: filePath) { path in
-                if let p = path {
-                    result(p)
-                } else {
-                    result(FlutterError(code: "STORAGE_ERROR", message: "Failed to save to Gallery", details: nil))
-                }
-            }
-
-        
-        case "loadCustomModel":
-            let path = args["modelPath"] as? String ?? ""
-            result(ai.loadCustomModel(modelPath: path))
-            
-        case "runInference":
-            let input = args["input"] as? [String: Any] ?? [:]
-            result(ai.runInference(input: input))
-            
-        case "getConnectedUsbDevices":
-            // USB OTG not fully supported on iOS without MFi
-            result([])
-            
-        case "openUsbConnection", "writeUsbData":
-            result(false)
-            
-        case "startDepthCamera":
-            result(false)
-            
-        case "generateSecureKeyPair":
-            let alias = args["alias"] as? String ?? ""
-            result(crypto.generateSecureKeyPair(alias: alias))
-            
-        case "signData":
-            guard let alias = args["alias"] as? String, let data = args["data"] as? FlutterStandardTypedData else {
-                result(nil)
-                return
-            }
-            if let signature = crypto.signData(alias: alias, data: data.data) {
-                result(signature)
-            } else {
-                result(nil)
-            }
-            
-        case "scheduleBackgroundTask":
-            let taskId = args["taskId"] as? String ?? ""
-            let interval = args["intervalSeconds"] as? Int ?? 900
-            result(backgroundTasks.scheduleBackgroundTask(taskId: taskId, intervalSeconds: interval))
-
         default:
             result(false)
         }
@@ -1391,84 +223,6 @@ public class NexoraSdk: NSObject, FlutterPlugin, CLLocationManagerDelegate {
         switch CLLocationManager.authorizationStatus() {
         case .authorizedAlways, .authorizedWhenInUse:
             return true
-        
-        case "startForegroundService":
-            // iOS background tasks are handled via Info.plist and Background Fetch, so this is mostly a no-op
-            // but we can register a background task to keep the app alive slightly longer
-            let title = args["title"] as? String ?? "Background Task"
-            result(true)
-            
-        case "stopForegroundService":
-            result(true)
-            
-        case "subscribeToCharacteristic":
-            guard let deviceId = args["deviceId"] as? String,
-                  let serviceId = args["serviceId"] as? String,
-                  let charId = args["charId"] as? String,
-                  let enable = args["enable"] as? Bool else {
-                result(FlutterError(code: "INVALID_ARGUMENT", message: "Missing arguments", details: nil))
-                return
-            }
-            bluetooth.subscribeToCharacteristic(deviceId: deviceId, serviceId: serviceId, charId: charId, enable: enable) { res in
-                result(res)
-            }
-            
-        case "requestMtu":
-            // iOS negotiates MTU automatically
-            result(true)
-            
-        case "saveToGallery":
-            guard let filePath = args["filePath"] as? String else {
-                result(FlutterError(code: "INVALID_ARGUMENT", message: "Missing filePath", details: nil))
-                return
-            }
-            storage.saveToGallery(filePath: filePath) { path in
-                if let p = path {
-                    result(p)
-                } else {
-                    result(FlutterError(code: "STORAGE_ERROR", message: "Failed to save to Gallery", details: nil))
-                }
-            }
-
-        
-        case "loadCustomModel":
-            let path = args["modelPath"] as? String ?? ""
-            result(ai.loadCustomModel(modelPath: path))
-            
-        case "runInference":
-            let input = args["input"] as? [String: Any] ?? [:]
-            result(ai.runInference(input: input))
-            
-        case "getConnectedUsbDevices":
-            // USB OTG not fully supported on iOS without MFi
-            result([])
-            
-        case "openUsbConnection", "writeUsbData":
-            result(false)
-            
-        case "startDepthCamera":
-            result(false)
-            
-        case "generateSecureKeyPair":
-            let alias = args["alias"] as? String ?? ""
-            result(crypto.generateSecureKeyPair(alias: alias))
-            
-        case "signData":
-            guard let alias = args["alias"] as? String, let data = args["data"] as? FlutterStandardTypedData else {
-                result(nil)
-                return
-            }
-            if let signature = crypto.signData(alias: alias, data: data.data) {
-                result(signature)
-            } else {
-                result(nil)
-            }
-            
-        case "scheduleBackgroundTask":
-            let taskId = args["taskId"] as? String ?? ""
-            let interval = args["intervalSeconds"] as? Int ?? 900
-            result(backgroundTasks.scheduleBackgroundTask(taskId: taskId, intervalSeconds: interval))
-
         default:
             return false
         }
@@ -1481,8 +235,8 @@ public class NexoraSdk: NSObject, FlutterPlugin, CLLocationManagerDelegate {
         return true
     }
 
-    private func getPermissionStatus(type: String?) -> [String: Any] {
-        let permission = type ?? "unknown"
+    private func getPermissionStatus(type: String) -> [String: Any] {
+        let permission = type
         let state: String
         let canRequest: Bool
 
@@ -1501,85 +255,7 @@ public class NexoraSdk: NSObject, FlutterPlugin, CLLocationManagerDelegate {
             case .restricted:
                 state = "restricted"
                 canRequest = false
-            @unknown 
-        case "startForegroundService":
-            // iOS background tasks are handled via Info.plist and Background Fetch, so this is mostly a no-op
-            // but we can register a background task to keep the app alive slightly longer
-            let title = args["title"] as? String ?? "Background Task"
-            result(true)
-            
-        case "stopForegroundService":
-            result(true)
-            
-        case "subscribeToCharacteristic":
-            guard let deviceId = args["deviceId"] as? String,
-                  let serviceId = args["serviceId"] as? String,
-                  let charId = args["charId"] as? String,
-                  let enable = args["enable"] as? Bool else {
-                result(FlutterError(code: "INVALID_ARGUMENT", message: "Missing arguments", details: nil))
-                return
-            }
-            bluetooth.subscribeToCharacteristic(deviceId: deviceId, serviceId: serviceId, charId: charId, enable: enable) { res in
-                result(res)
-            }
-            
-        case "requestMtu":
-            // iOS negotiates MTU automatically
-            result(true)
-            
-        case "saveToGallery":
-            guard let filePath = args["filePath"] as? String else {
-                result(FlutterError(code: "INVALID_ARGUMENT", message: "Missing filePath", details: nil))
-                return
-            }
-            storage.saveToGallery(filePath: filePath) { path in
-                if let p = path {
-                    result(p)
-                } else {
-                    result(FlutterError(code: "STORAGE_ERROR", message: "Failed to save to Gallery", details: nil))
-                }
-            }
-
-        
-        case "loadCustomModel":
-            let path = args["modelPath"] as? String ?? ""
-            result(ai.loadCustomModel(modelPath: path))
-            
-        case "runInference":
-            let input = args["input"] as? [String: Any] ?? [:]
-            result(ai.runInference(input: input))
-            
-        case "getConnectedUsbDevices":
-            // USB OTG not fully supported on iOS without MFi
-            result([])
-            
-        case "openUsbConnection", "writeUsbData":
-            result(false)
-            
-        case "startDepthCamera":
-            result(false)
-            
-        case "generateSecureKeyPair":
-            let alias = args["alias"] as? String ?? ""
-            result(crypto.generateSecureKeyPair(alias: alias))
-            
-        case "signData":
-            guard let alias = args["alias"] as? String, let data = args["data"] as? FlutterStandardTypedData else {
-                result(nil)
-                return
-            }
-            if let signature = crypto.signData(alias: alias, data: data.data) {
-                result(signature)
-            } else {
-                result(nil)
-            }
-            
-        case "scheduleBackgroundTask":
-            let taskId = args["taskId"] as? String ?? ""
-            let interval = args["intervalSeconds"] as? Int ?? 900
-            result(backgroundTasks.scheduleBackgroundTask(taskId: taskId, intervalSeconds: interval))
-
-        default:
+            @unknown default:
                 state = "unsupported"
                 canRequest = false
             }
@@ -1594,85 +270,7 @@ public class NexoraSdk: NSObject, FlutterPlugin, CLLocationManagerDelegate {
             case .denied:
                 state = "permanentlyDenied"
                 canRequest = false
-            @unknown 
-        case "startForegroundService":
-            // iOS background tasks are handled via Info.plist and Background Fetch, so this is mostly a no-op
-            // but we can register a background task to keep the app alive slightly longer
-            let title = args["title"] as? String ?? "Background Task"
-            result(true)
-            
-        case "stopForegroundService":
-            result(true)
-            
-        case "subscribeToCharacteristic":
-            guard let deviceId = args["deviceId"] as? String,
-                  let serviceId = args["serviceId"] as? String,
-                  let charId = args["charId"] as? String,
-                  let enable = args["enable"] as? Bool else {
-                result(FlutterError(code: "INVALID_ARGUMENT", message: "Missing arguments", details: nil))
-                return
-            }
-            bluetooth.subscribeToCharacteristic(deviceId: deviceId, serviceId: serviceId, charId: charId, enable: enable) { res in
-                result(res)
-            }
-            
-        case "requestMtu":
-            // iOS negotiates MTU automatically
-            result(true)
-            
-        case "saveToGallery":
-            guard let filePath = args["filePath"] as? String else {
-                result(FlutterError(code: "INVALID_ARGUMENT", message: "Missing filePath", details: nil))
-                return
-            }
-            storage.saveToGallery(filePath: filePath) { path in
-                if let p = path {
-                    result(p)
-                } else {
-                    result(FlutterError(code: "STORAGE_ERROR", message: "Failed to save to Gallery", details: nil))
-                }
-            }
-
-        
-        case "loadCustomModel":
-            let path = args["modelPath"] as? String ?? ""
-            result(ai.loadCustomModel(modelPath: path))
-            
-        case "runInference":
-            let input = args["input"] as? [String: Any] ?? [:]
-            result(ai.runInference(input: input))
-            
-        case "getConnectedUsbDevices":
-            // USB OTG not fully supported on iOS without MFi
-            result([])
-            
-        case "openUsbConnection", "writeUsbData":
-            result(false)
-            
-        case "startDepthCamera":
-            result(false)
-            
-        case "generateSecureKeyPair":
-            let alias = args["alias"] as? String ?? ""
-            result(crypto.generateSecureKeyPair(alias: alias))
-            
-        case "signData":
-            guard let alias = args["alias"] as? String, let data = args["data"] as? FlutterStandardTypedData else {
-                result(nil)
-                return
-            }
-            if let signature = crypto.signData(alias: alias, data: data.data) {
-                result(signature)
-            } else {
-                result(nil)
-            }
-            
-        case "scheduleBackgroundTask":
-            let taskId = args["taskId"] as? String ?? ""
-            let interval = args["intervalSeconds"] as? Int ?? 900
-            result(backgroundTasks.scheduleBackgroundTask(taskId: taskId, intervalSeconds: interval))
-
-        default:
+            @unknown default:
                 state = "unsupported"
                 canRequest = false
             }
@@ -1690,85 +288,7 @@ public class NexoraSdk: NSObject, FlutterPlugin, CLLocationManagerDelegate {
             case .restricted:
                 state = "restricted"
                 canRequest = false
-            @unknown 
-        case "startForegroundService":
-            // iOS background tasks are handled via Info.plist and Background Fetch, so this is mostly a no-op
-            // but we can register a background task to keep the app alive slightly longer
-            let title = args["title"] as? String ?? "Background Task"
-            result(true)
-            
-        case "stopForegroundService":
-            result(true)
-            
-        case "subscribeToCharacteristic":
-            guard let deviceId = args["deviceId"] as? String,
-                  let serviceId = args["serviceId"] as? String,
-                  let charId = args["charId"] as? String,
-                  let enable = args["enable"] as? Bool else {
-                result(FlutterError(code: "INVALID_ARGUMENT", message: "Missing arguments", details: nil))
-                return
-            }
-            bluetooth.subscribeToCharacteristic(deviceId: deviceId, serviceId: serviceId, charId: charId, enable: enable) { res in
-                result(res)
-            }
-            
-        case "requestMtu":
-            // iOS negotiates MTU automatically
-            result(true)
-            
-        case "saveToGallery":
-            guard let filePath = args["filePath"] as? String else {
-                result(FlutterError(code: "INVALID_ARGUMENT", message: "Missing filePath", details: nil))
-                return
-            }
-            storage.saveToGallery(filePath: filePath) { path in
-                if let p = path {
-                    result(p)
-                } else {
-                    result(FlutterError(code: "STORAGE_ERROR", message: "Failed to save to Gallery", details: nil))
-                }
-            }
-
-        
-        case "loadCustomModel":
-            let path = args["modelPath"] as? String ?? ""
-            result(ai.loadCustomModel(modelPath: path))
-            
-        case "runInference":
-            let input = args["input"] as? [String: Any] ?? [:]
-            result(ai.runInference(input: input))
-            
-        case "getConnectedUsbDevices":
-            // USB OTG not fully supported on iOS without MFi
-            result([])
-            
-        case "openUsbConnection", "writeUsbData":
-            result(false)
-            
-        case "startDepthCamera":
-            result(false)
-            
-        case "generateSecureKeyPair":
-            let alias = args["alias"] as? String ?? ""
-            result(crypto.generateSecureKeyPair(alias: alias))
-            
-        case "signData":
-            guard let alias = args["alias"] as? String, let data = args["data"] as? FlutterStandardTypedData else {
-                result(nil)
-                return
-            }
-            if let signature = crypto.signData(alias: alias, data: data.data) {
-                result(signature)
-            } else {
-                result(nil)
-            }
-            
-        case "scheduleBackgroundTask":
-            let taskId = args["taskId"] as? String ?? ""
-            let interval = args["intervalSeconds"] as? Int ?? 900
-            result(backgroundTasks.scheduleBackgroundTask(taskId: taskId, intervalSeconds: interval))
-
-        default:
+            @unknown default:
                 state = "unsupported"
                 canRequest = false
             }
@@ -1787,85 +307,7 @@ public class NexoraSdk: NSObject, FlutterPlugin, CLLocationManagerDelegate {
                 case .restricted:
                     state = "restricted"
                     canRequest = false
-                @unknown 
-        case "startForegroundService":
-            // iOS background tasks are handled via Info.plist and Background Fetch, so this is mostly a no-op
-            // but we can register a background task to keep the app alive slightly longer
-            let title = args["title"] as? String ?? "Background Task"
-            result(true)
-            
-        case "stopForegroundService":
-            result(true)
-            
-        case "subscribeToCharacteristic":
-            guard let deviceId = args["deviceId"] as? String,
-                  let serviceId = args["serviceId"] as? String,
-                  let charId = args["charId"] as? String,
-                  let enable = args["enable"] as? Bool else {
-                result(FlutterError(code: "INVALID_ARGUMENT", message: "Missing arguments", details: nil))
-                return
-            }
-            bluetooth.subscribeToCharacteristic(deviceId: deviceId, serviceId: serviceId, charId: charId, enable: enable) { res in
-                result(res)
-            }
-            
-        case "requestMtu":
-            // iOS negotiates MTU automatically
-            result(true)
-            
-        case "saveToGallery":
-            guard let filePath = args["filePath"] as? String else {
-                result(FlutterError(code: "INVALID_ARGUMENT", message: "Missing filePath", details: nil))
-                return
-            }
-            storage.saveToGallery(filePath: filePath) { path in
-                if let p = path {
-                    result(p)
-                } else {
-                    result(FlutterError(code: "STORAGE_ERROR", message: "Failed to save to Gallery", details: nil))
-                }
-            }
-
-        
-        case "loadCustomModel":
-            let path = args["modelPath"] as? String ?? ""
-            result(ai.loadCustomModel(modelPath: path))
-            
-        case "runInference":
-            let input = args["input"] as? [String: Any] ?? [:]
-            result(ai.runInference(input: input))
-            
-        case "getConnectedUsbDevices":
-            // USB OTG not fully supported on iOS without MFi
-            result([])
-            
-        case "openUsbConnection", "writeUsbData":
-            result(false)
-            
-        case "startDepthCamera":
-            result(false)
-            
-        case "generateSecureKeyPair":
-            let alias = args["alias"] as? String ?? ""
-            result(crypto.generateSecureKeyPair(alias: alias))
-            
-        case "signData":
-            guard let alias = args["alias"] as? String, let data = args["data"] as? FlutterStandardTypedData else {
-                result(nil)
-                return
-            }
-            if let signature = crypto.signData(alias: alias, data: data.data) {
-                result(signature)
-            } else {
-                result(nil)
-            }
-            
-        case "scheduleBackgroundTask":
-            let taskId = args["taskId"] as? String ?? ""
-            let interval = args["intervalSeconds"] as? Int ?? 900
-            result(backgroundTasks.scheduleBackgroundTask(taskId: taskId, intervalSeconds: interval))
-
-        default:
+                @unknown default:
                     state = "unsupported"
                     canRequest = false
                 }
@@ -1873,84 +315,6 @@ public class NexoraSdk: NSObject, FlutterPlugin, CLLocationManagerDelegate {
                 state = "granted"
                 canRequest = false
             }
-        
-        case "startForegroundService":
-            // iOS background tasks are handled via Info.plist and Background Fetch, so this is mostly a no-op
-            // but we can register a background task to keep the app alive slightly longer
-            let title = args["title"] as? String ?? "Background Task"
-            result(true)
-            
-        case "stopForegroundService":
-            result(true)
-            
-        case "subscribeToCharacteristic":
-            guard let deviceId = args["deviceId"] as? String,
-                  let serviceId = args["serviceId"] as? String,
-                  let charId = args["charId"] as? String,
-                  let enable = args["enable"] as? Bool else {
-                result(FlutterError(code: "INVALID_ARGUMENT", message: "Missing arguments", details: nil))
-                return
-            }
-            bluetooth.subscribeToCharacteristic(deviceId: deviceId, serviceId: serviceId, charId: charId, enable: enable) { res in
-                result(res)
-            }
-            
-        case "requestMtu":
-            // iOS negotiates MTU automatically
-            result(true)
-            
-        case "saveToGallery":
-            guard let filePath = args["filePath"] as? String else {
-                result(FlutterError(code: "INVALID_ARGUMENT", message: "Missing filePath", details: nil))
-                return
-            }
-            storage.saveToGallery(filePath: filePath) { path in
-                if let p = path {
-                    result(p)
-                } else {
-                    result(FlutterError(code: "STORAGE_ERROR", message: "Failed to save to Gallery", details: nil))
-                }
-            }
-
-        
-        case "loadCustomModel":
-            let path = args["modelPath"] as? String ?? ""
-            result(ai.loadCustomModel(modelPath: path))
-            
-        case "runInference":
-            let input = args["input"] as? [String: Any] ?? [:]
-            result(ai.runInference(input: input))
-            
-        case "getConnectedUsbDevices":
-            // USB OTG not fully supported on iOS without MFi
-            result([])
-            
-        case "openUsbConnection", "writeUsbData":
-            result(false)
-            
-        case "startDepthCamera":
-            result(false)
-            
-        case "generateSecureKeyPair":
-            let alias = args["alias"] as? String ?? ""
-            result(crypto.generateSecureKeyPair(alias: alias))
-            
-        case "signData":
-            guard let alias = args["alias"] as? String, let data = args["data"] as? FlutterStandardTypedData else {
-                result(nil)
-                return
-            }
-            if let signature = crypto.signData(alias: alias, data: data.data) {
-                result(signature)
-            } else {
-                result(nil)
-            }
-            
-        case "scheduleBackgroundTask":
-            let taskId = args["taskId"] as? String ?? ""
-            let interval = args["intervalSeconds"] as? Int ?? 900
-            result(backgroundTasks.scheduleBackgroundTask(taskId: taskId, intervalSeconds: interval))
-
         default:
             state = "unsupported"
             canRequest = false
@@ -1963,161 +327,6 @@ public class NexoraSdk: NSObject, FlutterPlugin, CLLocationManagerDelegate {
         ]
     }
 
-    private func openAppSettings(result: @escaping FlutterResult) {
-        guard let url = URL(string: UIApplication.openSettingsURLString),
-              UIApplication.shared.canOpenURL(url) else {
-            result(false)
-            return
-        }
-        UIApplication.shared.open(url, options: [:]) { success in
-            result(success)
-        }
-    }
-
-    private func openUrl(_ urlString: String, result: @escaping FlutterResult) {
-        guard let url = URL(string: urlString) else {
-            result(false)
-            return
-        }
-        UIApplication.shared.open(url, options: [:]) { success in
-            result(success)
-        }
-    }
-
-    private func shareText(_ text: String, subject: String?, result: @escaping FlutterResult) {
-        var items: [Any] = [text]
-        if let subject = subject, !subject.isEmpty {
-            items.append(subject)
-        }
-        guard let controller = UIApplication.shared.connectedScenes
-            .compactMap({ $0 as? UIWindowScene })
-            .flatMap({ $0.windows })
-            .first(where: { $0.isKeyWindow })?
-            .rootViewController else {
-            result(false)
-            return
-        }
-        let activity = UIActivityViewController(activityItems: items, applicationActivities: nil)
-        controller.present(activity, animated: true) {
-            result(true)
-        }
-    }
-
-    private func getDeviceInfo() -> [String: Any] {
-        let processInfo = ProcessInfo.processInfo
-        let thermalState: String
-        switch processInfo.thermalState {
-        case .nominal:
-            thermalState = "nominal"
-        case .fair:
-            thermalState = "fair"
-        case .serious:
-            thermalState = "serious"
-        case .critical:
-            thermalState = "critical"
-        @unknown 
-        case "startForegroundService":
-            // iOS background tasks are handled via Info.plist and Background Fetch, so this is mostly a no-op
-            // but we can register a background task to keep the app alive slightly longer
-            let title = args["title"] as? String ?? "Background Task"
-            result(true)
-            
-        case "stopForegroundService":
-            result(true)
-            
-        case "subscribeToCharacteristic":
-            guard let deviceId = args["deviceId"] as? String,
-                  let serviceId = args["serviceId"] as? String,
-                  let charId = args["charId"] as? String,
-                  let enable = args["enable"] as? Bool else {
-                result(FlutterError(code: "INVALID_ARGUMENT", message: "Missing arguments", details: nil))
-                return
-            }
-            bluetooth.subscribeToCharacteristic(deviceId: deviceId, serviceId: serviceId, charId: charId, enable: enable) { res in
-                result(res)
-            }
-            
-        case "requestMtu":
-            // iOS negotiates MTU automatically
-            result(true)
-            
-        case "saveToGallery":
-            guard let filePath = args["filePath"] as? String else {
-                result(FlutterError(code: "INVALID_ARGUMENT", message: "Missing filePath", details: nil))
-                return
-            }
-            storage.saveToGallery(filePath: filePath) { path in
-                if let p = path {
-                    result(p)
-                } else {
-                    result(FlutterError(code: "STORAGE_ERROR", message: "Failed to save to Gallery", details: nil))
-                }
-            }
-
-        
-        case "loadCustomModel":
-            let path = args["modelPath"] as? String ?? ""
-            result(ai.loadCustomModel(modelPath: path))
-            
-        case "runInference":
-            let input = args["input"] as? [String: Any] ?? [:]
-            result(ai.runInference(input: input))
-            
-        case "getConnectedUsbDevices":
-            // USB OTG not fully supported on iOS without MFi
-            result([])
-            
-        case "openUsbConnection", "writeUsbData":
-            result(false)
-            
-        case "startDepthCamera":
-            result(false)
-            
-        case "generateSecureKeyPair":
-            let alias = args["alias"] as? String ?? ""
-            result(crypto.generateSecureKeyPair(alias: alias))
-            
-        case "signData":
-            guard let alias = args["alias"] as? String, let data = args["data"] as? FlutterStandardTypedData else {
-                result(nil)
-                return
-            }
-            if let signature = crypto.signData(alias: alias, data: data.data) {
-                result(signature)
-            } else {
-                result(nil)
-            }
-            
-        case "scheduleBackgroundTask":
-            let taskId = args["taskId"] as? String ?? ""
-            let interval = args["intervalSeconds"] as? Int ?? 900
-            result(backgroundTasks.scheduleBackgroundTask(taskId: taskId, intervalSeconds: interval))
-
-        default:
-            thermalState = "unknown"
-        }
-
-        #if targetEnvironment(simulator)
-        let isPhysicalDevice = false
-        #else
-        let isPhysicalDevice = true
-        #endif
-
-        return [
-            "platform": "ios",
-            "manufacturer": "Apple",
-            "model": UIDevice.current.model,
-            "osVersion": UIDevice.current.systemVersion,
-            "sdkVersion": processInfo.operatingSystemVersionString,
-            "isPhysicalDevice": isPhysicalDevice,
-            "totalRamBytes": Int64(processInfo.physicalMemory),
-            "availableRamBytes": 0,
-            "cpuArchitecture": cpuArchitecture(),
-            "screenRefreshRate": Double(UIScreen.main.maximumFramesPerSecond),
-            "thermalState": thermalState
-        ]
-    }
-
     private func cameraSize(for resolution: String?) -> (width: Int, height: Int) {
         switch resolution {
         case "low":
@@ -2126,216 +335,9 @@ public class NexoraSdk: NSObject, FlutterPlugin, CLLocationManagerDelegate {
             return (960, 540)
         case "fullHd":
             return (1920, 1080)
-        
-        case "startForegroundService":
-            // iOS background tasks are handled via Info.plist and Background Fetch, so this is mostly a no-op
-            // but we can register a background task to keep the app alive slightly longer
-            let title = args["title"] as? String ?? "Background Task"
-            result(true)
-            
-        case "stopForegroundService":
-            result(true)
-            
-        case "subscribeToCharacteristic":
-            guard let deviceId = args["deviceId"] as? String,
-                  let serviceId = args["serviceId"] as? String,
-                  let charId = args["charId"] as? String,
-                  let enable = args["enable"] as? Bool else {
-                result(FlutterError(code: "INVALID_ARGUMENT", message: "Missing arguments", details: nil))
-                return
-            }
-            bluetooth.subscribeToCharacteristic(deviceId: deviceId, serviceId: serviceId, charId: charId, enable: enable) { res in
-                result(res)
-            }
-            
-        case "requestMtu":
-            // iOS negotiates MTU automatically
-            result(true)
-            
-        case "saveToGallery":
-            guard let filePath = args["filePath"] as? String else {
-                result(FlutterError(code: "INVALID_ARGUMENT", message: "Missing filePath", details: nil))
-                return
-            }
-            storage.saveToGallery(filePath: filePath) { path in
-                if let p = path {
-                    result(p)
-                } else {
-                    result(FlutterError(code: "STORAGE_ERROR", message: "Failed to save to Gallery", details: nil))
-                }
-            }
-
-        
-        case "loadCustomModel":
-            let path = args["modelPath"] as? String ?? ""
-            result(ai.loadCustomModel(modelPath: path))
-            
-        case "runInference":
-            let input = args["input"] as? [String: Any] ?? [:]
-            result(ai.runInference(input: input))
-            
-        case "getConnectedUsbDevices":
-            // USB OTG not fully supported on iOS without MFi
-            result([])
-            
-        case "openUsbConnection", "writeUsbData":
-            result(false)
-            
-        case "startDepthCamera":
-            result(false)
-            
-        case "generateSecureKeyPair":
-            let alias = args["alias"] as? String ?? ""
-            result(crypto.generateSecureKeyPair(alias: alias))
-            
-        case "signData":
-            guard let alias = args["alias"] as? String, let data = args["data"] as? FlutterStandardTypedData else {
-                result(nil)
-                return
-            }
-            if let signature = crypto.signData(alias: alias, data: data.data) {
-                result(signature)
-            } else {
-                result(nil)
-            }
-            
-        case "scheduleBackgroundTask":
-            let taskId = args["taskId"] as? String ?? ""
-            let interval = args["intervalSeconds"] as? Int ?? 900
-            result(backgroundTasks.scheduleBackgroundTask(taskId: taskId, intervalSeconds: interval))
-
         default:
             return (1280, 720)
         }
-    }
-
-    private func sensorFrequency(for accuracy: String?) -> Int {
-        switch accuracy {
-        case "fastest":
-            return 120
-        case "game":
-            return 100
-        case "ui":
-            return 60
-        
-        case "startForegroundService":
-            // iOS background tasks are handled via Info.plist and Background Fetch, so this is mostly a no-op
-            // but we can register a background task to keep the app alive slightly longer
-            let title = args["title"] as? String ?? "Background Task"
-            result(true)
-            
-        case "stopForegroundService":
-            result(true)
-            
-        case "subscribeToCharacteristic":
-            guard let deviceId = args["deviceId"] as? String,
-                  let serviceId = args["serviceId"] as? String,
-                  let charId = args["charId"] as? String,
-                  let enable = args["enable"] as? Bool else {
-                result(FlutterError(code: "INVALID_ARGUMENT", message: "Missing arguments", details: nil))
-                return
-            }
-            bluetooth.subscribeToCharacteristic(deviceId: deviceId, serviceId: serviceId, charId: charId, enable: enable) { res in
-                result(res)
-            }
-            
-        case "requestMtu":
-            // iOS negotiates MTU automatically
-            result(true)
-            
-        case "saveToGallery":
-            guard let filePath = args["filePath"] as? String else {
-                result(FlutterError(code: "INVALID_ARGUMENT", message: "Missing filePath", details: nil))
-                return
-            }
-            storage.saveToGallery(filePath: filePath) { path in
-                if let p = path {
-                    result(p)
-                } else {
-                    result(FlutterError(code: "STORAGE_ERROR", message: "Failed to save to Gallery", details: nil))
-                }
-            }
-
-        
-        case "loadCustomModel":
-            let path = args["modelPath"] as? String ?? ""
-            result(ai.loadCustomModel(modelPath: path))
-            
-        case "runInference":
-            let input = args["input"] as? [String: Any] ?? [:]
-            result(ai.runInference(input: input))
-            
-        case "getConnectedUsbDevices":
-            // USB OTG not fully supported on iOS without MFi
-            result([])
-            
-        case "openUsbConnection", "writeUsbData":
-            result(false)
-            
-        case "startDepthCamera":
-            result(false)
-            
-        case "generateSecureKeyPair":
-            let alias = args["alias"] as? String ?? ""
-            result(crypto.generateSecureKeyPair(alias: alias))
-            
-        case "signData":
-            guard let alias = args["alias"] as? String, let data = args["data"] as? FlutterStandardTypedData else {
-                result(nil)
-                return
-            }
-            if let signature = crypto.signData(alias: alias, data: data.data) {
-                result(signature)
-            } else {
-                result(nil)
-            }
-            
-        case "scheduleBackgroundTask":
-            let taskId = args["taskId"] as? String ?? ""
-            let interval = args["intervalSeconds"] as? Int ?? 900
-            result(backgroundTasks.scheduleBackgroundTask(taskId: taskId, intervalSeconds: interval))
-
-        default:
-            return 30
-        }
-    }
-
-    private func getConnectivityInfo(result: @escaping FlutterResult) {
-        let monitor = NWPathMonitor()
-        let queue = DispatchQueue(label: "com.nexora.sdk.connectivity")
-        var didReturn = false
-
-        monitor.pathUpdateHandler = { path in
-            guard !didReturn else { return }
-            didReturn = true
-            monitor.cancel()
-
-            let networkType: String
-            if path.usesInterfaceType(.wifi) {
-                networkType = "wifi"
-            } else if path.usesInterfaceType(.cellular) {
-                networkType = "mobile"
-            } else if path.usesInterfaceType(.wiredEthernet) {
-                networkType = "ethernet"
-            } else if path.usesInterfaceType(.loopback) {
-                networkType = "loopback"
-            } else {
-                networkType = path.status == .satisfied ? "unknown" : "none"
-            }
-
-            DispatchQueue.main.async {
-                result([
-                    "isConnected": path.status == .satisfied,
-                    "networkType": networkType,
-                    "isMetered": path.isExpensive,
-                    "isVpn": false,
-                    "signalStrength": nil,
-                    "ipAddress": nil
-                ])
-            }
-        }
-
-        monitor.start(queue: queue)
     }
 
     private func applyIosOptions(_ options: [String: Any]) {
@@ -2376,5 +378,726 @@ public class NexoraSdk: NSObject, FlutterPlugin, CLLocationManagerDelegate {
         #else
         return "unknown"
         #endif
+    }
+
+    // ==================== HardwareApi Implementation ====================
+    public func startCamera(width: Int64, height: Int64, completion: @escaping (Result<Int64, Error>) -> Void) {
+        guard AVCaptureDevice.authorizationStatus(for: .video) == .authorized else {
+            completion(.failure(PigeonError(code: "PERMISSION_DENIED", message: "Camera permission is required.", details: nil)))
+            return
+        }
+        textureId = registrar?.textures().register(camera) ?? -1
+        camera.start(width: Int(width), height: Int(height))
+        completion(.success(textureId))
+    }
+
+    public func startCameraWithOptions(options: NexoraCameraOptions, completion: @escaping (Result<Int64, Error>) -> Void) {
+        textureId = registrar?.textures().register(camera) ?? -1
+        let size = cameraSize(for: options.resolution)
+        camera.start(width: size.width, height: size.height)
+        completion(.success(textureId))
+    }
+
+    public func stopCamera(completion: @escaping (Result<Bool, Error>) -> Void) {
+        camera.stop()
+        if textureId != -1 {
+            registrar?.textures().unregisterTexture(textureId)
+        }
+        textureId = -1
+        completion(.success(true))
+    }
+
+    public func setVisionMode(options: VisionModeOptions, completion: @escaping (Result<Bool, Error>) -> Void) {
+        camera.setVisionMode(face: options.face ?? false, barcode: options.barcode ?? false)
+        completion(.success(true))
+    }
+
+    public func registerCustomClassifier(options: CustomClassifierOptions, completion: @escaping (Result<Bool, Error>) -> Void) {
+        guard let modelAssetPath = options.modelAssetPath,
+              let labels = options.labels?.compactMap({ $0 }) else {
+            completion(.failure(PigeonError(code: "INVALID_ARGUMENT", message: "registerCustomClassifier requires modelAssetPath and labels.", details: nil)))
+            return
+        }
+        let threshold = options.threshold ?? 0.5
+        let success = camera.registerCustomClassifier(modelAssetPath: modelAssetPath, labels: labels, threshold: Float(threshold))
+        completion(.success(success))
+    }
+
+    public func setFlash(on: Bool, completion: @escaping (Result<Bool, Error>) -> Void) {
+        camera.setFlash(on: on)
+        completion(.success(true))
+    }
+
+    public func setZoom(level: Double, completion: @escaping (Result<Bool, Error>) -> Void) {
+        camera.setZoom(level: level)
+        completion(.success(true))
+    }
+
+    public func flipCamera(completion: @escaping (Result<Bool, Error>) -> Void) {
+        camera.flipCamera()
+        if textureId != -1 { registrar?.textures().unregisterTexture(textureId) }
+        textureId = registrar?.textures().register(camera) ?? -1
+        completion(.success(true))
+    }
+
+    public func takePhoto(fileName: String?, completion: @escaping (Result<String?, Error>) -> Void) {
+        camera.takePhoto(fileName: fileName) { path in
+            completion(.success(path))
+        }
+    }
+
+    public func startVideoRecording(fileName: String?, completion: @escaping (Result<String?, Error>) -> Void) {
+        camera.startVideoRecording(fileName: fileName) { path in
+            completion(.success(path))
+        }
+    }
+
+    public func stopVideoRecording(completion: @escaping (Result<String?, Error>) -> Void) {
+        camera.stopVideoRecording { path in
+            completion(.success(path))
+        }
+    }
+
+    public func applyCameraFilterShader(shaderType: String, completion: @escaping (Result<Bool, Error>) -> Void) {
+        let success = camera.applyCameraFilterShader(shaderType: shaderType)
+        completion(.success(success))
+    }
+
+    // ==================== AudioApi Implementation ====================
+    public func startAudio(options: BasicAudioOptions, completion: @escaping (Result<Bool, Error>) -> Void) {
+        guard AVAudioSession.sharedInstance().recordPermission == .granted else {
+            completion(.failure(PigeonError(code: "PERMISSION_DENIED", message: "Microphone permission is required.", details: nil)))
+            return
+        }
+        audio.setFFTEnabled(options.enableFFT ?? false)
+        audio.setStreamBytes(options.streamBytes ?? false)
+        audio.setUpdateIntervalMs(Int(options.updateIntervalMs ?? 80))
+        completion(.success(audio.start()))
+    }
+
+    public func startAudioWithOptions(options: NexoraAudioOptions, completion: @escaping (Result<Bool, Error>) -> Void) {
+        let success = audio.start(enableFFT: false, streamBytes: false, interval: 80.0)
+        completion(.success(success))
+    }
+
+    public func stopAudio(completion: @escaping (Result<Bool, Error>) -> Void) {
+        audio.stop()
+        completion(.success(true))
+    }
+
+    public func routeAudioOutput(route: String, completion: @escaping (Result<Bool, Error>) -> Void) {
+        do {
+            if route == "speakerphone" {
+                try AVAudioSession.sharedInstance().overrideOutputAudioPort(.speaker)
+            } else {
+                try AVAudioSession.sharedInstance().overrideOutputAudioPort(.none)
+            }
+            completion(.success(true))
+        } catch {
+            completion(.failure(error))
+        }
+    }
+
+    public func getAudioVolume(completion: @escaping (Result<Double, Error>) -> Void) {
+        completion(.success(Double(AVAudioSession.sharedInstance().outputVolume)))
+    }
+
+    public func setAudioVolume(level: Double, completion: @escaping (Result<Bool, Error>) -> Void) {
+        completion(.success(true))
+    }
+
+    public func selectAudioInput(device: String, completion: @escaping (Result<Bool, Error>) -> Void) {
+        let session = AVAudioSession.sharedInstance()
+        if let inputs = session.availableInputs {
+            for input in inputs {
+                if device == "bluetoothMic" && input.portType == .bluetoothHFP {
+                    do {
+                        try session.setPreferredInput(input)
+                        completion(.success(true))
+                        return
+                    } catch {
+                        completion(.failure(error))
+                        return
+                    }
+                }
+            }
+        }
+        completion(.success(true))
+    }
+
+    public func setAudioGain(gain: Double, completion: @escaping (Result<Bool, Error>) -> Void) {
+        do {
+            let session = AVAudioSession.sharedInstance()
+            if session.isInputGainSettable {
+                try session.setInputGain(Float(gain))
+            }
+            completion(.success(true))
+        } catch {
+            completion(.failure(error))
+        }
+    }
+
+    // ==================== LocationApi Implementation ====================
+    public func startLocation(completion: @escaping (Result<Bool, Error>) -> Void) {
+        guard hasLocationPermission() else {
+            completion(.failure(PigeonError(code: "PERMISSION_DENIED", message: "Location permission is required.", details: nil)))
+            return
+        }
+        location.startUpdates()
+        completion(.success(true))
+    }
+
+    public func startLocationWithOptions(options: NexoraLocationOptions, completion: @escaping (Result<Bool, Error>) -> Void) {
+        guard hasLocationPermission() else {
+            completion(.failure(PigeonError(code: "PERMISSION_DENIED", message: "Location permission is required.", details: nil)))
+            return
+        }
+        location.startUpdates()
+        completion(.success(true))
+    }
+
+    public func stopLocation(completion: @escaping (Result<Bool, Error>) -> Void) {
+        location.stopUpdates()
+        completion(.success(true))
+    }
+
+    public func setBackgroundLocationEnabled(enabled: Bool, completion: @escaping (Result<Bool, Error>) -> Void) {
+        location.setBackgroundEnabled(enabled)
+        completion(.success(true))
+    }
+
+    // ==================== SensorApi Implementation ====================
+    public func startSensor(frequencyHz: Int64, completion: @escaping (Result<Bool, Error>) -> Void) {
+        sensors.start(frequencyHz: Int(frequencyHz))
+        completion(.success(true))
+    }
+
+    public func startSensorWithOptions(options: NexoraSensorOptions, completion: @escaping (Result<Bool, Error>) -> Void) {
+        sensors.start(frequencyHz: Int(options.frequencyHz ?? 60))
+        completion(.success(true))
+    }
+
+    public func stopSensor(completion: @escaping (Result<Bool, Error>) -> Void) {
+        sensors.stop()
+        completion(.success(true))
+    }
+
+    public func enableDeadReckoning(enabled: Bool, completion: @escaping (Result<Bool, Error>) -> Void) {
+        location.enableDeadReckoning(enabled)
+        completion(.success(true))
+    }
+
+    // ==================== BiometricsApi Implementation ====================
+    public func authenticate(reason: String, completion: @escaping (Result<Bool, Error>) -> Void) {
+        biometrics.authenticate(reason: reason) { success in
+            completion(.success(success))
+        }
+    }
+
+    public func authenticateWithOptions(options: NexoraBiometricOptions, completion: @escaping (Result<Bool, Error>) -> Void) {
+        biometrics.authenticate(reason: options.title ?? "Authentication Required") { success in
+            completion(.success(success))
+        }
+    }
+
+    public func canAuthenticate(completion: @escaping (Result<Bool, Error>) -> Void) {
+        completion(.success(biometrics.canAuthenticate()))
+    }
+
+    // ==================== BluetoothApi Implementation ====================
+    public func startBluetoothScan(completion: @escaping (Result<Bool, Error>) -> Void) {
+        guard bluetooth.startScan() else {
+            completion(.failure(PigeonError(code: "BLUETOOTH_UNAVAILABLE", message: "Bluetooth is not powered on or not authorized.", details: nil)))
+            return
+        }
+        completion(.success(true))
+    }
+
+    public func startBluetoothScanWithOptions(options: NexoraBluetoothScanOptions, completion: @escaping (Result<Bool, Error>) -> Void) {
+        guard bluetooth.startScan() else {
+            completion(.failure(PigeonError(code: "BLUETOOTH_UNAVAILABLE", message: "Bluetooth is not powered on or not authorized.", details: nil)))
+            return
+        }
+        completion(.success(true))
+    }
+
+    public func stopBluetoothScan(completion: @escaping (Result<Bool, Error>) -> Void) {
+        completion(.success(bluetooth.stopScan()))
+    }
+
+    public func connectDevice(id: String, completion: @escaping (Result<Bool, Error>) -> Void) {
+        guard bluetooth.connect(deviceId: id) else {
+            completion(.failure(PigeonError(code: "BLUETOOTH_UNAVAILABLE", message: "Bluetooth is unavailable or the device id is invalid.", details: nil)))
+            return
+        }
+        completion(.success(true))
+    }
+
+    public func disconnectDevice(id: String, completion: @escaping (Result<Bool, Error>) -> Void) {
+        bluetooth.disconnect()
+        completion(.success(true))
+    }
+
+    public func discoverServices(deviceId: String, completion: @escaping (Result<[String?], Error>) -> Void) {
+        bluetooth.discoverServices(deviceId: deviceId) { services in
+            completion(.success(services ?? []))
+        }
+    }
+
+    public func sendData(deviceId: String, serviceId: String, charId: String, data: [Int64?], completion: @escaping (Result<Bool, Error>) -> Void) {
+        let bytes = Data(data.compactMap { $0 }.map { UInt8($0 & 0xFF) })
+        guard bluetooth.sendData(deviceId: deviceId, serviceId: serviceId, charId: charId, data: bytes) else {
+            completion(.failure(PigeonError(code: "BLUETOOTH_WRITE_FAILED", message: "Unable to write to the requested BLE characteristic.", details: nil)))
+            return
+        }
+        completion(.success(true))
+    }
+
+    public func readData(deviceId: String, serviceId: String, charId: String, completion: @escaping (Result<FlutterStandardTypedData?, Error>) -> Void) {
+        guard bluetooth.readData(deviceId: deviceId, serviceId: serviceId, charId: charId, callback: { data in
+            if let data = data {
+                completion(.success(FlutterStandardTypedData(bytes: data)))
+            } else {
+                completion(.success(nil))
+            }
+        }) else {
+            completion(.failure(PigeonError(code: "BLUETOOTH_READ_FAILED", message: "Unable to read from the requested BLE characteristic.", details: nil)))
+            return
+        }
+    }
+
+    public func subscribeToCharacteristic(deviceId: String, serviceId: String, charId: String, enable: Bool, completion: @escaping (Result<Bool, Error>) -> Void) {
+        bluetooth.subscribeToCharacteristic(deviceId: deviceId, serviceId: serviceId, charId: charId, enable: enable) { res in
+            if let error = res as? FlutterError {
+                completion(.failure(PigeonError(code: error.code, message: error.message, details: error.details)))
+            } else if let success = res as? Bool {
+                completion(.success(success))
+            } else {
+                completion(.success(true))
+            }
+        }
+    }
+
+    public func requestMtu(deviceId: String, mtu: Int64, completion: @escaping (Result<Bool, Error>) -> Void) {
+        completion(.success(true))
+    }
+
+    public func startBlePeripheral(uuid: String, completion: @escaping (Result<Bool, Error>) -> Void) {
+        let success = blePeripheral.startAdvertising(uuid: uuid)
+        completion(.success(success))
+    }
+
+    public func stopBlePeripheral(completion: @escaping (Result<Void, Error>) -> Void) {
+        blePeripheral.stopAdvertising()
+        completion(.success(()))
+    }
+
+    // ==================== SecureStorageApi Implementation ====================
+    public func getStorageInfo(completion: @escaping (Result<NexoraStorageInfo?, Error>) -> Void) {
+        let dict = storage.getStorageInfo()
+        let info = NexoraStorageInfo(
+            internalTotal: dict["internalTotal"] as? Int64,
+            internalFree: dict["internalFree"] as? Int64,
+            externalTotal: dict["externalTotal"] as? Int64,
+            externalFree: dict["externalFree"] as? Int64,
+            appCacheSize: dict["appCacheSize"] as? Int64,
+            appDataSize: dict["appDataSize"] as? Int64
+        )
+        completion(.success(info))
+    }
+
+    public func writeFile(fileName: String, content: String, completion: @escaping (Result<String?, Error>) -> Void) {
+        let res = storage.writeFile(fileName: fileName, content: content)
+        completion(.success(res))
+    }
+
+    public func appendFile(fileName: String, content: String, completion: @escaping (Result<String?, Error>) -> Void) {
+        let res = storage.appendFile(fileName: fileName, content: content)
+        completion(.success(res))
+    }
+
+    public func readFile(fileName: String, completion: @escaping (Result<String?, Error>) -> Void) {
+        let res = storage.readFile(fileName: fileName)
+        completion(.success(res))
+    }
+
+    public func deleteFile(fileName: String, completion: @escaping (Result<Bool, Error>) -> Void) {
+        let res = storage.deleteFile(fileName: fileName)
+        completion(.success(res))
+    }
+
+    public func fileExists(fileName: String, completion: @escaping (Result<Bool, Error>) -> Void) {
+        let res = storage.fileExists(fileName: fileName)
+        completion(.success(res))
+    }
+
+    public func listFiles(completion: @escaping (Result<[NexoraFileInfo?], Error>) -> Void) {
+        let files = storage.listFiles()
+        var fileInfos: [NexoraFileInfo?] = []
+        for file in files {
+            if let f = file as? [String: Any] {
+                fileInfos.append(NexoraFileInfo(
+                    name: f["name"] as? String,
+                    size: f["size"] as? Int64,
+                    isDirectory: f["isDirectory"] as? Bool,
+                    lastModifiedMs: f["lastModifiedMs"] as? Int64
+                ))
+            }
+        }
+        completion(.success(fileInfos))
+    }
+
+    public func writeBytes(fileName: String, bytes: FlutterStandardTypedData, completion: @escaping (Result<String?, Error>) -> Void) {
+        let res = storage.writeBytes(fileName: fileName, bytes: bytes)
+        completion(.success(res))
+    }
+
+    public func readBytes(fileName: String, completion: @escaping (Result<FlutterStandardTypedData?, Error>) -> Void) {
+        let res = storage.readBytes(fileName: fileName)
+        completion(.success(res))
+    }
+
+    public func clearCache(completion: @escaping (Result<Bool, Error>) -> Void) {
+        let res = storage.clearCache()
+        completion(.success(res))
+    }
+
+    public func getAppDirectory(completion: @escaping (Result<String?, Error>) -> Void) {
+        completion(.success(storage.getAppDirectory()))
+    }
+
+    public func getCacheDirectory(completion: @escaping (Result<String?, Error>) -> Void) {
+        completion(.success(storage.getCacheDirectory()))
+    }
+
+    public func getExternalDirectory(completion: @escaping (Result<String?, Error>) -> Void) {
+        completion(.success(storage.getExternalDirectory()))
+    }
+
+    // ==================== SystemApi Implementation ====================
+    public func configureSdk(config: NexoraSdkConfig, completion: @escaping (Result<Bool, Error>) -> Void) {
+        logNativeCalls = config.enableLogging ?? false
+        ecoModeUserEnabled = config.ecoMode ?? false
+        completion(.success(true))
+    }
+
+    public func requestPermissions(completion: @escaping (Result<Bool, Error>) -> Void) {
+        if permissionResult != nil {
+            completion(.failure(PigeonError(code: "PERMISSION_REQUEST_IN_PROGRESS", message: "A permission request is already running.", details: nil)))
+            return
+        }
+
+        permissionResult = { res in
+            if let success = res as? Bool {
+                completion(.success(success))
+            } else if let error = res as? Error {
+                completion(.failure(error))
+            } else {
+                completion(.success(false))
+            }
+        }
+        pendingPermissionType = nil
+        let group = DispatchGroup()
+
+        switch AVCaptureDevice.authorizationStatus(for: .video) {
+        case .authorized:
+            pendingCameraPermission = true
+        case .notDetermined:
+            group.enter()
+            AVCaptureDevice.requestAccess(for: .video) { granted in
+                self.pendingCameraPermission = granted
+                group.leave()
+            }
+        default:
+            pendingCameraPermission = false
+        }
+
+        switch AVAudioSession.sharedInstance().recordPermission {
+        case .granted:
+            pendingMicrophonePermission = true
+        case .undetermined:
+            group.enter()
+            AVAudioSession.sharedInstance().requestRecordPermission { granted in
+                self.pendingMicrophonePermission = granted
+                group.leave()
+            }
+        default:
+            pendingMicrophonePermission = false
+        }
+
+        group.notify(queue: .main) {
+            let status = CLLocationManager.authorizationStatus()
+            if status == .notDetermined {
+                let manager = CLLocationManager()
+                self.permissionLocationManager = manager
+                manager.delegate = self
+                manager.requestWhenInUseAuthorization()
+            } else {
+                self.finishNativePermissionRequest()
+            }
+        }
+    }
+
+    public func requestPermission(type: String, completion: @escaping (Result<Bool, Error>) -> Void) {
+        if permissionResult != nil {
+            completion(.failure(PigeonError(code: "PERMISSION_REQUEST_IN_PROGRESS", message: "A permission request is already running.", details: nil)))
+            return
+        }
+
+        let resultWrapper: (Any?) -> Void = { res in
+            if let success = res as? Bool {
+                completion(.success(success))
+            } else {
+                completion(.success(false))
+            }
+        }
+
+        switch type {
+        case "camera":
+            requestCameraPermission(result: resultWrapper)
+        case "audio":
+            requestAudioPermission(result: resultWrapper)
+        case "location":
+            pendingPermissionType = type
+            permissionResult = resultWrapper
+            let status = CLLocationManager.authorizationStatus()
+            if status == .notDetermined {
+                let manager = CLLocationManager()
+                permissionLocationManager = manager
+                manager.delegate = self
+                manager.requestWhenInUseAuthorization()
+            } else {
+                finishNativePermissionRequest()
+            }
+        case "bluetooth":
+            completion(.success(hasBluetoothPermission()))
+        default:
+            completion(.failure(PigeonError(code: "INVALID_ARGUMENT", message: "Unknown permission type: \(type)", details: nil)))
+        }
+    }
+
+    public func getPermissionStatus(type: String, completion: @escaping (Result<NexoraPermissionStatus, Error>) -> Void) {
+        let dict = getPermissionStatus(type: type)
+        let status = NexoraPermissionStatus(
+            permission: dict["permission"] as? String,
+            state: dict["state"] as? String,
+            canRequest: dict["canRequest"] as? Bool
+        )
+        completion(.success(status))
+    }
+
+    public func openAppSettings(completion: @escaping (Result<Bool, Error>) -> Void) {
+        guard let url = URL(string: UIApplication.openSettingsURLString),
+              UIApplication.shared.canOpenURL(url) else {
+            completion(.success(false))
+            return
+        }
+        UIApplication.shared.open(url, options: [:]) { success in
+            completion(.success(success))
+        }
+    }
+
+    public func getDeviceInfo(completion: @escaping (Result<NexoraDeviceInfo, Error>) -> Void) {
+        let dict = getDeviceInfo()
+        let info = NexoraDeviceInfo(
+            platform: dict["platform"] as? String,
+            manufacturer: dict["manufacturer"] as? String,
+            model: dict["model"] as? String,
+            osVersion: dict["osVersion"] as? String,
+            sdkVersion: dict["sdkVersion"] as? String,
+            isPhysicalDevice: dict["isPhysicalDevice"] as? Bool,
+            totalRamBytes: dict["totalRamBytes"] as? Int64,
+            availableRamBytes: dict["availableRamBytes"] as? Int64,
+            cpuArchitecture: dict["cpuArchitecture"] as? String,
+            screenRefreshRate: dict["screenRefreshRate"] as? Double,
+            thermalState: dict["thermalState"] as? String
+        )
+        completion(.success(info))
+    }
+
+    public func getConnectivityInfo(completion: @escaping (Result<NexoraConnectivityInfo, Error>) -> Void) {
+        let monitor = NWPathMonitor()
+        let queue = DispatchQueue(label: "com.nexora.sdk.connectivity")
+        var didReturn = false
+
+        monitor.pathUpdateHandler = { path in
+            guard !didReturn else { return }
+            didReturn = true
+            monitor.cancel()
+
+            let networkType: String
+            if path.usesInterfaceType(.wifi) {
+                networkType = "wifi"
+            } else if path.usesInterfaceType(.cellular) {
+                networkType = "mobile"
+            } else if path.usesInterfaceType(.wiredEthernet) {
+                networkType = "ethernet"
+            } else if path.usesInterfaceType(.loopback) {
+                networkType = "loopback"
+            } else {
+                networkType = path.status == .satisfied ? "unknown" : "none"
+            }
+
+            let info = NexoraConnectivityInfo(
+                isConnected: path.status == .satisfied,
+                networkType: networkType,
+                isMetered: path.isExpensive,
+                isVpn: false,
+                signalStrength: nil,
+                ipAddress: nil
+            )
+            DispatchQueue.main.async {
+                completion(.success(info))
+            }
+        }
+
+        monitor.start(queue: queue)
+    }
+
+    public func getBatteryInfo(completion: @escaping (Result<NexoraBatteryInfo?, Error>) -> Void) {
+        if let dict = health.getBatteryInfo() as? [String: Any] {
+            let info = NexoraBatteryInfo(
+                level: dict["level"] as? Double,
+                isCharging: dict["isCharging"] as? Bool,
+                status: dict["status"] as? String,
+                temperature: dict["temperature"] as? Double
+            )
+            completion(.success(info))
+        } else {
+            completion(.success(nil))
+        }
+    }
+
+    public func getWifiInfo(completion: @escaping (Result<NexoraWifiInfo?, Error>) -> Void) {
+        if let dict = health.getWifiInfo() as? [String: Any] {
+            let info = NexoraWifiInfo(
+                ssid: dict["ssid"] as? String,
+                bssid: dict["bssid"] as? String,
+                signalStrength: dict["signalStrength"] as? Int64,
+                frequency: dict["frequency"] as? Int64,
+                linkSpeed: dict["linkSpeed"] as? Int64
+            )
+            completion(.success(info))
+        } else {
+            completion(.success(nil))
+        }
+    }
+
+    public func vibrate(durationMs: Int64, completion: @escaping (Result<Void, Error>) -> Void) {
+        feedback.vibrate(duration: Int(durationMs))
+        completion(.success(()))
+    }
+
+    public func hapticFeedback(type: String, completion: @escaping (Result<Void, Error>) -> Void) {
+        feedback.haptic(type: type)
+        completion(.success(()))
+    }
+
+    public func performHapticWithOptions(options: NexoraHapticOptions, completion: @escaping (Result<Void, Error>) -> Void) {
+        feedback.haptic(type: options.type ?? "medium")
+        completion(.success(()))
+    }
+
+    public func copyText(text: String, completion: @escaping (Result<Bool, Error>) -> Void) {
+        UIPasteboard.general.string = text
+        completion(.success(true))
+    }
+
+    public func pasteText(completion: @escaping (Result<String?, Error>) -> Void) {
+        completion(.success(UIPasteboard.general.string))
+    }
+
+    public func openUrl(url: String, completion: @escaping (Result<Bool, Error>) -> Void) {
+        guard let nsUrl = URL(string: url) else {
+            completion(.success(false))
+            return
+        }
+        UIApplication.shared.open(nsUrl, options: [:]) { success in
+            completion(.success(success))
+        }
+    }
+
+    public func shareText(text: String, subject: String?, completion: @escaping (Result<Bool, Error>) -> Void) {
+        var items: [Any] = [text]
+        if let subject = subject, !subject.isEmpty {
+            items.append(subject)
+        }
+        DispatchQueue.main.async {
+            guard let controller = UIApplication.shared.connectedScenes
+                .compactMap({ $0 as? UIWindowScene })
+                .flatMap({ $0.windows })
+                .first(where: { $0.isKeyWindow })?
+                .rootViewController else {
+                completion(.success(false))
+                return
+            }
+            let activity = UIActivityViewController(activityItems: items, applicationActivities: nil)
+            controller.present(activity, animated: true) {
+                completion(.success(true))
+            }
+        }
+    }
+
+    public func saveToGallery(filePath: String, completion: @escaping (Result<String?, Error>) -> Void) {
+        storage.saveToGallery(filePath: filePath) { path in
+            completion(.success(path))
+        }
+    }
+
+    public func enterPictureInPicture(completion: @escaping (Result<Bool, Error>) -> Void) {
+        completion(.success(false))
+    }
+
+    public func getConnectedUsbDevices(completion: @escaping (Result<[String?], Error>) -> Void) {
+        completion(.success([]))
+    }
+
+    public func startForegroundService(title: String, content: String, completion: @escaping (Result<Bool, Error>) -> Void) {
+        completion(.success(true))
+    }
+
+    public func updateForegroundService(title: String, text: String, completion: @escaping (Result<Bool, Error>) -> Void) {
+        completion(.success(true))
+    }
+
+    public func stopForegroundService(completion: @escaping (Result<Bool, Error>) -> Void) {
+        completion(.success(true))
+    }
+
+    public func enableSmartSync(uploadEndpointUrl: String, headers: [String?: String?], rollLimitBytes: Int64, requireWifi: Bool, completion: @escaping (Result<Bool, Error>) -> Void) {
+        var cleanHeaders: [String: String] = [:]
+        for (key, val) in headers {
+            if let k = key, let v = val {
+                cleanHeaders[k] = v
+            }
+        }
+        SmartSyncManager.shared.enable(url: uploadEndpointUrl, headers: cleanHeaders, limit: Int(rollLimitBytes), wifiOnly: requireWifi)
+        completion(.success(true))
+    }
+
+    public func setEcoModeEnabled(enabled: Bool, completion: @escaping (Result<Void, Error>) -> Void) {
+        ecoModeUserEnabled = enabled
+        completion(.success(()))
+    }
+
+    public func isEcoModeActive(completion: @escaping (Result<Bool, Error>) -> Void) {
+        let active = ecoModeUserEnabled || ProcessInfo.processInfo.isLowPowerModeEnabled
+        completion(.success(active))
+    }
+
+    public func getThermalState(completion: @escaping (Result<String, Error>) -> Void) {
+        let state = ProcessInfo.processInfo.thermalState
+        switch state {
+        case .nominal:
+            completion(.success("normal"))
+        case .fair:
+            completion(.success("fair"))
+        case .serious:
+            completion(.success("serious"))
+        case .critical:
+            completion(.success("critical"))
+        @unknown default:
+            completion(.success("unknown"))
+        }
     }
 }

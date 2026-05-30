@@ -193,22 +193,31 @@ class FlutterError (
 ) : RuntimeException()
 
 /** Generated class from Pigeon that represents data sent in messages. */
-data class BasicCameraOptions (
-  val enableFlash: Boolean? = null,
-  val resolution: String? = null
+data class NexoraCameraOptions (
+  val resolution: String? = null,
+  val focusMode: String? = null,
+  val exposureMode: String? = null,
+  val exposureCompensation: Double? = null,
+  val mirrorFrontCamera: Boolean? = null
 )
  {
   companion object {
-    fun fromList(pigeonVar_list: List<Any?>): BasicCameraOptions {
-      val enableFlash = pigeonVar_list[0] as Boolean?
-      val resolution = pigeonVar_list[1] as String?
-      return BasicCameraOptions(enableFlash, resolution)
+    fun fromList(pigeonVar_list: List<Any?>): NexoraCameraOptions {
+      val resolution = pigeonVar_list[0] as String?
+      val focusMode = pigeonVar_list[1] as String?
+      val exposureMode = pigeonVar_list[2] as String?
+      val exposureCompensation = pigeonVar_list[3] as Double?
+      val mirrorFrontCamera = pigeonVar_list[4] as Boolean?
+      return NexoraCameraOptions(resolution, focusMode, exposureMode, exposureCompensation, mirrorFrontCamera)
     }
   }
   fun toList(): List<Any?> {
     return listOf(
-      enableFlash,
       resolution,
+      focusMode,
+      exposureMode,
+      exposureCompensation,
+      mirrorFrontCamera,
     )
   }
   override fun equals(other: Any?): Boolean {
@@ -218,35 +227,41 @@ data class BasicCameraOptions (
     if (this === other) {
       return true
     }
-    val other = other as BasicCameraOptions
-    return HardwareApiPigeonUtils.deepEquals(this.enableFlash, other.enableFlash) && HardwareApiPigeonUtils.deepEquals(this.resolution, other.resolution)
+    val other = other as NexoraCameraOptions
+    return HardwareApiPigeonUtils.deepEquals(this.resolution, other.resolution) && HardwareApiPigeonUtils.deepEquals(this.focusMode, other.focusMode) && HardwareApiPigeonUtils.deepEquals(this.exposureMode, other.exposureMode) && HardwareApiPigeonUtils.deepEquals(this.exposureCompensation, other.exposureCompensation) && HardwareApiPigeonUtils.deepEquals(this.mirrorFrontCamera, other.mirrorFrontCamera)
   }
 
   override fun hashCode(): Int {
     var result = javaClass.hashCode()
-    result = 31 * result + HardwareApiPigeonUtils.deepHash(this.enableFlash)
     result = 31 * result + HardwareApiPigeonUtils.deepHash(this.resolution)
+    result = 31 * result + HardwareApiPigeonUtils.deepHash(this.focusMode)
+    result = 31 * result + HardwareApiPigeonUtils.deepHash(this.exposureMode)
+    result = 31 * result + HardwareApiPigeonUtils.deepHash(this.exposureCompensation)
+    result = 31 * result + HardwareApiPigeonUtils.deepHash(this.mirrorFrontCamera)
     return result
   }
 }
 
 /** Generated class from Pigeon that represents data sent in messages. */
-data class StartCameraResult (
-  val textureId: Long? = null,
-  val error: String? = null
+data class CustomClassifierOptions (
+  val modelAssetPath: String? = null,
+  val labels: List<String?>? = null,
+  val threshold: Double? = null
 )
  {
   companion object {
-    fun fromList(pigeonVar_list: List<Any?>): StartCameraResult {
-      val textureId = pigeonVar_list[0] as Long?
-      val error = pigeonVar_list[1] as String?
-      return StartCameraResult(textureId, error)
+    fun fromList(pigeonVar_list: List<Any?>): CustomClassifierOptions {
+      val modelAssetPath = pigeonVar_list[0] as String?
+      val labels = pigeonVar_list[1] as List<String?>?
+      val threshold = pigeonVar_list[2] as Double?
+      return CustomClassifierOptions(modelAssetPath, labels, threshold)
     }
   }
   fun toList(): List<Any?> {
     return listOf(
-      textureId,
-      error,
+      modelAssetPath,
+      labels,
+      threshold,
     )
   }
   override fun equals(other: Any?): Boolean {
@@ -256,14 +271,781 @@ data class StartCameraResult (
     if (this === other) {
       return true
     }
-    val other = other as StartCameraResult
-    return HardwareApiPigeonUtils.deepEquals(this.textureId, other.textureId) && HardwareApiPigeonUtils.deepEquals(this.error, other.error)
+    val other = other as CustomClassifierOptions
+    return HardwareApiPigeonUtils.deepEquals(this.modelAssetPath, other.modelAssetPath) && HardwareApiPigeonUtils.deepEquals(this.labels, other.labels) && HardwareApiPigeonUtils.deepEquals(this.threshold, other.threshold)
   }
 
   override fun hashCode(): Int {
     var result = javaClass.hashCode()
-    result = 31 * result + HardwareApiPigeonUtils.deepHash(this.textureId)
-    result = 31 * result + HardwareApiPigeonUtils.deepHash(this.error)
+    result = 31 * result + HardwareApiPigeonUtils.deepHash(this.modelAssetPath)
+    result = 31 * result + HardwareApiPigeonUtils.deepHash(this.labels)
+    result = 31 * result + HardwareApiPigeonUtils.deepHash(this.threshold)
+    return result
+  }
+}
+
+/** Generated class from Pigeon that represents data sent in messages. */
+data class VisionModeOptions (
+  val barcode: Boolean? = null,
+  val face: Boolean? = null
+)
+ {
+  companion object {
+    fun fromList(pigeonVar_list: List<Any?>): VisionModeOptions {
+      val barcode = pigeonVar_list[0] as Boolean?
+      val face = pigeonVar_list[1] as Boolean?
+      return VisionModeOptions(barcode, face)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf(
+      barcode,
+      face,
+    )
+  }
+  override fun equals(other: Any?): Boolean {
+    if (other == null || other.javaClass != javaClass) {
+      return false
+    }
+    if (this === other) {
+      return true
+    }
+    val other = other as VisionModeOptions
+    return HardwareApiPigeonUtils.deepEquals(this.barcode, other.barcode) && HardwareApiPigeonUtils.deepEquals(this.face, other.face)
+  }
+
+  override fun hashCode(): Int {
+    var result = javaClass.hashCode()
+    result = 31 * result + HardwareApiPigeonUtils.deepHash(this.barcode)
+    result = 31 * result + HardwareApiPigeonUtils.deepHash(this.face)
+    return result
+  }
+}
+
+/** Generated class from Pigeon that represents data sent in messages. */
+data class BasicAudioOptions (
+  val enableFFT: Boolean? = null,
+  val streamBytes: Boolean? = null,
+  val updateIntervalMs: Long? = null
+)
+ {
+  companion object {
+    fun fromList(pigeonVar_list: List<Any?>): BasicAudioOptions {
+      val enableFFT = pigeonVar_list[0] as Boolean?
+      val streamBytes = pigeonVar_list[1] as Boolean?
+      val updateIntervalMs = pigeonVar_list[2] as Long?
+      return BasicAudioOptions(enableFFT, streamBytes, updateIntervalMs)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf(
+      enableFFT,
+      streamBytes,
+      updateIntervalMs,
+    )
+  }
+  override fun equals(other: Any?): Boolean {
+    if (other == null || other.javaClass != javaClass) {
+      return false
+    }
+    if (this === other) {
+      return true
+    }
+    val other = other as BasicAudioOptions
+    return HardwareApiPigeonUtils.deepEquals(this.enableFFT, other.enableFFT) && HardwareApiPigeonUtils.deepEquals(this.streamBytes, other.streamBytes) && HardwareApiPigeonUtils.deepEquals(this.updateIntervalMs, other.updateIntervalMs)
+  }
+
+  override fun hashCode(): Int {
+    var result = javaClass.hashCode()
+    result = 31 * result + HardwareApiPigeonUtils.deepHash(this.enableFFT)
+    result = 31 * result + HardwareApiPigeonUtils.deepHash(this.streamBytes)
+    result = 31 * result + HardwareApiPigeonUtils.deepHash(this.updateIntervalMs)
+    return result
+  }
+}
+
+/** Generated class from Pigeon that represents data sent in messages. */
+data class NexoraAudioOptions (
+  val sampleRate: Long? = null,
+  val channels: String? = null,
+  val enableEchoCancellation: Boolean? = null,
+  val enableNoiseSuppression: Boolean? = null
+)
+ {
+  companion object {
+    fun fromList(pigeonVar_list: List<Any?>): NexoraAudioOptions {
+      val sampleRate = pigeonVar_list[0] as Long?
+      val channels = pigeonVar_list[1] as String?
+      val enableEchoCancellation = pigeonVar_list[2] as Boolean?
+      val enableNoiseSuppression = pigeonVar_list[3] as Boolean?
+      return NexoraAudioOptions(sampleRate, channels, enableEchoCancellation, enableNoiseSuppression)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf(
+      sampleRate,
+      channels,
+      enableEchoCancellation,
+      enableNoiseSuppression,
+    )
+  }
+  override fun equals(other: Any?): Boolean {
+    if (other == null || other.javaClass != javaClass) {
+      return false
+    }
+    if (this === other) {
+      return true
+    }
+    val other = other as NexoraAudioOptions
+    return HardwareApiPigeonUtils.deepEquals(this.sampleRate, other.sampleRate) && HardwareApiPigeonUtils.deepEquals(this.channels, other.channels) && HardwareApiPigeonUtils.deepEquals(this.enableEchoCancellation, other.enableEchoCancellation) && HardwareApiPigeonUtils.deepEquals(this.enableNoiseSuppression, other.enableNoiseSuppression)
+  }
+
+  override fun hashCode(): Int {
+    var result = javaClass.hashCode()
+    result = 31 * result + HardwareApiPigeonUtils.deepHash(this.sampleRate)
+    result = 31 * result + HardwareApiPigeonUtils.deepHash(this.channels)
+    result = 31 * result + HardwareApiPigeonUtils.deepHash(this.enableEchoCancellation)
+    result = 31 * result + HardwareApiPigeonUtils.deepHash(this.enableNoiseSuppression)
+    return result
+  }
+}
+
+/** Generated class from Pigeon that represents data sent in messages. */
+data class NexoraLocationOptions (
+  val accuracy: String? = null,
+  val distanceFilter: Double? = null,
+  val intervalMs: Long? = null
+)
+ {
+  companion object {
+    fun fromList(pigeonVar_list: List<Any?>): NexoraLocationOptions {
+      val accuracy = pigeonVar_list[0] as String?
+      val distanceFilter = pigeonVar_list[1] as Double?
+      val intervalMs = pigeonVar_list[2] as Long?
+      return NexoraLocationOptions(accuracy, distanceFilter, intervalMs)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf(
+      accuracy,
+      distanceFilter,
+      intervalMs,
+    )
+  }
+  override fun equals(other: Any?): Boolean {
+    if (other == null || other.javaClass != javaClass) {
+      return false
+    }
+    if (this === other) {
+      return true
+    }
+    val other = other as NexoraLocationOptions
+    return HardwareApiPigeonUtils.deepEquals(this.accuracy, other.accuracy) && HardwareApiPigeonUtils.deepEquals(this.distanceFilter, other.distanceFilter) && HardwareApiPigeonUtils.deepEquals(this.intervalMs, other.intervalMs)
+  }
+
+  override fun hashCode(): Int {
+    var result = javaClass.hashCode()
+    result = 31 * result + HardwareApiPigeonUtils.deepHash(this.accuracy)
+    result = 31 * result + HardwareApiPigeonUtils.deepHash(this.distanceFilter)
+    result = 31 * result + HardwareApiPigeonUtils.deepHash(this.intervalMs)
+    return result
+  }
+}
+
+/** Generated class from Pigeon that represents data sent in messages. */
+data class NexoraSensorOptions (
+  val frequencyHz: Long? = null
+)
+ {
+  companion object {
+    fun fromList(pigeonVar_list: List<Any?>): NexoraSensorOptions {
+      val frequencyHz = pigeonVar_list[0] as Long?
+      return NexoraSensorOptions(frequencyHz)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf(
+      frequencyHz,
+    )
+  }
+  override fun equals(other: Any?): Boolean {
+    if (other == null || other.javaClass != javaClass) {
+      return false
+    }
+    if (this === other) {
+      return true
+    }
+    val other = other as NexoraSensorOptions
+    return HardwareApiPigeonUtils.deepEquals(this.frequencyHz, other.frequencyHz)
+  }
+
+  override fun hashCode(): Int {
+    var result = javaClass.hashCode()
+    result = 31 * result + HardwareApiPigeonUtils.deepHash(this.frequencyHz)
+    return result
+  }
+}
+
+/** Generated class from Pigeon that represents data sent in messages. */
+data class NexoraBiometricOptions (
+  val title: String? = null,
+  val subtitle: String? = null,
+  val description: String? = null,
+  val negativeButtonText: String? = null
+)
+ {
+  companion object {
+    fun fromList(pigeonVar_list: List<Any?>): NexoraBiometricOptions {
+      val title = pigeonVar_list[0] as String?
+      val subtitle = pigeonVar_list[1] as String?
+      val description = pigeonVar_list[2] as String?
+      val negativeButtonText = pigeonVar_list[3] as String?
+      return NexoraBiometricOptions(title, subtitle, description, negativeButtonText)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf(
+      title,
+      subtitle,
+      description,
+      negativeButtonText,
+    )
+  }
+  override fun equals(other: Any?): Boolean {
+    if (other == null || other.javaClass != javaClass) {
+      return false
+    }
+    if (this === other) {
+      return true
+    }
+    val other = other as NexoraBiometricOptions
+    return HardwareApiPigeonUtils.deepEquals(this.title, other.title) && HardwareApiPigeonUtils.deepEquals(this.subtitle, other.subtitle) && HardwareApiPigeonUtils.deepEquals(this.description, other.description) && HardwareApiPigeonUtils.deepEquals(this.negativeButtonText, other.negativeButtonText)
+  }
+
+  override fun hashCode(): Int {
+    var result = javaClass.hashCode()
+    result = 31 * result + HardwareApiPigeonUtils.deepHash(this.title)
+    result = 31 * result + HardwareApiPigeonUtils.deepHash(this.subtitle)
+    result = 31 * result + HardwareApiPigeonUtils.deepHash(this.description)
+    result = 31 * result + HardwareApiPigeonUtils.deepHash(this.negativeButtonText)
+    return result
+  }
+}
+
+/** Generated class from Pigeon that represents data sent in messages. */
+data class NexoraBluetoothScanOptions (
+  val serviceUuids: List<String?>? = null,
+  val scanMode: String? = null
+)
+ {
+  companion object {
+    fun fromList(pigeonVar_list: List<Any?>): NexoraBluetoothScanOptions {
+      val serviceUuids = pigeonVar_list[0] as List<String?>?
+      val scanMode = pigeonVar_list[1] as String?
+      return NexoraBluetoothScanOptions(serviceUuids, scanMode)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf(
+      serviceUuids,
+      scanMode,
+    )
+  }
+  override fun equals(other: Any?): Boolean {
+    if (other == null || other.javaClass != javaClass) {
+      return false
+    }
+    if (this === other) {
+      return true
+    }
+    val other = other as NexoraBluetoothScanOptions
+    return HardwareApiPigeonUtils.deepEquals(this.serviceUuids, other.serviceUuids) && HardwareApiPigeonUtils.deepEquals(this.scanMode, other.scanMode)
+  }
+
+  override fun hashCode(): Int {
+    var result = javaClass.hashCode()
+    result = 31 * result + HardwareApiPigeonUtils.deepHash(this.serviceUuids)
+    result = 31 * result + HardwareApiPigeonUtils.deepHash(this.scanMode)
+    return result
+  }
+}
+
+/** Generated class from Pigeon that represents data sent in messages. */
+data class NexoraStorageInfo (
+  val internalTotal: Long? = null,
+  val internalFree: Long? = null,
+  val externalTotal: Long? = null,
+  val externalFree: Long? = null,
+  val appCacheSize: Long? = null,
+  val appDataSize: Long? = null
+)
+ {
+  companion object {
+    fun fromList(pigeonVar_list: List<Any?>): NexoraStorageInfo {
+      val internalTotal = pigeonVar_list[0] as Long?
+      val internalFree = pigeonVar_list[1] as Long?
+      val externalTotal = pigeonVar_list[2] as Long?
+      val externalFree = pigeonVar_list[3] as Long?
+      val appCacheSize = pigeonVar_list[4] as Long?
+      val appDataSize = pigeonVar_list[5] as Long?
+      return NexoraStorageInfo(internalTotal, internalFree, externalTotal, externalFree, appCacheSize, appDataSize)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf(
+      internalTotal,
+      internalFree,
+      externalTotal,
+      externalFree,
+      appCacheSize,
+      appDataSize,
+    )
+  }
+  override fun equals(other: Any?): Boolean {
+    if (other == null || other.javaClass != javaClass) {
+      return false
+    }
+    if (this === other) {
+      return true
+    }
+    val other = other as NexoraStorageInfo
+    return HardwareApiPigeonUtils.deepEquals(this.internalTotal, other.internalTotal) && HardwareApiPigeonUtils.deepEquals(this.internalFree, other.internalFree) && HardwareApiPigeonUtils.deepEquals(this.externalTotal, other.externalTotal) && HardwareApiPigeonUtils.deepEquals(this.externalFree, other.externalFree) && HardwareApiPigeonUtils.deepEquals(this.appCacheSize, other.appCacheSize) && HardwareApiPigeonUtils.deepEquals(this.appDataSize, other.appDataSize)
+  }
+
+  override fun hashCode(): Int {
+    var result = javaClass.hashCode()
+    result = 31 * result + HardwareApiPigeonUtils.deepHash(this.internalTotal)
+    result = 31 * result + HardwareApiPigeonUtils.deepHash(this.internalFree)
+    result = 31 * result + HardwareApiPigeonUtils.deepHash(this.externalTotal)
+    result = 31 * result + HardwareApiPigeonUtils.deepHash(this.externalFree)
+    result = 31 * result + HardwareApiPigeonUtils.deepHash(this.appCacheSize)
+    result = 31 * result + HardwareApiPigeonUtils.deepHash(this.appDataSize)
+    return result
+  }
+}
+
+/** Generated class from Pigeon that represents data sent in messages. */
+data class NexoraFileInfo (
+  val name: String? = null,
+  val size: Long? = null,
+  val isDirectory: Boolean? = null,
+  val lastModifiedMs: Long? = null
+)
+ {
+  companion object {
+    fun fromList(pigeonVar_list: List<Any?>): NexoraFileInfo {
+      val name = pigeonVar_list[0] as String?
+      val size = pigeonVar_list[1] as Long?
+      val isDirectory = pigeonVar_list[2] as Boolean?
+      val lastModifiedMs = pigeonVar_list[3] as Long?
+      return NexoraFileInfo(name, size, isDirectory, lastModifiedMs)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf(
+      name,
+      size,
+      isDirectory,
+      lastModifiedMs,
+    )
+  }
+  override fun equals(other: Any?): Boolean {
+    if (other == null || other.javaClass != javaClass) {
+      return false
+    }
+    if (this === other) {
+      return true
+    }
+    val other = other as NexoraFileInfo
+    return HardwareApiPigeonUtils.deepEquals(this.name, other.name) && HardwareApiPigeonUtils.deepEquals(this.size, other.size) && HardwareApiPigeonUtils.deepEquals(this.isDirectory, other.isDirectory) && HardwareApiPigeonUtils.deepEquals(this.lastModifiedMs, other.lastModifiedMs)
+  }
+
+  override fun hashCode(): Int {
+    var result = javaClass.hashCode()
+    result = 31 * result + HardwareApiPigeonUtils.deepHash(this.name)
+    result = 31 * result + HardwareApiPigeonUtils.deepHash(this.size)
+    result = 31 * result + HardwareApiPigeonUtils.deepHash(this.isDirectory)
+    result = 31 * result + HardwareApiPigeonUtils.deepHash(this.lastModifiedMs)
+    return result
+  }
+}
+
+/** Generated class from Pigeon that represents data sent in messages. */
+data class NexoraDeviceInfo (
+  val platform: String? = null,
+  val manufacturer: String? = null,
+  val model: String? = null,
+  val osVersion: String? = null,
+  val sdkVersion: String? = null,
+  val isPhysicalDevice: Boolean? = null,
+  val totalRamBytes: Long? = null,
+  val availableRamBytes: Long? = null,
+  val cpuArchitecture: String? = null,
+  val screenRefreshRate: Double? = null,
+  val thermalState: String? = null
+)
+ {
+  companion object {
+    fun fromList(pigeonVar_list: List<Any?>): NexoraDeviceInfo {
+      val platform = pigeonVar_list[0] as String?
+      val manufacturer = pigeonVar_list[1] as String?
+      val model = pigeonVar_list[2] as String?
+      val osVersion = pigeonVar_list[3] as String?
+      val sdkVersion = pigeonVar_list[4] as String?
+      val isPhysicalDevice = pigeonVar_list[5] as Boolean?
+      val totalRamBytes = pigeonVar_list[6] as Long?
+      val availableRamBytes = pigeonVar_list[7] as Long?
+      val cpuArchitecture = pigeonVar_list[8] as String?
+      val screenRefreshRate = pigeonVar_list[9] as Double?
+      val thermalState = pigeonVar_list[10] as String?
+      return NexoraDeviceInfo(platform, manufacturer, model, osVersion, sdkVersion, isPhysicalDevice, totalRamBytes, availableRamBytes, cpuArchitecture, screenRefreshRate, thermalState)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf(
+      platform,
+      manufacturer,
+      model,
+      osVersion,
+      sdkVersion,
+      isPhysicalDevice,
+      totalRamBytes,
+      availableRamBytes,
+      cpuArchitecture,
+      screenRefreshRate,
+      thermalState,
+    )
+  }
+  override fun equals(other: Any?): Boolean {
+    if (other == null || other.javaClass != javaClass) {
+      return false
+    }
+    if (this === other) {
+      return true
+    }
+    val other = other as NexoraDeviceInfo
+    return HardwareApiPigeonUtils.deepEquals(this.platform, other.platform) && HardwareApiPigeonUtils.deepEquals(this.manufacturer, other.manufacturer) && HardwareApiPigeonUtils.deepEquals(this.model, other.model) && HardwareApiPigeonUtils.deepEquals(this.osVersion, other.osVersion) && HardwareApiPigeonUtils.deepEquals(this.sdkVersion, other.sdkVersion) && HardwareApiPigeonUtils.deepEquals(this.isPhysicalDevice, other.isPhysicalDevice) && HardwareApiPigeonUtils.deepEquals(this.totalRamBytes, other.totalRamBytes) && HardwareApiPigeonUtils.deepEquals(this.availableRamBytes, other.availableRamBytes) && HardwareApiPigeonUtils.deepEquals(this.cpuArchitecture, other.cpuArchitecture) && HardwareApiPigeonUtils.deepEquals(this.screenRefreshRate, other.screenRefreshRate) && HardwareApiPigeonUtils.deepEquals(this.thermalState, other.thermalState)
+  }
+
+  override fun hashCode(): Int {
+    var result = javaClass.hashCode()
+    result = 31 * result + HardwareApiPigeonUtils.deepHash(this.platform)
+    result = 31 * result + HardwareApiPigeonUtils.deepHash(this.manufacturer)
+    result = 31 * result + HardwareApiPigeonUtils.deepHash(this.model)
+    result = 31 * result + HardwareApiPigeonUtils.deepHash(this.osVersion)
+    result = 31 * result + HardwareApiPigeonUtils.deepHash(this.sdkVersion)
+    result = 31 * result + HardwareApiPigeonUtils.deepHash(this.isPhysicalDevice)
+    result = 31 * result + HardwareApiPigeonUtils.deepHash(this.totalRamBytes)
+    result = 31 * result + HardwareApiPigeonUtils.deepHash(this.availableRamBytes)
+    result = 31 * result + HardwareApiPigeonUtils.deepHash(this.cpuArchitecture)
+    result = 31 * result + HardwareApiPigeonUtils.deepHash(this.screenRefreshRate)
+    result = 31 * result + HardwareApiPigeonUtils.deepHash(this.thermalState)
+    return result
+  }
+}
+
+/** Generated class from Pigeon that represents data sent in messages. */
+data class NexoraConnectivityInfo (
+  val isConnected: Boolean? = null,
+  val networkType: String? = null,
+  val isMetered: Boolean? = null,
+  val isVpn: Boolean? = null,
+  val signalStrength: Long? = null,
+  val ipAddress: String? = null
+)
+ {
+  companion object {
+    fun fromList(pigeonVar_list: List<Any?>): NexoraConnectivityInfo {
+      val isConnected = pigeonVar_list[0] as Boolean?
+      val networkType = pigeonVar_list[1] as String?
+      val isMetered = pigeonVar_list[2] as Boolean?
+      val isVpn = pigeonVar_list[3] as Boolean?
+      val signalStrength = pigeonVar_list[4] as Long?
+      val ipAddress = pigeonVar_list[5] as String?
+      return NexoraConnectivityInfo(isConnected, networkType, isMetered, isVpn, signalStrength, ipAddress)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf(
+      isConnected,
+      networkType,
+      isMetered,
+      isVpn,
+      signalStrength,
+      ipAddress,
+    )
+  }
+  override fun equals(other: Any?): Boolean {
+    if (other == null || other.javaClass != javaClass) {
+      return false
+    }
+    if (this === other) {
+      return true
+    }
+    val other = other as NexoraConnectivityInfo
+    return HardwareApiPigeonUtils.deepEquals(this.isConnected, other.isConnected) && HardwareApiPigeonUtils.deepEquals(this.networkType, other.networkType) && HardwareApiPigeonUtils.deepEquals(this.isMetered, other.isMetered) && HardwareApiPigeonUtils.deepEquals(this.isVpn, other.isVpn) && HardwareApiPigeonUtils.deepEquals(this.signalStrength, other.signalStrength) && HardwareApiPigeonUtils.deepEquals(this.ipAddress, other.ipAddress)
+  }
+
+  override fun hashCode(): Int {
+    var result = javaClass.hashCode()
+    result = 31 * result + HardwareApiPigeonUtils.deepHash(this.isConnected)
+    result = 31 * result + HardwareApiPigeonUtils.deepHash(this.networkType)
+    result = 31 * result + HardwareApiPigeonUtils.deepHash(this.isMetered)
+    result = 31 * result + HardwareApiPigeonUtils.deepHash(this.isVpn)
+    result = 31 * result + HardwareApiPigeonUtils.deepHash(this.signalStrength)
+    result = 31 * result + HardwareApiPigeonUtils.deepHash(this.ipAddress)
+    return result
+  }
+}
+
+/** Generated class from Pigeon that represents data sent in messages. */
+data class NexoraBatteryInfo (
+  val level: Double? = null,
+  val isCharging: Boolean? = null,
+  val status: String? = null,
+  val temperature: Double? = null
+)
+ {
+  companion object {
+    fun fromList(pigeonVar_list: List<Any?>): NexoraBatteryInfo {
+      val level = pigeonVar_list[0] as Double?
+      val isCharging = pigeonVar_list[1] as Boolean?
+      val status = pigeonVar_list[2] as String?
+      val temperature = pigeonVar_list[3] as Double?
+      return NexoraBatteryInfo(level, isCharging, status, temperature)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf(
+      level,
+      isCharging,
+      status,
+      temperature,
+    )
+  }
+  override fun equals(other: Any?): Boolean {
+    if (other == null || other.javaClass != javaClass) {
+      return false
+    }
+    if (this === other) {
+      return true
+    }
+    val other = other as NexoraBatteryInfo
+    return HardwareApiPigeonUtils.deepEquals(this.level, other.level) && HardwareApiPigeonUtils.deepEquals(this.isCharging, other.isCharging) && HardwareApiPigeonUtils.deepEquals(this.status, other.status) && HardwareApiPigeonUtils.deepEquals(this.temperature, other.temperature)
+  }
+
+  override fun hashCode(): Int {
+    var result = javaClass.hashCode()
+    result = 31 * result + HardwareApiPigeonUtils.deepHash(this.level)
+    result = 31 * result + HardwareApiPigeonUtils.deepHash(this.isCharging)
+    result = 31 * result + HardwareApiPigeonUtils.deepHash(this.status)
+    result = 31 * result + HardwareApiPigeonUtils.deepHash(this.temperature)
+    return result
+  }
+}
+
+/** Generated class from Pigeon that represents data sent in messages. */
+data class NexoraWifiInfo (
+  val ssid: String? = null,
+  val bssid: String? = null,
+  val signalStrength: Long? = null,
+  val frequency: Long? = null,
+  val linkSpeed: Long? = null
+)
+ {
+  companion object {
+    fun fromList(pigeonVar_list: List<Any?>): NexoraWifiInfo {
+      val ssid = pigeonVar_list[0] as String?
+      val bssid = pigeonVar_list[1] as String?
+      val signalStrength = pigeonVar_list[2] as Long?
+      val frequency = pigeonVar_list[3] as Long?
+      val linkSpeed = pigeonVar_list[4] as Long?
+      return NexoraWifiInfo(ssid, bssid, signalStrength, frequency, linkSpeed)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf(
+      ssid,
+      bssid,
+      signalStrength,
+      frequency,
+      linkSpeed,
+    )
+  }
+  override fun equals(other: Any?): Boolean {
+    if (other == null || other.javaClass != javaClass) {
+      return false
+    }
+    if (this === other) {
+      return true
+    }
+    val other = other as NexoraWifiInfo
+    return HardwareApiPigeonUtils.deepEquals(this.ssid, other.ssid) && HardwareApiPigeonUtils.deepEquals(this.bssid, other.bssid) && HardwareApiPigeonUtils.deepEquals(this.signalStrength, other.signalStrength) && HardwareApiPigeonUtils.deepEquals(this.frequency, other.frequency) && HardwareApiPigeonUtils.deepEquals(this.linkSpeed, other.linkSpeed)
+  }
+
+  override fun hashCode(): Int {
+    var result = javaClass.hashCode()
+    result = 31 * result + HardwareApiPigeonUtils.deepHash(this.ssid)
+    result = 31 * result + HardwareApiPigeonUtils.deepHash(this.bssid)
+    result = 31 * result + HardwareApiPigeonUtils.deepHash(this.signalStrength)
+    result = 31 * result + HardwareApiPigeonUtils.deepHash(this.frequency)
+    result = 31 * result + HardwareApiPigeonUtils.deepHash(this.linkSpeed)
+    return result
+  }
+}
+
+/** Generated class from Pigeon that represents data sent in messages. */
+data class NexoraHapticOptions (
+  val type: String? = null
+)
+ {
+  companion object {
+    fun fromList(pigeonVar_list: List<Any?>): NexoraHapticOptions {
+      val type = pigeonVar_list[0] as String?
+      return NexoraHapticOptions(type)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf(
+      type,
+    )
+  }
+  override fun equals(other: Any?): Boolean {
+    if (other == null || other.javaClass != javaClass) {
+      return false
+    }
+    if (this === other) {
+      return true
+    }
+    val other = other as NexoraHapticOptions
+    return HardwareApiPigeonUtils.deepEquals(this.type, other.type)
+  }
+
+  override fun hashCode(): Int {
+    var result = javaClass.hashCode()
+    result = 31 * result + HardwareApiPigeonUtils.deepHash(this.type)
+    return result
+  }
+}
+
+/** Generated class from Pigeon that represents data sent in messages. */
+data class NexoraSdkConfig (
+  val enableLogging: Boolean? = null,
+  val ecoMode: Boolean? = null
+)
+ {
+  companion object {
+    fun fromList(pigeonVar_list: List<Any?>): NexoraSdkConfig {
+      val enableLogging = pigeonVar_list[0] as Boolean?
+      val ecoMode = pigeonVar_list[1] as Boolean?
+      return NexoraSdkConfig(enableLogging, ecoMode)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf(
+      enableLogging,
+      ecoMode,
+    )
+  }
+  override fun equals(other: Any?): Boolean {
+    if (other == null || other.javaClass != javaClass) {
+      return false
+    }
+    if (this === other) {
+      return true
+    }
+    val other = other as NexoraSdkConfig
+    return HardwareApiPigeonUtils.deepEquals(this.enableLogging, other.enableLogging) && HardwareApiPigeonUtils.deepEquals(this.ecoMode, other.ecoMode)
+  }
+
+  override fun hashCode(): Int {
+    var result = javaClass.hashCode()
+    result = 31 * result + HardwareApiPigeonUtils.deepHash(this.enableLogging)
+    result = 31 * result + HardwareApiPigeonUtils.deepHash(this.ecoMode)
+    return result
+  }
+}
+
+/** Generated class from Pigeon that represents data sent in messages. */
+data class NexoraPermissionStatus (
+  val permission: String? = null,
+  val state: String? = null,
+  val canRequest: Boolean? = null
+)
+ {
+  companion object {
+    fun fromList(pigeonVar_list: List<Any?>): NexoraPermissionStatus {
+      val permission = pigeonVar_list[0] as String?
+      val state = pigeonVar_list[1] as String?
+      val canRequest = pigeonVar_list[2] as Boolean?
+      return NexoraPermissionStatus(permission, state, canRequest)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf(
+      permission,
+      state,
+      canRequest,
+    )
+  }
+  override fun equals(other: Any?): Boolean {
+    if (other == null || other.javaClass != javaClass) {
+      return false
+    }
+    if (this === other) {
+      return true
+    }
+    val other = other as NexoraPermissionStatus
+    return HardwareApiPigeonUtils.deepEquals(this.permission, other.permission) && HardwareApiPigeonUtils.deepEquals(this.state, other.state) && HardwareApiPigeonUtils.deepEquals(this.canRequest, other.canRequest)
+  }
+
+  override fun hashCode(): Int {
+    var result = javaClass.hashCode()
+    result = 31 * result + HardwareApiPigeonUtils.deepHash(this.permission)
+    result = 31 * result + HardwareApiPigeonUtils.deepHash(this.state)
+    result = 31 * result + HardwareApiPigeonUtils.deepHash(this.canRequest)
+    return result
+  }
+}
+
+/** Generated class from Pigeon that represents data sent in messages. */
+data class NexoraCryptoKeyOptions (
+  val alias: String? = null,
+  val requireBiometric: Boolean? = null,
+  val useStrongBox: Boolean? = null
+)
+ {
+  companion object {
+    fun fromList(pigeonVar_list: List<Any?>): NexoraCryptoKeyOptions {
+      val alias = pigeonVar_list[0] as String?
+      val requireBiometric = pigeonVar_list[1] as Boolean?
+      val useStrongBox = pigeonVar_list[2] as Boolean?
+      return NexoraCryptoKeyOptions(alias, requireBiometric, useStrongBox)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf(
+      alias,
+      requireBiometric,
+      useStrongBox,
+    )
+  }
+  override fun equals(other: Any?): Boolean {
+    if (other == null || other.javaClass != javaClass) {
+      return false
+    }
+    if (this === other) {
+      return true
+    }
+    val other = other as NexoraCryptoKeyOptions
+    return HardwareApiPigeonUtils.deepEquals(this.alias, other.alias) && HardwareApiPigeonUtils.deepEquals(this.requireBiometric, other.requireBiometric) && HardwareApiPigeonUtils.deepEquals(this.useStrongBox, other.useStrongBox)
+  }
+
+  override fun hashCode(): Int {
+    var result = javaClass.hashCode()
+    result = 31 * result + HardwareApiPigeonUtils.deepHash(this.alias)
+    result = 31 * result + HardwareApiPigeonUtils.deepHash(this.requireBiometric)
+    result = 31 * result + HardwareApiPigeonUtils.deepHash(this.useStrongBox)
     return result
   }
 }
@@ -272,12 +1054,97 @@ private open class HardwareApiPigeonCodec : StandardMessageCodec() {
     return when (type) {
       129.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          BasicCameraOptions.fromList(it)
+          NexoraCameraOptions.fromList(it)
         }
       }
       130.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          StartCameraResult.fromList(it)
+          CustomClassifierOptions.fromList(it)
+        }
+      }
+      131.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          VisionModeOptions.fromList(it)
+        }
+      }
+      132.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          BasicAudioOptions.fromList(it)
+        }
+      }
+      133.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          NexoraAudioOptions.fromList(it)
+        }
+      }
+      134.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          NexoraLocationOptions.fromList(it)
+        }
+      }
+      135.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          NexoraSensorOptions.fromList(it)
+        }
+      }
+      136.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          NexoraBiometricOptions.fromList(it)
+        }
+      }
+      137.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          NexoraBluetoothScanOptions.fromList(it)
+        }
+      }
+      138.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          NexoraStorageInfo.fromList(it)
+        }
+      }
+      139.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          NexoraFileInfo.fromList(it)
+        }
+      }
+      140.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          NexoraDeviceInfo.fromList(it)
+        }
+      }
+      141.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          NexoraConnectivityInfo.fromList(it)
+        }
+      }
+      142.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          NexoraBatteryInfo.fromList(it)
+        }
+      }
+      143.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          NexoraWifiInfo.fromList(it)
+        }
+      }
+      144.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          NexoraHapticOptions.fromList(it)
+        }
+      }
+      145.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          NexoraSdkConfig.fromList(it)
+        }
+      }
+      146.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          NexoraPermissionStatus.fromList(it)
+        }
+      }
+      147.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          NexoraCryptoKeyOptions.fromList(it)
         }
       }
       else -> super.readValueOfType(type, buffer)
@@ -285,12 +1152,80 @@ private open class HardwareApiPigeonCodec : StandardMessageCodec() {
   }
   override fun writeValue(stream: ByteArrayOutputStream, value: Any?)   {
     when (value) {
-      is BasicCameraOptions -> {
+      is NexoraCameraOptions -> {
         stream.write(129)
         writeValue(stream, value.toList())
       }
-      is StartCameraResult -> {
+      is CustomClassifierOptions -> {
         stream.write(130)
+        writeValue(stream, value.toList())
+      }
+      is VisionModeOptions -> {
+        stream.write(131)
+        writeValue(stream, value.toList())
+      }
+      is BasicAudioOptions -> {
+        stream.write(132)
+        writeValue(stream, value.toList())
+      }
+      is NexoraAudioOptions -> {
+        stream.write(133)
+        writeValue(stream, value.toList())
+      }
+      is NexoraLocationOptions -> {
+        stream.write(134)
+        writeValue(stream, value.toList())
+      }
+      is NexoraSensorOptions -> {
+        stream.write(135)
+        writeValue(stream, value.toList())
+      }
+      is NexoraBiometricOptions -> {
+        stream.write(136)
+        writeValue(stream, value.toList())
+      }
+      is NexoraBluetoothScanOptions -> {
+        stream.write(137)
+        writeValue(stream, value.toList())
+      }
+      is NexoraStorageInfo -> {
+        stream.write(138)
+        writeValue(stream, value.toList())
+      }
+      is NexoraFileInfo -> {
+        stream.write(139)
+        writeValue(stream, value.toList())
+      }
+      is NexoraDeviceInfo -> {
+        stream.write(140)
+        writeValue(stream, value.toList())
+      }
+      is NexoraConnectivityInfo -> {
+        stream.write(141)
+        writeValue(stream, value.toList())
+      }
+      is NexoraBatteryInfo -> {
+        stream.write(142)
+        writeValue(stream, value.toList())
+      }
+      is NexoraWifiInfo -> {
+        stream.write(143)
+        writeValue(stream, value.toList())
+      }
+      is NexoraHapticOptions -> {
+        stream.write(144)
+        writeValue(stream, value.toList())
+      }
+      is NexoraSdkConfig -> {
+        stream.write(145)
+        writeValue(stream, value.toList())
+      }
+      is NexoraPermissionStatus -> {
+        stream.write(146)
+        writeValue(stream, value.toList())
+      }
+      is NexoraCryptoKeyOptions -> {
+        stream.write(147)
         writeValue(stream, value.toList())
       }
       else -> super.writeValue(stream, value)
@@ -298,10 +1233,21 @@ private open class HardwareApiPigeonCodec : StandardMessageCodec() {
   }
 }
 
+
 /** Generated interface from Pigeon that represents a handler of messages from Flutter. */
 interface HardwareApi {
-  fun startCamera(options: BasicCameraOptions): StartCameraResult
-  fun stopCamera()
+  fun startCamera(width: Long, height: Long, callback: (Result<Long>) -> Unit)
+  fun startCameraWithOptions(options: NexoraCameraOptions, callback: (Result<Long>) -> Unit)
+  fun stopCamera(callback: (Result<Boolean>) -> Unit)
+  fun setVisionMode(options: VisionModeOptions, callback: (Result<Boolean>) -> Unit)
+  fun registerCustomClassifier(options: CustomClassifierOptions, callback: (Result<Boolean>) -> Unit)
+  fun setFlash(on: Boolean, callback: (Result<Boolean>) -> Unit)
+  fun setZoom(level: Double, callback: (Result<Boolean>) -> Unit)
+  fun flipCamera(callback: (Result<Boolean>) -> Unit)
+  fun takePhoto(fileName: String?, callback: (Result<String?>) -> Unit)
+  fun startVideoRecording(fileName: String?, callback: (Result<String?>) -> Unit)
+  fun stopVideoRecording(callback: (Result<String?>) -> Unit)
+  fun applyCameraFilterShader(shaderType: String, callback: (Result<Boolean>) -> Unit)
 
   companion object {
     /** The codec used by HardwareApi. */
@@ -317,13 +1263,37 @@ interface HardwareApi {
         if (api != null) {
           channel.setMessageHandler { message, reply ->
             val args = message as List<Any?>
-            val optionsArg = args[0] as BasicCameraOptions
-            val wrapped: List<Any?> = try {
-              listOf(api.startCamera(optionsArg))
-            } catch (exception: Throwable) {
-              HardwareApiPigeonUtils.wrapError(exception)
+            val widthArg = args[0] as Long
+            val heightArg = args[1] as Long
+            api.startCamera(widthArg, heightArg) { result: Result<Long> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
             }
-            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.HardwareApi.startCameraWithOptions$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val optionsArg = args[0] as NexoraCameraOptions
+            api.startCameraWithOptions(optionsArg) { result: Result<Long> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
+            }
           }
         } else {
           channel.setMessageHandler(null)
@@ -333,13 +1303,1869 @@ interface HardwareApi {
         val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.HardwareApi.stopCamera$separatedMessageChannelSuffix", codec)
         if (api != null) {
           channel.setMessageHandler { _, reply ->
-            val wrapped: List<Any?> = try {
-              api.stopCamera()
-              listOf(null)
-            } catch (exception: Throwable) {
-              HardwareApiPigeonUtils.wrapError(exception)
+            api.stopCamera{ result: Result<Boolean> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
             }
-            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.HardwareApi.setVisionMode$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val optionsArg = args[0] as VisionModeOptions
+            api.setVisionMode(optionsArg) { result: Result<Boolean> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.HardwareApi.registerCustomClassifier$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val optionsArg = args[0] as CustomClassifierOptions
+            api.registerCustomClassifier(optionsArg) { result: Result<Boolean> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.HardwareApi.setFlash$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val onArg = args[0] as Boolean
+            api.setFlash(onArg) { result: Result<Boolean> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.HardwareApi.setZoom$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val levelArg = args[0] as Double
+            api.setZoom(levelArg) { result: Result<Boolean> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.HardwareApi.flipCamera$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            api.flipCamera{ result: Result<Boolean> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.HardwareApi.takePhoto$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val fileNameArg = args[0] as String?
+            api.takePhoto(fileNameArg) { result: Result<String?> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.HardwareApi.startVideoRecording$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val fileNameArg = args[0] as String?
+            api.startVideoRecording(fileNameArg) { result: Result<String?> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.HardwareApi.stopVideoRecording$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            api.stopVideoRecording{ result: Result<String?> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.HardwareApi.applyCameraFilterShader$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val shaderTypeArg = args[0] as String
+            api.applyCameraFilterShader(shaderTypeArg) { result: Result<Boolean> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+    }
+  }
+}
+/** Generated interface from Pigeon that represents a handler of messages from Flutter. */
+interface AudioApi {
+  fun startAudio(options: BasicAudioOptions, callback: (Result<Boolean>) -> Unit)
+  fun startAudioWithOptions(options: NexoraAudioOptions, callback: (Result<Boolean>) -> Unit)
+  fun stopAudio(callback: (Result<Boolean>) -> Unit)
+  fun routeAudioOutput(route: String, callback: (Result<Boolean>) -> Unit)
+  fun getAudioVolume(callback: (Result<Double>) -> Unit)
+  fun setAudioVolume(level: Double, callback: (Result<Boolean>) -> Unit)
+  fun selectAudioInput(device: String, callback: (Result<Boolean>) -> Unit)
+  fun setAudioGain(gain: Double, callback: (Result<Boolean>) -> Unit)
+
+  companion object {
+    /** The codec used by AudioApi. */
+    val codec: MessageCodec<Any?> by lazy {
+      HardwareApiPigeonCodec()
+    }
+    /** Sets up an instance of `AudioApi` to handle messages through the `binaryMessenger`. */
+    @JvmOverloads
+    fun setUp(binaryMessenger: BinaryMessenger, api: AudioApi?, messageChannelSuffix: String = "") {
+      val separatedMessageChannelSuffix = if (messageChannelSuffix.isNotEmpty()) ".$messageChannelSuffix" else ""
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.AudioApi.startAudio$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val optionsArg = args[0] as BasicAudioOptions
+            api.startAudio(optionsArg) { result: Result<Boolean> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.AudioApi.startAudioWithOptions$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val optionsArg = args[0] as NexoraAudioOptions
+            api.startAudioWithOptions(optionsArg) { result: Result<Boolean> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.AudioApi.stopAudio$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            api.stopAudio{ result: Result<Boolean> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.AudioApi.routeAudioOutput$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val routeArg = args[0] as String
+            api.routeAudioOutput(routeArg) { result: Result<Boolean> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.AudioApi.getAudioVolume$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            api.getAudioVolume{ result: Result<Double> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.AudioApi.setAudioVolume$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val levelArg = args[0] as Double
+            api.setAudioVolume(levelArg) { result: Result<Boolean> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.AudioApi.selectAudioInput$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val deviceArg = args[0] as String
+            api.selectAudioInput(deviceArg) { result: Result<Boolean> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.AudioApi.setAudioGain$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val gainArg = args[0] as Double
+            api.setAudioGain(gainArg) { result: Result<Boolean> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+    }
+  }
+}
+/** Generated interface from Pigeon that represents a handler of messages from Flutter. */
+interface LocationApi {
+  fun startLocation(callback: (Result<Boolean>) -> Unit)
+  fun startLocationWithOptions(options: NexoraLocationOptions, callback: (Result<Boolean>) -> Unit)
+  fun stopLocation(callback: (Result<Boolean>) -> Unit)
+  fun setBackgroundLocationEnabled(enabled: Boolean, callback: (Result<Boolean>) -> Unit)
+
+  companion object {
+    /** The codec used by LocationApi. */
+    val codec: MessageCodec<Any?> by lazy {
+      HardwareApiPigeonCodec()
+    }
+    /** Sets up an instance of `LocationApi` to handle messages through the `binaryMessenger`. */
+    @JvmOverloads
+    fun setUp(binaryMessenger: BinaryMessenger, api: LocationApi?, messageChannelSuffix: String = "") {
+      val separatedMessageChannelSuffix = if (messageChannelSuffix.isNotEmpty()) ".$messageChannelSuffix" else ""
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.LocationApi.startLocation$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            api.startLocation{ result: Result<Boolean> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.LocationApi.startLocationWithOptions$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val optionsArg = args[0] as NexoraLocationOptions
+            api.startLocationWithOptions(optionsArg) { result: Result<Boolean> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.LocationApi.stopLocation$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            api.stopLocation{ result: Result<Boolean> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.LocationApi.setBackgroundLocationEnabled$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val enabledArg = args[0] as Boolean
+            api.setBackgroundLocationEnabled(enabledArg) { result: Result<Boolean> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+    }
+  }
+}
+/** Generated interface from Pigeon that represents a handler of messages from Flutter. */
+interface SensorApi {
+  fun startSensor(frequencyHz: Long, callback: (Result<Boolean>) -> Unit)
+  fun startSensorWithOptions(options: NexoraSensorOptions, callback: (Result<Boolean>) -> Unit)
+  fun stopSensor(callback: (Result<Boolean>) -> Unit)
+  fun enableDeadReckoning(enabled: Boolean, callback: (Result<Boolean>) -> Unit)
+
+  companion object {
+    /** The codec used by SensorApi. */
+    val codec: MessageCodec<Any?> by lazy {
+      HardwareApiPigeonCodec()
+    }
+    /** Sets up an instance of `SensorApi` to handle messages through the `binaryMessenger`. */
+    @JvmOverloads
+    fun setUp(binaryMessenger: BinaryMessenger, api: SensorApi?, messageChannelSuffix: String = "") {
+      val separatedMessageChannelSuffix = if (messageChannelSuffix.isNotEmpty()) ".$messageChannelSuffix" else ""
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.SensorApi.startSensor$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val frequencyHzArg = args[0] as Long
+            api.startSensor(frequencyHzArg) { result: Result<Boolean> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.SensorApi.startSensorWithOptions$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val optionsArg = args[0] as NexoraSensorOptions
+            api.startSensorWithOptions(optionsArg) { result: Result<Boolean> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.SensorApi.stopSensor$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            api.stopSensor{ result: Result<Boolean> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.SensorApi.enableDeadReckoning$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val enabledArg = args[0] as Boolean
+            api.enableDeadReckoning(enabledArg) { result: Result<Boolean> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+    }
+  }
+}
+/** Generated interface from Pigeon that represents a handler of messages from Flutter. */
+interface BiometricsApi {
+  fun authenticate(reason: String, callback: (Result<Boolean>) -> Unit)
+  fun authenticateWithOptions(options: NexoraBiometricOptions, callback: (Result<Boolean>) -> Unit)
+  fun canAuthenticate(callback: (Result<Boolean>) -> Unit)
+
+  companion object {
+    /** The codec used by BiometricsApi. */
+    val codec: MessageCodec<Any?> by lazy {
+      HardwareApiPigeonCodec()
+    }
+    /** Sets up an instance of `BiometricsApi` to handle messages through the `binaryMessenger`. */
+    @JvmOverloads
+    fun setUp(binaryMessenger: BinaryMessenger, api: BiometricsApi?, messageChannelSuffix: String = "") {
+      val separatedMessageChannelSuffix = if (messageChannelSuffix.isNotEmpty()) ".$messageChannelSuffix" else ""
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.BiometricsApi.authenticate$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val reasonArg = args[0] as String
+            api.authenticate(reasonArg) { result: Result<Boolean> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.BiometricsApi.authenticateWithOptions$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val optionsArg = args[0] as NexoraBiometricOptions
+            api.authenticateWithOptions(optionsArg) { result: Result<Boolean> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.BiometricsApi.canAuthenticate$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            api.canAuthenticate{ result: Result<Boolean> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+    }
+  }
+}
+/** Generated interface from Pigeon that represents a handler of messages from Flutter. */
+interface BluetoothApi {
+  fun startBluetoothScan(callback: (Result<Boolean>) -> Unit)
+  fun startBluetoothScanWithOptions(options: NexoraBluetoothScanOptions, callback: (Result<Boolean>) -> Unit)
+  fun stopBluetoothScan(callback: (Result<Boolean>) -> Unit)
+  fun connectDevice(id: String, callback: (Result<Boolean>) -> Unit)
+  fun disconnectDevice(id: String, callback: (Result<Boolean>) -> Unit)
+  fun discoverServices(deviceId: String, callback: (Result<List<String?>>) -> Unit)
+  fun sendData(deviceId: String, serviceId: String, charId: String, data: List<Long?>, callback: (Result<Boolean>) -> Unit)
+  fun readData(deviceId: String, serviceId: String, charId: String, callback: (Result<ByteArray?>) -> Unit)
+  fun subscribeToCharacteristic(deviceId: String, serviceId: String, charId: String, enable: Boolean, callback: (Result<Boolean>) -> Unit)
+  fun requestMtu(deviceId: String, mtu: Long, callback: (Result<Boolean>) -> Unit)
+  fun startBlePeripheral(uuid: String, callback: (Result<Boolean>) -> Unit)
+  fun stopBlePeripheral(callback: (Result<Unit>) -> Unit)
+
+  companion object {
+    /** The codec used by BluetoothApi. */
+    val codec: MessageCodec<Any?> by lazy {
+      HardwareApiPigeonCodec()
+    }
+    /** Sets up an instance of `BluetoothApi` to handle messages through the `binaryMessenger`. */
+    @JvmOverloads
+    fun setUp(binaryMessenger: BinaryMessenger, api: BluetoothApi?, messageChannelSuffix: String = "") {
+      val separatedMessageChannelSuffix = if (messageChannelSuffix.isNotEmpty()) ".$messageChannelSuffix" else ""
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.BluetoothApi.startBluetoothScan$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            api.startBluetoothScan{ result: Result<Boolean> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.BluetoothApi.startBluetoothScanWithOptions$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val optionsArg = args[0] as NexoraBluetoothScanOptions
+            api.startBluetoothScanWithOptions(optionsArg) { result: Result<Boolean> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.BluetoothApi.stopBluetoothScan$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            api.stopBluetoothScan{ result: Result<Boolean> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.BluetoothApi.connectDevice$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val idArg = args[0] as String
+            api.connectDevice(idArg) { result: Result<Boolean> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.BluetoothApi.disconnectDevice$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val idArg = args[0] as String
+            api.disconnectDevice(idArg) { result: Result<Boolean> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.BluetoothApi.discoverServices$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val deviceIdArg = args[0] as String
+            api.discoverServices(deviceIdArg) { result: Result<List<String?>> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.BluetoothApi.sendData$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val deviceIdArg = args[0] as String
+            val serviceIdArg = args[1] as String
+            val charIdArg = args[2] as String
+            val dataArg = args[3] as List<Long?>
+            api.sendData(deviceIdArg, serviceIdArg, charIdArg, dataArg) { result: Result<Boolean> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.BluetoothApi.readData$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val deviceIdArg = args[0] as String
+            val serviceIdArg = args[1] as String
+            val charIdArg = args[2] as String
+            api.readData(deviceIdArg, serviceIdArg, charIdArg) { result: Result<ByteArray?> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.BluetoothApi.subscribeToCharacteristic$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val deviceIdArg = args[0] as String
+            val serviceIdArg = args[1] as String
+            val charIdArg = args[2] as String
+            val enableArg = args[3] as Boolean
+            api.subscribeToCharacteristic(deviceIdArg, serviceIdArg, charIdArg, enableArg) { result: Result<Boolean> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.BluetoothApi.requestMtu$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val deviceIdArg = args[0] as String
+            val mtuArg = args[1] as Long
+            api.requestMtu(deviceIdArg, mtuArg) { result: Result<Boolean> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.BluetoothApi.startBlePeripheral$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val uuidArg = args[0] as String
+            api.startBlePeripheral(uuidArg) { result: Result<Boolean> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.BluetoothApi.stopBlePeripheral$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            api.stopBlePeripheral{ result: Result<Unit> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                reply.reply(HardwareApiPigeonUtils.wrapResult(null))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+    }
+  }
+}
+/** Generated interface from Pigeon that represents a handler of messages from Flutter. */
+interface SecureStorageApi {
+  fun getStorageInfo(callback: (Result<NexoraStorageInfo?>) -> Unit)
+  fun writeFile(fileName: String, content: String, callback: (Result<String?>) -> Unit)
+  fun appendFile(fileName: String, content: String, callback: (Result<String?>) -> Unit)
+  fun readFile(fileName: String, callback: (Result<String?>) -> Unit)
+  fun deleteFile(fileName: String, callback: (Result<Boolean>) -> Unit)
+  fun fileExists(fileName: String, callback: (Result<Boolean>) -> Unit)
+  fun listFiles(callback: (Result<List<NexoraFileInfo?>>) -> Unit)
+  fun writeBytes(fileName: String, bytes: ByteArray, callback: (Result<String?>) -> Unit)
+  fun readBytes(fileName: String, callback: (Result<ByteArray?>) -> Unit)
+  fun clearCache(callback: (Result<Boolean>) -> Unit)
+  fun getAppDirectory(callback: (Result<String?>) -> Unit)
+  fun getCacheDirectory(callback: (Result<String?>) -> Unit)
+  fun getExternalDirectory(callback: (Result<String?>) -> Unit)
+
+  companion object {
+    /** The codec used by SecureStorageApi. */
+    val codec: MessageCodec<Any?> by lazy {
+      HardwareApiPigeonCodec()
+    }
+    /** Sets up an instance of `SecureStorageApi` to handle messages through the `binaryMessenger`. */
+    @JvmOverloads
+    fun setUp(binaryMessenger: BinaryMessenger, api: SecureStorageApi?, messageChannelSuffix: String = "") {
+      val separatedMessageChannelSuffix = if (messageChannelSuffix.isNotEmpty()) ".$messageChannelSuffix" else ""
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.SecureStorageApi.getStorageInfo$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            api.getStorageInfo{ result: Result<NexoraStorageInfo?> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.SecureStorageApi.writeFile$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val fileNameArg = args[0] as String
+            val contentArg = args[1] as String
+            api.writeFile(fileNameArg, contentArg) { result: Result<String?> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.SecureStorageApi.appendFile$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val fileNameArg = args[0] as String
+            val contentArg = args[1] as String
+            api.appendFile(fileNameArg, contentArg) { result: Result<String?> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.SecureStorageApi.readFile$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val fileNameArg = args[0] as String
+            api.readFile(fileNameArg) { result: Result<String?> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.SecureStorageApi.deleteFile$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val fileNameArg = args[0] as String
+            api.deleteFile(fileNameArg) { result: Result<Boolean> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.SecureStorageApi.fileExists$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val fileNameArg = args[0] as String
+            api.fileExists(fileNameArg) { result: Result<Boolean> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.SecureStorageApi.listFiles$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            api.listFiles{ result: Result<List<NexoraFileInfo?>> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.SecureStorageApi.writeBytes$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val fileNameArg = args[0] as String
+            val bytesArg = args[1] as ByteArray
+            api.writeBytes(fileNameArg, bytesArg) { result: Result<String?> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.SecureStorageApi.readBytes$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val fileNameArg = args[0] as String
+            api.readBytes(fileNameArg) { result: Result<ByteArray?> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.SecureStorageApi.clearCache$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            api.clearCache{ result: Result<Boolean> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.SecureStorageApi.getAppDirectory$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            api.getAppDirectory{ result: Result<String?> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.SecureStorageApi.getCacheDirectory$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            api.getCacheDirectory{ result: Result<String?> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.SecureStorageApi.getExternalDirectory$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            api.getExternalDirectory{ result: Result<String?> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+    }
+  }
+}
+/** Generated interface from Pigeon that represents a handler of messages from Flutter. */
+interface SystemApi {
+  fun configureSdk(config: NexoraSdkConfig, callback: (Result<Boolean>) -> Unit)
+  fun requestPermissions(callback: (Result<Boolean>) -> Unit)
+  fun requestPermission(type: String, callback: (Result<Boolean>) -> Unit)
+  fun getPermissionStatus(type: String, callback: (Result<NexoraPermissionStatus>) -> Unit)
+  fun openAppSettings(callback: (Result<Boolean>) -> Unit)
+  fun getDeviceInfo(callback: (Result<NexoraDeviceInfo>) -> Unit)
+  fun getConnectivityInfo(callback: (Result<NexoraConnectivityInfo>) -> Unit)
+  fun getBatteryInfo(callback: (Result<NexoraBatteryInfo?>) -> Unit)
+  fun getWifiInfo(callback: (Result<NexoraWifiInfo?>) -> Unit)
+  fun vibrate(durationMs: Long, callback: (Result<Unit>) -> Unit)
+  fun hapticFeedback(type: String, callback: (Result<Unit>) -> Unit)
+  fun performHapticWithOptions(options: NexoraHapticOptions, callback: (Result<Unit>) -> Unit)
+  fun copyText(text: String, callback: (Result<Boolean>) -> Unit)
+  fun pasteText(callback: (Result<String?>) -> Unit)
+  fun openUrl(url: String, callback: (Result<Boolean>) -> Unit)
+  fun shareText(text: String, subject: String?, callback: (Result<Boolean>) -> Unit)
+  fun saveToGallery(filePath: String, callback: (Result<String?>) -> Unit)
+  fun enterPictureInPicture(callback: (Result<Boolean>) -> Unit)
+  fun getConnectedUsbDevices(callback: (Result<List<String?>>) -> Unit)
+  fun startForegroundService(title: String, content: String, callback: (Result<Boolean>) -> Unit)
+  fun updateForegroundService(title: String, text: String, callback: (Result<Boolean>) -> Unit)
+  fun stopForegroundService(callback: (Result<Boolean>) -> Unit)
+  fun enableSmartSync(uploadEndpointUrl: String, headers: Map<String?, String?>, rollLimitBytes: Long, requireWifi: Boolean, callback: (Result<Boolean>) -> Unit)
+  fun setEcoModeEnabled(enabled: Boolean, callback: (Result<Unit>) -> Unit)
+  fun isEcoModeActive(callback: (Result<Boolean>) -> Unit)
+  fun getThermalState(callback: (Result<String>) -> Unit)
+
+  companion object {
+    /** The codec used by SystemApi. */
+    val codec: MessageCodec<Any?> by lazy {
+      HardwareApiPigeonCodec()
+    }
+    /** Sets up an instance of `SystemApi` to handle messages through the `binaryMessenger`. */
+    @JvmOverloads
+    fun setUp(binaryMessenger: BinaryMessenger, api: SystemApi?, messageChannelSuffix: String = "") {
+      val separatedMessageChannelSuffix = if (messageChannelSuffix.isNotEmpty()) ".$messageChannelSuffix" else ""
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.configureSdk$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val configArg = args[0] as NexoraSdkConfig
+            api.configureSdk(configArg) { result: Result<Boolean> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.requestPermissions$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            api.requestPermissions{ result: Result<Boolean> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.requestPermission$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val typeArg = args[0] as String
+            api.requestPermission(typeArg) { result: Result<Boolean> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.getPermissionStatus$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val typeArg = args[0] as String
+            api.getPermissionStatus(typeArg) { result: Result<NexoraPermissionStatus> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.openAppSettings$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            api.openAppSettings{ result: Result<Boolean> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.getDeviceInfo$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            api.getDeviceInfo{ result: Result<NexoraDeviceInfo> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.getConnectivityInfo$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            api.getConnectivityInfo{ result: Result<NexoraConnectivityInfo> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.getBatteryInfo$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            api.getBatteryInfo{ result: Result<NexoraBatteryInfo?> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.getWifiInfo$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            api.getWifiInfo{ result: Result<NexoraWifiInfo?> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.vibrate$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val durationMsArg = args[0] as Long
+            api.vibrate(durationMsArg) { result: Result<Unit> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                reply.reply(HardwareApiPigeonUtils.wrapResult(null))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.hapticFeedback$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val typeArg = args[0] as String
+            api.hapticFeedback(typeArg) { result: Result<Unit> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                reply.reply(HardwareApiPigeonUtils.wrapResult(null))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.performHapticWithOptions$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val optionsArg = args[0] as NexoraHapticOptions
+            api.performHapticWithOptions(optionsArg) { result: Result<Unit> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                reply.reply(HardwareApiPigeonUtils.wrapResult(null))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.copyText$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val textArg = args[0] as String
+            api.copyText(textArg) { result: Result<Boolean> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.pasteText$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            api.pasteText{ result: Result<String?> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.openUrl$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val urlArg = args[0] as String
+            api.openUrl(urlArg) { result: Result<Boolean> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.shareText$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val textArg = args[0] as String
+            val subjectArg = args[1] as String?
+            api.shareText(textArg, subjectArg) { result: Result<Boolean> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.saveToGallery$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val filePathArg = args[0] as String
+            api.saveToGallery(filePathArg) { result: Result<String?> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.enterPictureInPicture$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            api.enterPictureInPicture{ result: Result<Boolean> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.getConnectedUsbDevices$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            api.getConnectedUsbDevices{ result: Result<List<String?>> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.startForegroundService$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val titleArg = args[0] as String
+            val contentArg = args[1] as String
+            api.startForegroundService(titleArg, contentArg) { result: Result<Boolean> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.updateForegroundService$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val titleArg = args[0] as String
+            val textArg = args[1] as String
+            api.updateForegroundService(titleArg, textArg) { result: Result<Boolean> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.stopForegroundService$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            api.stopForegroundService{ result: Result<Boolean> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.enableSmartSync$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val uploadEndpointUrlArg = args[0] as String
+            val headersArg = args[1] as Map<String?, String?>
+            val rollLimitBytesArg = args[2] as Long
+            val requireWifiArg = args[3] as Boolean
+            api.enableSmartSync(uploadEndpointUrlArg, headersArg, rollLimitBytesArg, requireWifiArg) { result: Result<Boolean> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.setEcoModeEnabled$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val enabledArg = args[0] as Boolean
+            api.setEcoModeEnabled(enabledArg) { result: Result<Unit> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                reply.reply(HardwareApiPigeonUtils.wrapResult(null))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.isEcoModeActive$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            api.isEcoModeActive{ result: Result<Boolean> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.getThermalState$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            api.getThermalState{ result: Result<String> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+    }
+  }
+}
+/** Generated interface from Pigeon that represents a handler of messages from Flutter. */
+interface CryptoApi {
+  fun generateBiometricKey(options: NexoraCryptoKeyOptions, callback: (Result<Boolean>) -> Unit)
+  fun deleteKey(alias: String, callback: (Result<Boolean>) -> Unit)
+  fun keyExists(alias: String, callback: (Result<Boolean>) -> Unit)
+  fun signWithBiometricKey(alias: String, data: ByteArray, callback: (Result<ByteArray?>) -> Unit)
+  fun encryptWithBiometricKey(alias: String, plaintext: ByteArray, callback: (Result<ByteArray?>) -> Unit)
+  fun decryptWithBiometricKey(alias: String, ciphertext: ByteArray, callback: (Result<ByteArray?>) -> Unit)
+
+  companion object {
+    /** The codec used by CryptoApi. */
+    val codec: MessageCodec<Any?> by lazy {
+      HardwareApiPigeonCodec()
+    }
+    /** Sets up an instance of `CryptoApi` to handle messages through the `binaryMessenger`. */
+    @JvmOverloads
+    fun setUp(binaryMessenger: BinaryMessenger, api: CryptoApi?, messageChannelSuffix: String = "") {
+      val separatedMessageChannelSuffix = if (messageChannelSuffix.isNotEmpty()) ".$messageChannelSuffix" else ""
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.CryptoApi.generateBiometricKey$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val optionsArg = args[0] as NexoraCryptoKeyOptions
+            api.generateBiometricKey(optionsArg) { result: Result<Boolean> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.CryptoApi.deleteKey$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val aliasArg = args[0] as String
+            api.deleteKey(aliasArg) { result: Result<Boolean> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.CryptoApi.keyExists$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val aliasArg = args[0] as String
+            api.keyExists(aliasArg) { result: Result<Boolean> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.CryptoApi.signWithBiometricKey$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val aliasArg = args[0] as String
+            val dataArg = args[1] as ByteArray
+            api.signWithBiometricKey(aliasArg, dataArg) { result: Result<ByteArray?> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.CryptoApi.encryptWithBiometricKey$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val aliasArg = args[0] as String
+            val plaintextArg = args[1] as ByteArray
+            api.encryptWithBiometricKey(aliasArg, plaintextArg) { result: Result<ByteArray?> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.CryptoApi.decryptWithBiometricKey$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val aliasArg = args[0] as String
+            val ciphertextArg = args[1] as ByteArray
+            api.decryptWithBiometricKey(aliasArg, ciphertextArg) { result: Result<ByteArray?> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
+            }
           }
         } else {
           channel.setMessageHandler(null)

@@ -58,6 +58,7 @@ class HardwareCameraManager(private val context: Context) {
         .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_FAST)
         .build())
 
+    private val ai = HardwareAiManager(context)
     private var customModelAssetPath: String? = null
     private var customLabels: List<String>? = null
     private var customThreshold: Float = 0.5f
@@ -67,8 +68,8 @@ class HardwareCameraManager(private val context: Context) {
         this.customModelAssetPath = modelAssetPath
         this.customLabels = labels
         this.customThreshold = threshold
-        this.isCustomClassifierRegistered = true
-        return true
+        this.isCustomClassifierRegistered = ai.loadCustomModel(modelAssetPath)
+        return this.isCustomClassifierRegistered
     }
 
     fun setEventSink(sink: EventChannel.EventSink?) { this.eventSink = sink }
@@ -206,6 +207,57 @@ class HardwareCameraManager(private val context: Context) {
             faceDetector.process(inputImage).addOnSuccessListener { faces ->
                 sendVisionData(mapOf("faces" to faces.map { mapOf("top" to it.boundingBox.top, "left" to it.boundingBox.left) }))
             }
+        }
+        if (isCustomClassifierRegistered) {
+            val bitmap = imageToBitmap(image)
+            if (bitmap != null) {
+                val prediction = ai.runInferenceOnImage(bitmap)
+                if (prediction != null) {
+                    val labelIdx = prediction.first
+                    val confidence = prediction.second
+                    if (confidence >= customThreshold) {
+                        val labels = customLabels
+                        val label = if (labels != null && labelIdx >= 0 && labelIdx < labels.size) {
+                            labels[labelIdx]
+                        } else {
+                            "class_$labelIdx"
+                        }
+                        sendVisionData(mapOf(
+                            "classification" to mapOf(
+                                "label" to label,
+                                "confidence" to confidence.toDouble()
+                            )
+                        ))
+                    }
+                }
+            }
+        }
+    }
+
+    private fun imageToBitmap(image: android.media.Image): android.graphics.Bitmap? {
+        return try {
+            val planes = image.planes
+            val yBuffer = planes[0].buffer
+            val uBuffer = planes[1].buffer
+            val vBuffer = planes[2].buffer
+
+            val ySize = yBuffer.remaining()
+            val uSize = uBuffer.remaining()
+            val vSize = vBuffer.remaining()
+
+            val nv21 = ByteArray(ySize + uSize + vSize)
+
+            yBuffer.get(nv21, 0, ySize)
+            vBuffer.get(nv21, ySize, vSize)
+            uBuffer.get(nv21, ySize + vSize, uSize)
+
+            val yuvImage = android.graphics.YuvImage(nv21, android.graphics.ImageFormat.NV21, image.width, image.height, null)
+            val out = java.io.ByteArrayOutputStream()
+            yuvImage.compressToJpeg(android.graphics.Rect(0, 0, yuvImage.width, yuvImage.height), 100, out)
+            val imageBytes = out.toByteArray()
+            android.graphics.BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
+        } catch (e: Exception) {
+            null
         }
     }
 

@@ -2,7 +2,7 @@
 # Nexora SDK Podspec
 #
 Pod::Spec.new do |s|
-  s.name             = 'nexora_sdk'
+  s.name             = 'nexora_sdk_ios'
   s.version          = '3.1.2'
   s.summary          = 'High-performance Flutter Hardware SDK with AI Intelligence & Storage.'
   s.description      = <<-DESC
@@ -12,7 +12,7 @@ A premium hardware engine for Flutter supporting Camera (Vision AI), Bluetooth L
   s.license          = { :file => '../LICENSE' }
   s.author           = { 'Sahil' => 'email@example.com' }
   s.source           = { :path => '.' }
-  s.source_files = 'Classes/**/*.swift'
+  s.source_files = 'Classes/**/*.swift', '../../../src/*.{h,cpp}'
   s.dependency 'Flutter'
   s.platform = :ios, '13.0'
 

@@ -308,4 +308,91 @@ class HardwareBluetoothManager(private val context: Context) {
             listOf(filter)
         }
     }
+
+    // ======================== L2CAP Connection-Oriented Channels ========================
+
+    private var l2capSocket: BluetoothSocket? = null
+    @Volatile
+    private var l2capRunning = false
+    private val l2capExecutor = java.util.concurrent.Executors.newSingleThreadExecutor()
+
+    /**
+     * Opens an L2CAP Connection-Oriented Channel to the given device.
+     * Requires Android 10+ (API 29) for insecure L2CAP channels.
+     * Incoming bytes are piped as `type: "l2cap"` events through the EventSink.
+     */
+    @SuppressLint("MissingPermission")
+    fun connectL2cap(deviceId: String, psm: Int): Boolean {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+            // L2CAP CoC requires API 29+
+            return false
+        }
+        val adapter = bluetoothAdapter ?: return false
+        val device = try {
+            adapter.getRemoteDevice(deviceId)
+        } catch (_: IllegalArgumentException) {
+            return false
+        }
+
+        // Close any existing L2CAP socket
+        closeL2cap()
+
+        return try {
+            val socket = device.createInsecureL2capChannel(psm)
+            socket.connect()
+            l2capSocket = socket
+            l2capRunning = true
+
+            l2capExecutor.execute {
+                val buffer = ByteArray(4096)
+                try {
+                    val inputStream = socket.inputStream
+                    while (l2capRunning && socket.isConnected) {
+                        val bytesRead = inputStream.read(buffer)
+                        if (bytesRead == -1) break
+                        val chunk = buffer.copyOf(bytesRead)
+                        val eventData = mapOf(
+                            "module" to "bluetooth",
+                            "type" to "l2cap",
+                            "data" to mapOf(
+                                "deviceId" to deviceId,
+                                "psm" to psm,
+                                "bytes" to chunk.toList()
+                            )
+                        )
+                        Handler(context.mainLooper).post { eventSink?.success(eventData) }
+                    }
+                } catch (_: java.io.IOException) {
+                    // Socket closed or remote disconnect – stop gracefully
+                } finally {
+                    closeL2cap()
+                    val statusData = mapOf(
+                        "module" to "bluetooth",
+                        "type" to "l2capStatus",
+                        "data" to mapOf(
+                            "deviceId" to deviceId,
+                            "psm" to psm,
+                            "state" to "disconnected"
+                        )
+                    )
+                    Handler(context.mainLooper).post { eventSink?.success(statusData) }
+                }
+            }
+            true
+        } catch (_: Exception) {
+            false
+        }
+    }
+
+    /** Closes the active L2CAP socket. */
+    fun closeL2cap() {
+        l2capRunning = false
+        try {
+            l2capSocket?.close()
+        } catch (_: java.io.IOException) {
+            // Ignore close errors
+        }
+        l2capSocket = null
+    }
 }
+

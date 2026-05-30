@@ -1335,6 +1335,7 @@ class NexoraSdkConfig {
   const NexoraSdkConfig({
     this.autoRequestPermissions = true,
     this.logNativeCalls = false,
+    this.ecoMode = false,
     this.unsupportedFeaturePolicy = UnsupportedFeaturePolicy.throwException,
     this.camera = const CameraOptions(),
     this.audio = const AudioOptions(),
@@ -1358,6 +1359,9 @@ class NexoraSdkConfig {
 
   /// Whether native implementations should emit lightweight diagnostic logs.
   final bool logNativeCalls;
+
+  /// Whether the SDK should run in energy-saving/eco mode by default.
+  final bool ecoMode;
 
   /// The fallback strategy for unsupported platform features.
   final UnsupportedFeaturePolicy unsupportedFeaturePolicy;
@@ -1396,6 +1400,7 @@ class NexoraSdkConfig {
   Map<String, Object?> toMap() => <String, Object?>{
         'autoRequestPermissions': autoRequestPermissions,
         'logNativeCalls': logNativeCalls,
+        'ecoMode': ecoMode,
         'unsupportedFeaturePolicy': unsupportedFeaturePolicy.name,
         'camera': camera.toMap(),
         'audio': audio.toMap(),
@@ -1414,6 +1419,7 @@ class NexoraSdkConfig {
     return NexoraSdkConfig(
       autoRequestPermissions: map['autoRequestPermissions'] as bool? ?? true,
       logNativeCalls: map['logNativeCalls'] as bool? ?? false,
+      ecoMode: map['ecoMode'] as bool? ?? false,
       unsupportedFeaturePolicy: UnsupportedFeaturePolicy.values.firstWhere(
         (policy) => policy.name == policyName,
         orElse: () => UnsupportedFeaturePolicy.throwException,
@@ -1452,6 +1458,7 @@ class NexoraSdkConfig {
   NexoraSdkConfig copyWith({
     bool? autoRequestPermissions,
     bool? logNativeCalls,
+    bool? ecoMode,
     UnsupportedFeaturePolicy? unsupportedFeaturePolicy,
     CameraOptions? camera,
     AudioOptions? audio,
@@ -1467,6 +1474,7 @@ class NexoraSdkConfig {
       autoRequestPermissions:
           autoRequestPermissions ?? this.autoRequestPermissions,
       logNativeCalls: logNativeCalls ?? this.logNativeCalls,
+      ecoMode: ecoMode ?? this.ecoMode,
       unsupportedFeaturePolicy:
           unsupportedFeaturePolicy ?? this.unsupportedFeaturePolicy,
       camera: camera ?? this.camera,
@@ -1484,7 +1492,7 @@ class NexoraSdkConfig {
   @override
   String toString() {
     return 'NexoraSdkConfig(autoRequestPermissions: $autoRequestPermissions, '
-        'logNativeCalls: $logNativeCalls, policy: $unsupportedFeaturePolicy)';
+        'logNativeCalls: $logNativeCalls, ecoMode: $ecoMode, policy: $unsupportedFeaturePolicy)';
   }
 }
 

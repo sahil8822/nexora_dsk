@@ -17,6 +17,12 @@ public class HardwareBluetoothManager: NSObject, CBCentralManagerDelegate {
     private var allowDuplicates = false
     private var serviceFilters: [CBUUID]?
     private var nameFilter: String?
+
+    // L2CAP state
+    var l2capChannel: CBL2CAPChannel?
+    var l2capInputStream: InputStream?
+    var l2capPsm: Int?
+    var l2capDeviceId: String?
     
     public override init() {
         super.init()
@@ -261,3 +267,112 @@ extension HardwareBluetoothManager {
     }
 
 }
+
+// MARK: - L2CAP Connection-Oriented Channels
+
+extension HardwareBluetoothManager: StreamDelegate {
+
+    /// Opens an L2CAP Connection-Oriented Channel to the connected peripheral.
+    /// Requires iOS 11.0+. Incoming bytes are piped as `type: "l2cap"` events through the EventSink.
+    func connectL2cap(deviceId: String, psm: Int) -> Bool {
+        guard let peripheral = connectedPeripheral,
+              peripheral.identifier.uuidString == deviceId else {
+            return false
+        }
+        peripheral.openL2CAPChannel(CBL2CAPPSM(psm))
+        return true
+    }
+
+    /// Close the active L2CAP channel.
+    func closeL2cap() {
+        l2capInputStream?.close()
+        l2capInputStream?.remove(from: .current, forMode: .default)
+        l2capInputStream = nil
+        l2capChannel = nil
+    }
+
+    /// Called when an L2CAP channel is opened.
+    public func peripheral(_ peripheral: CBPeripheral, didOpen channel: CBL2CAPChannel?, error: Error?) {
+        guard let channel = channel, error == nil else {
+            let errorData: [String: Any] = [
+                "module": "bluetooth",
+                "type": "l2capStatus",
+                "data": [
+                    "deviceId": peripheral.identifier.uuidString,
+                    "state": "error",
+                    "message": error?.localizedDescription ?? "Unknown L2CAP error"
+                ]
+            ]
+            DispatchQueue.main.async { self.eventSink?(errorData) }
+            return
+        }
+
+        l2capChannel = channel
+        l2capPsm = Int(channel.psm)
+        l2capDeviceId = peripheral.identifier.uuidString
+
+        let inputStream = channel.inputStream
+        l2capInputStream = inputStream
+        inputStream.delegate = self
+        inputStream.schedule(in: .current, forMode: .default)
+        inputStream.open()
+
+        let statusData: [String: Any] = [
+            "module": "bluetooth",
+            "type": "l2capStatus",
+            "data": [
+                "deviceId": peripheral.identifier.uuidString,
+                "psm": Int(channel.psm),
+                "state": "connected"
+            ]
+        ]
+        DispatchQueue.main.async { self.eventSink?(statusData) }
+    }
+
+    /// Stream delegate to read incoming L2CAP data.
+    public func stream(_ aStream: Stream, handle eventCode: Stream.Event) {
+        guard let inputStream = aStream as? InputStream else { return }
+
+        switch eventCode {
+        case .hasBytesAvailable:
+            let bufferSize = 4096
+            let buffer = UnsafeMutablePointer<UInt8>.allocate(capacity: bufferSize)
+            defer { buffer.deallocate() }
+
+            let bytesRead = inputStream.read(buffer, maxLength: bufferSize)
+            if bytesRead > 0 {
+                let data = Data(bytes: buffer, count: bytesRead)
+                let eventData: [String: Any] = [
+                    "module": "bluetooth",
+                    "type": "l2cap",
+                    "data": [
+                        "deviceId": l2capDeviceId ?? "",
+                        "psm": l2capPsm ?? 0,
+                        "bytes": [UInt8](data)
+                    ]
+                ]
+                DispatchQueue.main.async { self.eventSink?(eventData) }
+            }
+
+        case .endEncountered:
+            closeL2cap()
+            let statusData: [String: Any] = [
+                "module": "bluetooth",
+                "type": "l2capStatus",
+                "data": [
+                    "deviceId": l2capDeviceId ?? "",
+                    "psm": l2capPsm ?? 0,
+                    "state": "disconnected"
+                ]
+            ]
+            DispatchQueue.main.async { self.eventSink?(statusData) }
+
+        case .errorOccurred:
+            closeL2cap()
+
+        default:
+            break
+        }
+    }
+}
+

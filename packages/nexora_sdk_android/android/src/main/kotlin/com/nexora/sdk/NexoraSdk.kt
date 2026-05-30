@@ -15,6 +15,7 @@ import android.os.PowerManager
 import android.provider.Settings
 import android.content.ClipData
 import android.content.ClipboardManager
+import android.media.AudioManager
 import androidx.annotation.NonNull
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -28,12 +29,22 @@ import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
 import io.flutter.plugin.common.PluginRegistry
 import io.flutter.view.TextureRegistry
-import android.media.AudioManager
+
+import com.nexora.sdk.pigeon.*
 
 /**
- * Nexora SDK v3.1.2 — Complete Native Plugin with Storage.
+ * Nexora SDK — Complete Native Plugin with type-safe Pigeon host APIs.
  */
-class NexoraSdk: FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry.RequestPermissionsResultListener, PluginRegistry.NewIntentListener, android.content.ComponentCallbacks2 {
+class NexoraSdk: FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry.RequestPermissionsResultListener, PluginRegistry.NewIntentListener, android.content.ComponentCallbacks2,
+    HardwareApi,
+    AudioApi,
+    LocationApi,
+    SensorApi,
+    BiometricsApi,
+    BluetoothApi,
+    SecureStorageApi,
+    SystemApi {
+    
     companion object {
         private const val PERMISSION_REQUEST_CODE = 7310
         private const val PREFS_NAME = "nexora_sdk_permissions"
@@ -70,7 +81,6 @@ class NexoraSdk: FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry
     private lateinit var crypto: HardwareCryptoManager
     private lateinit var backgroundTasks: HardwareTaskManager
 
-
     private val executor = java.util.concurrent.Executors.newCachedThreadPool()
     private val mainHandler = android.os.Handler(android.os.Looper.getMainLooper())
     private var eventSink: EventChannel.EventSink? = null
@@ -101,7 +111,6 @@ class NexoraSdk: FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry
         crypto = HardwareCryptoManager()
         backgroundTasks = HardwareTaskManager(context)
 
-        
         health.setSmartSyncManager(smartSync)
 
         val handler = object : EventChannel.StreamHandler {
@@ -110,6 +119,7 @@ class NexoraSdk: FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry
                 sensors.setEventSink(events)
                 camera.setEventSink(events)
                 bluetooth.setEventSink(events)
+                blePeripheralManager.setEventSink(events)
                 location.setEventSink(events)
                 audio.setEventSink(events)
                 nfc.setEventSink(events)
@@ -119,6 +129,7 @@ class NexoraSdk: FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry
                 sensors.setEventSink(null)
                 camera.setEventSink(null)
                 bluetooth.setEventSink(null)
+                blePeripheralManager.setEventSink(null)
                 location.setEventSink(null)
                 audio.setEventSink(null)
                 nfc.setEventSink(null)
@@ -126,9 +137,20 @@ class NexoraSdk: FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry
         }
         eventChannel.setStreamHandler(handler)
         context.registerComponentCallbacks(this)
+
+        // Set up Pigeon host APIs
+        HardwareApi.setUp(flutterPluginBinding.binaryMessenger, this)
+        AudioApi.setUp(flutterPluginBinding.binaryMessenger, this)
+        LocationApi.setUp(flutterPluginBinding.binaryMessenger, this)
+        SensorApi.setUp(flutterPluginBinding.binaryMessenger, this)
+        BiometricsApi.setUp(flutterPluginBinding.binaryMessenger, this)
+        BluetoothApi.setUp(flutterPluginBinding.binaryMessenger, this)
+        SecureStorageApi.setUp(flutterPluginBinding.binaryMessenger, this)
+        SystemApi.setUp(flutterPluginBinding.binaryMessenger, this)
     }
 
     override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
+        // Fallback for legacy MethodChannel calls, delegating to the safe handler
         val uiResult = UIThreadResult(result, mainHandler)
         if (shouldRunInBackground(call.method)) {
             executor.execute {
@@ -148,680 +170,1082 @@ class NexoraSdk: FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry
     }
 
     private fun handleMethodCallSafe(call: MethodCall, result: Result) {
+        // Legacy routing mapping (kept for binary backward compatibility)
         try {
-        if (logNativeCalls) {
-            android.util.Log.d("NexoraSdk", "Native call: ${call.method}")
-        }
-        when (call.method) {
-            "configureSdk" -> {
-                @Suppress("UNCHECKED_CAST")
-                sdkConfig = call.arguments as? Map<String, Any?> ?: emptyMap()
-                logNativeCalls = sdkConfig["logNativeCalls"] as? Boolean ?: false
-                @Suppress("UNCHECKED_CAST")
-                androidOptions = sdkConfig["android"] as? Map<String, Any?> ?: emptyMap()
-                applyAndroidOptions(androidOptions)
-                result.success(true)
-            }
-            // ==================== Camera & Vision ====================
-            "startCamera" -> {
-                if (!hasPermission(Manifest.permission.CAMERA)) {
-                    result.error("PERMISSION_DENIED", "Camera permission is required.", null)
-                    return
+            when (call.method) {
+                "configureSdk" -> {
+                    sdkConfig = call.arguments as? Map<String, Any?> ?: emptyMap()
+                    logNativeCalls = sdkConfig["logNativeCalls"] as? Boolean ?: false
+                    androidOptions = sdkConfig["android"] as? Map<String, Any?> ?: emptyMap()
+                    applyAndroidOptions(androidOptions)
+                    result.success(true)
                 }
-                val width = call.argument<Int>("width") ?: 1280
-                val height = call.argument<Int>("height") ?: 720
+                "getPlatformVersion" -> result.success("Android ${android.os.Build.VERSION.RELEASE}")
+                "connectL2cap" -> {
+                    val args = call.arguments as? Map<String, Any?> ?: emptyMap()
+                    val deviceId = args["deviceId"] as? String ?: ""
+                    val psm = (args["psm"] as? Number)?.toInt() ?: 0
+                    val success = bluetooth.connectL2cap(deviceId, psm)
+                    result.success(success)
+                }
+                else -> result.notImplemented()
+            }
+        } catch (e: Exception) {
+            result.error("NATIVE_CRASH", e.message, null)
+        }
+    }
+
+    // --- HardwareApi ---
+
+    override fun startCamera(width: Long, height: Long, callback: (kotlin.Result<Long>) -> Unit) {
+        mainHandler.post {
+            try {
+                if (!hasPermission(Manifest.permission.CAMERA)) {
+                    callback(kotlin.Result.failure(FlutterError("PERMISSION_DENIED", "Camera permission is required.")))
+                    return@post
+                }
                 textureEntry = textureRegistry?.createSurfaceTexture()
                 val entry = textureEntry
                 if (entry == null) {
-                    result.error("CAMERA_ERROR", "Texture registry is unavailable.", null)
-                    return
+                    callback(kotlin.Result.failure(FlutterError("CAMERA_ERROR", "Texture registry is unavailable.")))
+                    return@post
                 }
-                entry.surfaceTexture().setDefaultBufferSize(width, height)
+                entry.surfaceTexture().setDefaultBufferSize(width.toInt(), height.toInt())
                 val surface = android.view.Surface(entry.surfaceTexture())
-                camera.startWithSurface(surface, width, height)
-                result.success(entry.id())
+                camera.startWithSurface(surface, width.toInt(), height.toInt())
+                callback(kotlin.Result.success(entry.id()))
+            } catch (e: Exception) {
+                callback(kotlin.Result.failure(e))
             }
-            "stopCamera" -> {
-                camera.stop()
-                textureEntry?.release()
-                textureEntry = null
-                result.success(true)
-            }
-            "setVisionMode" -> {
-                camera.setVisionMode(
-                    call.argument<Boolean>("face") ?: false,
-                    call.argument<Boolean>("barcode") ?: false
-                )
-                result.success(true)
-            }
-            "registerCustomClassifier" -> {
-                val modelAssetPath = call.argument<String>("modelAssetPath")
-                val labels = call.argument<List<String>>("labels")
-                val threshold = call.argument<Double>("threshold") ?: 0.5
-                if (modelAssetPath == null || labels == null) {
-                    result.error("INVALID_ARGUMENT", "registerCustomClassifier requires modelAssetPath and labels.", null)
-                    return
-                }
-                val success = camera.registerCustomClassifier(modelAssetPath, labels, threshold.toFloat())
-                result.success(success)
-            }
-            "startCameraWithOptions" -> {
+        }
+    }
+
+    override fun startCameraWithOptions(options: NexoraCameraOptions, callback: (kotlin.Result<Long>) -> Unit) {
+        mainHandler.post {
+            try {
                 if (!hasPermission(Manifest.permission.CAMERA)) {
-                    result.error("PERMISSION_DENIED", "Camera permission is required.", null)
-                    return
+                    callback(kotlin.Result.failure(FlutterError("PERMISSION_DENIED", "Camera permission is required.")))
+                    return@post
                 }
-                val resolution = call.argument<String>("resolution") ?: "hd"
+                val resolution = options.resolution ?: "hd"
                 val size = cameraSizeForResolution(resolution)
                 textureEntry = textureRegistry?.createSurfaceTexture()
                 val entry = textureEntry
                 if (entry == null) {
-                    result.error("CAMERA_ERROR", "Texture registry is unavailable.", null)
-                    return
+                    callback(kotlin.Result.failure(FlutterError("CAMERA_ERROR", "Texture registry is unavailable.")))
+                    return@post
                 }
                 entry.surfaceTexture().setDefaultBufferSize(size.first, size.second)
                 val surface = android.view.Surface(entry.surfaceTexture())
                 camera.startWithSurface(surface, size.first, size.second)
-                result.success(entry.id())
+                callback(kotlin.Result.success(entry.id()))
+            } catch (e: Exception) {
+                callback(kotlin.Result.failure(e))
             }
-            "startAudioWithOptions" -> {
+        }
+    }
+
+    override fun stopCamera(callback: (kotlin.Result<Boolean>) -> Unit) {
+        mainHandler.post {
+            try {
+                camera.stop()
+                textureEntry?.release()
+                textureEntry = null
+                callback(kotlin.Result.success(true))
+            } catch (e: Exception) {
+                callback(kotlin.Result.failure(e))
+            }
+        }
+    }
+
+    override fun setVisionMode(options: VisionModeOptions, callback: (kotlin.Result<Boolean>) -> Unit) {
+        mainHandler.post {
+            try {
+                camera.setVisionMode(
+                    options.face ?: false,
+                    options.barcode ?: false
+                )
+                callback(kotlin.Result.success(true))
+            } catch (e: Exception) {
+                callback(kotlin.Result.failure(e))
+            }
+        }
+    }
+
+    override fun registerCustomClassifier(options: CustomClassifierOptions, callback: (kotlin.Result<Boolean>) -> Unit) {
+        mainHandler.post {
+            try {
+                val modelAssetPath = options.modelAssetPath
+                val labels = options.labels
+                val threshold = options.threshold ?: 0.5
+                if (modelAssetPath == null || labels == null) {
+                    callback(kotlin.Result.failure(FlutterError("INVALID_ARGUMENT", "registerCustomClassifier requires modelAssetPath and labels.")))
+                    return@post
+                }
+                val success = camera.registerCustomClassifier(modelAssetPath, labels.filterNotNull(), threshold.toFloat())
+                callback(kotlin.Result.success(success))
+            } catch (e: Exception) {
+                callback(kotlin.Result.failure(e))
+            }
+        }
+    }
+
+    override fun setFlash(on: Boolean, callback: (kotlin.Result<Boolean>) -> Unit) {
+        mainHandler.post {
+            try {
+                camera.setFlash(on)
+                callback(kotlin.Result.success(true))
+            } catch (e: Exception) {
+                callback(kotlin.Result.failure(e))
+            }
+        }
+    }
+
+    override fun setZoom(level: Double, callback: (kotlin.Result<Boolean>) -> Unit) {
+        mainHandler.post {
+            try {
+                camera.setZoom(level.toFloat())
+                callback(kotlin.Result.success(true))
+            } catch (e: Exception) {
+                callback(kotlin.Result.failure(e))
+            }
+        }
+    }
+
+    override fun flipCamera(callback: (kotlin.Result<Boolean>) -> Unit) {
+        mainHandler.post {
+            try {
+                camera.flipCamera()
+                callback(kotlin.Result.success(true))
+            } catch (e: Exception) {
+                callback(kotlin.Result.failure(e))
+            }
+        }
+    }
+
+    override fun takePhoto(fileName: String?, callback: (kotlin.Result<String?>) -> Unit) {
+        mainHandler.post {
+            try {
+                camera.takePhoto(fileName) { path ->
+                    callback(kotlin.Result.success(path))
+                }
+            } catch (e: Exception) {
+                callback(kotlin.Result.failure(e))
+            }
+        }
+    }
+
+    override fun startVideoRecording(fileName: String?, callback: (kotlin.Result<String?>) -> Unit) {
+        mainHandler.post {
+            try {
+                camera.startVideoRecording(fileName) { path ->
+                    callback(kotlin.Result.success(path))
+                }
+            } catch (e: Exception) {
+                callback(kotlin.Result.failure(e))
+            }
+        }
+    }
+
+    override fun stopVideoRecording(callback: (kotlin.Result<String?>) -> Unit) {
+        mainHandler.post {
+            try {
+                camera.stopVideoRecording { path ->
+                    callback(kotlin.Result.success(path))
+                }
+            } catch (e: Exception) {
+                callback(kotlin.Result.failure(e))
+            }
+        }
+    }
+
+    override fun applyCameraFilterShader(shaderType: String, callback: (kotlin.Result<Boolean>) -> Unit) {
+        mainHandler.post {
+            try {
+                callback(kotlin.Result.success(camera.applyCameraFilterShader(shaderType)))
+            } catch (e: Exception) {
+                callback(kotlin.Result.failure(e))
+            }
+        }
+    }
+
+    // --- AudioApi ---
+
+    override fun startAudio(options: BasicAudioOptions, callback: (kotlin.Result<Boolean>) -> Unit) {
+        executor.execute {
+            try {
                 if (!hasPermission(Manifest.permission.RECORD_AUDIO)) {
-                    result.error("PERMISSION_DENIED", "Microphone permission is required.", null)
-                    return
+                    mainHandler.post { callback(kotlin.Result.failure(FlutterError("PERMISSION_DENIED", "Microphone permission is required."))) }
+                    return@execute
+                }
+                val success = audio.start(
+                    options.enableFFT ?: false,
+                    options.streamBytes ?: false,
+                    (options.updateIntervalMs ?: 80).toInt()
+                )
+                mainHandler.post { callback(kotlin.Result.success(success)) }
+            } catch (e: Exception) {
+                mainHandler.post { callback(kotlin.Result.failure(e)) }
+            }
+        }
+    }
+
+    override fun startAudioWithOptions(options: NexoraAudioOptions, callback: (kotlin.Result<Boolean>) -> Unit) {
+        executor.execute {
+            try {
+                if (!hasPermission(Manifest.permission.RECORD_AUDIO)) {
+                    mainHandler.post { callback(kotlin.Result.failure(FlutterError("PERMISSION_DENIED", "Microphone permission is required."))) }
+                    return@execute
                 }
                 val success = audio.start(false, false, 80)
-                result.success(success)
+                mainHandler.post { callback(kotlin.Result.success(success)) }
+            } catch (e: Exception) {
+                mainHandler.post { callback(kotlin.Result.failure(e)) }
             }
-            "enableSmartSync" -> {
-                val uploadEndpointUrl = call.argument<String>("uploadEndpointUrl")
-                val headers = call.argument<Map<String, String>>("headers") ?: mapOf()
-                val rollLimitBytes = call.argument<Int>("rollLimitBytes") ?: (2 * 1024 * 1024)
-                val requireWifi = call.argument<Boolean>("requireWifi") ?: true
-                if (uploadEndpointUrl == null) {
-                    result.error("INVALID_ARGUMENT", "enableSmartSync requires uploadEndpointUrl.", null)
-                    return
-                }
-                smartSync.enable(uploadEndpointUrl, headers, rollLimitBytes, requireWifi)
-                result.success(true)
-            }
-            "applyCameraFilterShader" -> {
-                val shaderType = call.argument<String>("shaderType")
-                if (shaderType == null) {
-                    result.error("INVALID_ARGUMENT", "applyCameraFilterShader requires shaderType.", null)
-                    return
-                }
-                result.success(camera.applyCameraFilterShader(shaderType))
-            }
-            "enableDeadReckoning" -> {
-                val enabled = call.argument<Boolean>("enabled") ?: false
-                location.enableDeadReckoning(enabled)
-                result.success(true)
-            }
-            "setFlash" -> {
-                camera.setFlash(call.argument<Boolean>("on") ?: false)
-                result.success(true)
-            }
-            "setZoom" -> {
-                camera.setZoom((call.argument<Double>("level") ?: 1.0).toFloat())
-                result.success(true)
-            }
-            "flipCamera" -> {
-                camera.flipCamera()
-                result.success(true)
-            }
-            "takePhoto" -> {
-                camera.takePhoto(call.argument<String>("fileName")) { path ->
-                    if (path == null) {
-                        result.error("CAMERA_UNAVAILABLE", "Camera is not running or photo capture failed.", null)
-                    } else {
-                        result.success(path)
-                    }
-                }
-            }
-            "startVideoRecording" -> {
-                camera.startVideoRecording(call.argument<String>("fileName")) { path ->
-                    if (path == null) {
-                        result.error("CAMERA_ERROR", "Failed to start video recording.", null)
-                    } else {
-                        result.success(path)
-                    }
-                }
-            }
-            "stopVideoRecording" -> {
-                camera.stopVideoRecording { path ->
-                    if (path == null) {
-                        result.error("CAMERA_ERROR", "Failed to stop video recording.", null)
-                    } else {
-                        result.success(path)
-                    }
-                }
-            }
-
-            // ==================== Audio & FFT ====================
-            "startAudio" -> {
-                if (!hasPermission(Manifest.permission.RECORD_AUDIO)) {
-                    result.error("PERMISSION_DENIED", "Microphone permission is required.", null)
-                    return
-                }
-                result.success(
-                    audio.start(
-                        call.argument<Boolean>("enableFFT") ?: false,
-                        call.argument<Boolean>("streamBytes") ?: false,
-                        call.argument<Int>("updateIntervalMs") ?: 80
-                    )
-                )
-            }
-            "stopAudio" -> { audio.stop(); result.success(true) }
-            "routeAudioOutput" -> {
-                val context = context
-                if (context != null) {
-                    val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-                    val route = call.argument<String>("route") ?: "defaultRoute"
-                    if (route == "speakerphone") {
-                        audioManager.isSpeakerphoneOn = true
-                        audioManager.mode = AudioManager.MODE_IN_COMMUNICATION
-                    } else {
-                        audioManager.isSpeakerphoneOn = false
-                        audioManager.mode = AudioManager.MODE_NORMAL
-                    }
-                    result.success(true)
-                } else {
-                    result.error("NO_CONTEXT", "AudioManager requires system context.", null)
-                }
-            }
-            "getAudioVolume" -> {
-                val context = context
-                if (context != null) {
-                    val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-                    val max = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC).toDouble()
-                    val curr = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC).toDouble()
-                    result.success(if (max > 0) curr / max else 0.5)
-                } else {
-                    result.success(0.5)
-                }
-            }
-            "setAudioVolume" -> {
-                val context = context
-                if (context != null) {
-                    val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-                    val level = call.argument<Double>("level") ?: 0.5
-                    val max = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
-                    audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, (level * max).toInt(), 0)
-                    result.success(true)
-                } else {
-                    result.error("NO_CONTEXT", "AudioManager requires system context.", null)
-                }
-            }
-            "selectAudioInput" -> {
-                result.success(true)
-            }
-            "setAudioGain" -> {
-                result.success(true)
-            }
-            "setEcoModeEnabled" -> {
-                val enabled = call.argument<Boolean>("enabled") ?: false
-                ecoModeUserEnabled = enabled
-                result.success(null)
-            }
-            "isEcoModeActive" -> {
-                val powerManager = context.getSystemService(Context.POWER_SERVICE) as PowerManager
-                val isPowerSave = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    powerManager.isPowerSaveMode
-                } else {
-                    false
-                }
-                result.success(ecoModeUserEnabled || isPowerSave)
-            }
-            "getThermalState" -> {
-                val powerManager = context.getSystemService(Context.POWER_SERVICE) as PowerManager
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    val status = powerManager.currentThermalStatus
-                    when (status) {
-                        PowerManager.THERMAL_STATUS_NONE -> result.success("normal")
-                        PowerManager.THERMAL_STATUS_LIGHT -> result.success("fair")
-                        PowerManager.THERMAL_STATUS_MODERATE -> result.success("serious")
-                        PowerManager.THERMAL_STATUS_SEVERE, PowerManager.THERMAL_STATUS_CRITICAL -> result.success("critical")
-                        else -> result.success("normal")
-                    }
-                } else {
-                    result.success("normal")
-                }
-            }
-
-            // ==================== Bluetooth ====================
-            "startBluetoothScan" -> {
-                if (!hasBluetoothPermissions()) {
-                    result.error("PERMISSION_DENIED", "Bluetooth scan/connect permission is required.", null)
-                    return
-                }
-                result.success(bluetooth.startScan())
-            }
-            "startBluetoothScanWithOptions" -> {
-                if (!hasBluetoothPermissions()) {
-                    result.error("PERMISSION_DENIED", "Bluetooth scan/connect permission is required.", null)
-                    return
-                }
-                result.success(bluetooth.startScan())
-            }
-            "stopBluetoothScan" -> { result.success(bluetooth.stopScan()) }
-            "connectDevice" -> {
-                if (!hasBluetoothPermissions()) {
-                    result.error("PERMISSION_DENIED", "Bluetooth connect permission is required.", null)
-                    return
-                }
-                result.success(bluetooth.connect(call.argument<String>("id") ?: ""))
-            }
-            "disconnectDevice" -> {
-                bluetooth.disconnect()
-                result.success(true)
-            }
-            "discoverServices" -> {
-                bluetooth.discoverServices(call.argument<String>("id") ?: "") { services ->
-                    result.success(services)
-                }
-            }
-            "sendData" -> {
-                result.success(bluetooth.sendData(
-                    call.argument<String>("deviceId") ?: "",
-                    call.argument<String>("serviceId") ?: "",
-                    call.argument<String>("charId") ?: "",
-                    (call.argument<List<Int>>("data") ?: emptyList()).map { it.toByte() }.toByteArray()
-                ))
-            }
-            "readData" -> {
-                val deviceId = call.argument<String>("deviceId") ?: ""
-                val serviceId = call.argument<String>("serviceId") ?: ""
-                val charId = call.argument<String>("charId") ?: ""
-                bluetooth.readData(deviceId, serviceId, charId) { data ->
-                    result.success(data)
-                }
-            }
-
-            // ==================== Location & Geofencing ====================
-            "startLocation" -> {
-                if (!hasLocationPermission()) {
-                    result.error("PERMISSION_DENIED", "Location permission is required.", null)
-                    return
-                }
-                location.startUpdates()
-                result.success(true)
-            }
-            "startLocationWithOptions" -> {
-                if (!hasLocationPermission()) {
-                    result.error("PERMISSION_DENIED", "Location permission is required.", null)
-                    return
-                }
-                location.startUpdates()
-                result.success(true)
-            }
-            "stopLocation" -> { location.stopUpdates(); result.success(true) }
-            "setBackgroundLocationEnabled" -> {
-                location.setBackgroundEnabled(call.argument<Boolean>("enabled") ?: false)
-                result.success(true)
-            }
-            "addGeofence" -> {
-                if (!hasLocationPermission()) {
-                    result.error("PERMISSION_DENIED", "Location permission is required.", null)
-                    return
-                }
-                val id = call.argument<String>("id")
-                val lat = call.argument<Double>("lat")
-                val lon = call.argument<Double>("lon")
-                val radius = call.argument<Double>("radius")
-                if (id.isNullOrBlank() || lat == null || lon == null || radius == null || radius <= 0.0) {
-                    result.error("INVALID_ARGUMENT", "Geofence requires id, lat, lon, and a positive radius.", null)
-                    return
-                }
-                val added = location.addGeofence(
-                    id,
-                    lat,
-                    lon,
-                    radius
-                )
-                result.success(added)
-            }
-
-            // ==================== Sensors ====================
-            "startSensor" -> { sensors.start(call.argument<Int>("frequency") ?: 60); result.success(true) }
-            "startSensorWithOptions" -> {
-                val accuracy = call.argument<String>("accuracy") ?: "normal"
-                sensors.start(sensorFrequencyForAccuracy(accuracy))
-                result.success(true)
-            }
-            "stopSensor" -> { sensors.stop(); result.success(true) }
-
-            // ==================== Biometrics ====================
-            "authenticate" -> {
-                val act = activity
-                if (act != null) {
-                    biometrics.authenticate(act, call.argument<String>("reason") ?: "Authentication Required") { success ->
-                        result.success(success)
-                    }
-                } else {
-                    result.error("NO_ACTIVITY", "Biometric authentication requires a foreground activity", null)
-                }
-            }
-            "authenticateWithOptions" -> {
-                val act = activity
-                if (act != null) {
-                    val title = call.argument<String>("title") ?: "Authentication Required"
-                    biometrics.authenticate(act, title) { success ->
-                        result.success(success)
-                    }
-                } else {
-                    result.error("NO_ACTIVITY", "Biometric authentication requires a foreground activity", null)
-                }
-            }
-            "canAuthenticate" -> result.success(biometrics.canAuthenticate())
-
-            // ==================== Feedback ====================
-            "vibrate" -> { feedback.vibrate((call.argument<Int>("duration") ?: 50).toLong()); result.success(null) }
-            "hapticFeedback" -> { feedback.haptic(call.argument<String>("type") ?: "impact"); result.success(null) }
-            "performHapticWithOptions" -> {
-                val type = call.argument<String>("type") ?: "medium"
-                feedback.haptic(type)
-                result.success(null)
-            }
-
-            // ==================== Health ====================
-            "getBatteryInfo" -> result.success(health.getBatteryInfo())
-            "getWifiInfo" -> result.success(health.getWifiInfo())
-            "startLogging" -> {
-                result.success(
-                    health.startLogging(
-                        call.argument<String>("fileName") ?: "log.csv",
-                        (call.argument<Int>("interval") ?: 1000).toLong()
-                    )
-                )
-            }
-            "stopLogging" -> { health.stopLogging(); result.success(true) }
-
-            // ==================== Storage ====================
-            "getStorageInfo" -> result.success(storage.getStorageInfo())
-            "writeFile" -> {
-                val fileName = call.argument<String>("fileName")
-                val content = call.argument<String>("content")
-                if (fileName == null || content == null) {
-                    result.error("INVALID_ARGUMENT", "writeFile requires fileName and content.", null)
-                    return
-                }
-                val path = storage.writeFile(fileName, content)
-                result.success(path)
-            }
-            "appendFile" -> {
-                val fileName = call.argument<String>("fileName")
-                val content = call.argument<String>("content")
-                if (fileName == null || content == null) {
-                    result.error("INVALID_ARGUMENT", "appendFile requires fileName and content.", null)
-                    return
-                }
-                val path = storage.appendFile(fileName, content)
-                result.success(path)
-            }
-            "readFile" -> {
-                val fileName = call.argument<String>("fileName")
-                if (fileName == null) {
-                    result.error("INVALID_ARGUMENT", "readFile requires fileName.", null)
-                    return
-                }
-                result.success(storage.readFile(fileName))
-            }
-            "deleteFile" -> {
-                val fileName = call.argument<String>("fileName")
-                if (fileName == null) {
-                    result.error("INVALID_ARGUMENT", "deleteFile requires fileName.", null)
-                    return
-                }
-                result.success(storage.deleteFile(fileName))
-            }
-            "fileExists" -> {
-                val fileName = call.argument<String>("fileName")
-                if (fileName == null) {
-                    result.error("INVALID_ARGUMENT", "fileExists requires fileName.", null)
-                    return
-                }
-                result.success(storage.fileExists(fileName))
-            }
-            "listFiles" -> result.success(storage.listFiles())
-            "writeBytes" -> {
-                val fileName = call.argument<String>("fileName")
-                val bytes = call.argument<ByteArray>("bytes")
-                if (fileName == null || bytes == null) {
-                    result.error("INVALID_ARGUMENT", "writeBytes requires fileName and bytes.", null)
-                    return
-                }
-                val path = storage.writeBytes(fileName, bytes)
-                result.success(path)
-            }
-            "readBytes" -> {
-                val fileName = call.argument<String>("fileName")
-                if (fileName == null) {
-                    result.error("INVALID_ARGUMENT", "readBytes requires fileName.", null)
-                    return
-                }
-                result.success(storage.readBytes(fileName))
-            }
-            "clearCache" -> result.success(storage.clearCache())
-            "getAppDirectory" -> result.success(storage.getAppDirectory())
-            "getCacheDirectory" -> result.success(storage.getCacheDirectory())
-            "getExternalDirectory" -> result.success(storage.getExternalDirectory())
-
-            // ==================== NFC ====================
-            "startNfcScan" -> {
-                val act = activity
-                if (act == null) {
-                    result.error("NO_ACTIVITY", "NFC scanning requires a running activity.", null)
-                    return
-                }
-                result.success(nfc.startScan(act))
-            }
-            "stopNfcScan" -> {
-                val act = activity
-                if (act == null) {
-                    result.error("NO_ACTIVITY", "NFC scanning requires a running activity.", null)
-                    return
-                }
-                result.success(nfc.stopScan(act))
-            }
-            "writeNdefRecord" -> {
-                val type = call.argument<String>("type")
-                val payload = call.argument<String>("payload")
-                if (type == null || payload == null) {
-                    result.error("INVALID_ARGUMENT", "writeNdefRecord requires type and payload.", null)
-                    return
-                }
-                nfc.writeNdef(type, payload) { success ->
-                    result.success(success)
-                }
-            }
-
-            // ==================== Secure Storage ====================
-            "writeSecureFile" -> {
-                val fileName = call.argument<String>("fileName")
-                val content = call.argument<String>("content")
-                if (fileName == null || content == null) {
-                    result.error("INVALID_ARGUMENT", "writeSecureFile requires fileName and content.", null)
-                    return
-                }
-                result.success(storage.writeSecureFile(fileName, content))
-            }
-            "readSecureFile" -> {
-                val fileName = call.argument<String>("fileName")
-                if (fileName == null) {
-                    result.error("INVALID_ARGUMENT", "readSecureFile requires fileName.", null)
-                    return
-                }
-                result.success(storage.readSecureFile(fileName))
-            }
-            "deleteSecureFile" -> {
-                val fileName = call.argument<String>("fileName")
-                if (fileName == null) {
-                    result.error("INVALID_ARGUMENT", "deleteSecureFile requires fileName.", null)
-                    return
-                }
-                result.success(storage.deleteSecureFile(fileName))
-            }
-
-            // ==================== Base ====================
-            "getPlatformVersion" -> result.success("Android ${android.os.Build.VERSION.RELEASE}")
-            "getDeviceInfo" -> result.success(getDeviceInfo())
-            "getConnectivityInfo" -> result.success(getConnectivityInfo())
-            "getPermissionStatus" -> result.success(getPermissionStatus(call.argument<String>("type")))
-            "openAppSettings" -> result.success(openAppSettings())
-            "copyText" -> result.success(copyText(call.argument<String>("text") ?: ""))
-            "pasteText" -> result.success(pasteText())
-            "openUrl" -> result.success(openUrl(call.argument<String>("url") ?: ""))
-            "shareText" -> result.success(shareText(call.argument<String>("text") ?: "", call.argument<String>("subject")))
-            "requestPermissions" -> requestNativePermissions(result)
-            "requestPermission" -> requestNativePermission(call.argument<String>("type"), result)
-            
-            
-            // ==================== Foreground Service ====================
-            "startForegroundService" -> {
-                val androidOptions = sdkConfig["android"] as? Map<String, Any?> ?: emptyMap()
-                val locationOptions = androidOptions["location"] as? Map<String, Any?> ?: emptyMap()
-                val channelId = locationOptions["notificationChannelId"] as? String ?: "NexoraHardwareChannel"
-                val title = call.argument<String>("title")
-                    ?: locationOptions["notificationTitle"] as? String
-                    ?: "Nexora Background Service"
-                val content = call.argument<String>("content")
-                    ?: locationOptions["notificationText"] as? String
-                    ?: "Running hardware tasks in background"
-                val intent = Intent(context, NexoraForegroundService::class.java).apply {
-                    putExtra("title", title)
-                    putExtra("content", content)
-                    putExtra("channelId", channelId)
-                    putExtra("channelName", title)
-                }
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    context.startForegroundService(intent)
-                } else {
-                    context.startService(intent)
-                }
-                result.success(true)
-            }
-            "stopForegroundService" -> {
-                val intent = Intent(context, NexoraForegroundService::class.java)
-                context.stopService(intent)
-                result.success(true)
-            }
-
-            // ==================== Bluetooth Phase 6 ====================
-            "subscribeToCharacteristic" -> {
-                if (!hasBluetoothPermissions()) {
-                    result.error("PERMISSION_DENIED", "Bluetooth connect permission is required.", null)
-                    return
-                }
-                val deviceId = call.argument<String>("deviceId") ?: ""
-                val serviceId = call.argument<String>("serviceId") ?: ""
-                val charId = call.argument<String>("charId") ?: ""
-                val enable = call.argument<Boolean>("enable") ?: true
-                bluetooth.subscribeToCharacteristic(deviceId, serviceId, charId, enable) { res ->
-                    result.success(res)
-                }
-            }
-            "requestMtu" -> {
-                if (!hasBluetoothPermissions()) {
-                    result.error("PERMISSION_DENIED", "Bluetooth connect permission is required.", null)
-                    return
-                }
-                val deviceId = call.argument<String>("deviceId") ?: ""
-                val mtu = call.argument<Int>("mtu") ?: 512
-                bluetooth.requestMtu(deviceId, mtu) { res ->
-                    result.success(res)
-                }
-            }
-            
-            // ==================== Storage Phase 6 ====================
-            "saveToGallery" -> {
-                val filePath = call.argument<String>("filePath")
-                if (filePath == null) {
-                    result.error("INVALID_ARGUMENT", "saveToGallery requires filePath.", null)
-                    return
-                }
-                storage.saveToGallery(filePath) { uri ->
-                    if (uri != null) {
-                        result.success(uri)
-                    } else {
-                        result.error("STORAGE_ERROR", "Failed to save file to Gallery.", null)
-                    }
-                }
-            }
-
-
-            // ==================== Phase 7 ====================
-            "loadCustomModel" -> {
-                val path = call.argument<String>("modelPath") ?: ""
-                result.success(ai.loadCustomModel(path))
-            }
-            "runInference" -> {
-                val input = call.argument<Map<String, Any>>("input") ?: mapOf()
-                result.success(ai.runInference(input))
-            }
-            "getConnectedUsbDevices" -> {
-                result.success(usb.getConnectedUsbDevices())
-            }
-            "openUsbConnection" -> {
-                val id = call.argument<String>("deviceId") ?: ""
-                result.success(usb.openUsbConnection(id))
-            }
-            "writeUsbData" -> {
-                val id = call.argument<String>("deviceId") ?: ""
-                val data = call.argument<ByteArray>("data") ?: ByteArray(0)
-                result.success(usb.writeUsbData(id, data))
-            }
-            "generateSecureKeyPair" -> {
-                val alias = call.argument<String>("alias") ?: ""
-                result.success(crypto.generateSecureKeyPair(alias))
-            }
-            "signData" -> {
-                val alias = call.argument<String>("alias") ?: ""
-                val data = call.argument<ByteArray>("data") ?: ByteArray(0)
-                result.success(crypto.signData(alias, data))
-            }
-            "scheduleBackgroundTask" -> {
-                val taskId = call.argument<String>("taskId") ?: ""
-                val interval = call.argument<Int>("intervalSeconds") ?: 900
-                result.success(backgroundTasks.scheduleBackgroundTask(taskId, interval))
-            }
-
-
-            "startBlePeripheral" -> {
-                result.success(blePeripheralManager.startAdvertising(call.argument<String>("uuid") ?: ""))
-            }
-            "stopBlePeripheral" -> {
-                blePeripheralManager.stopAdvertising()
-                result.success(true)
-            }
-            "enterPictureInPicture" -> {
-                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                    val params = android.app.PictureInPictureParams.Builder().build()
-                    activity?.enterPictureInPictureMode(params)
-                    result.success(true)
-                } else {
-                    result.error("UNSUPPORTED", "PiP requires Android 8.0+", null)
-                }
-            }
-            "connectUsbDevice" -> {
-                result.success(usb.getConnectedDevices())
-            }
-            "sendUsbData" -> {
-                result.success(true)
-            }
-            "disconnectUsbDevice" -> {
-                result.success(true)
-            }
-
-            "updateForegroundService" -> {
-                // Simplified foreground service update
-                val title = call.argument<String>("title") ?: "Nexora Service"
-                val textContent = call.argument<String>("text") ?: "Running in background"
-                // Ideally this would broadcast to the active Service.
-                result.success(true)
-            }
-            else -> result.notImplemented()
         }
-        } catch (e: Exception) {
-            result.error("NATIVE_CRASH", e.message, null)
+    }
+
+    override fun stopAudio(callback: (kotlin.Result<Boolean>) -> Unit) {
+        executor.execute {
+            try {
+                audio.stop()
+                mainHandler.post { callback(kotlin.Result.success(true)) }
+            } catch (e: Exception) {
+                mainHandler.post { callback(kotlin.Result.failure(e)) }
+            }
+        }
+    }
+
+    override fun routeAudioOutput(route: String, callback: (kotlin.Result<Boolean>) -> Unit) {
+        executor.execute {
+            try {
+                val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+                if (route == "speakerphone") {
+                    audioManager.isSpeakerphoneOn = true
+                    audioManager.mode = AudioManager.MODE_IN_COMMUNICATION
+                } else {
+                    audioManager.isSpeakerphoneOn = false
+                    audioManager.mode = AudioManager.MODE_NORMAL
+                }
+                mainHandler.post { callback(kotlin.Result.success(true)) }
+            } catch (e: Exception) {
+                mainHandler.post { callback(kotlin.Result.failure(e)) }
+            }
+        }
+    }
+
+    override fun getAudioVolume(callback: (kotlin.Result<Double>) -> Unit) {
+        executor.execute {
+            try {
+                val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+                val max = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC).toDouble()
+                val curr = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC).toDouble()
+                val volume = if (max > 0) curr / max else 0.5
+                mainHandler.post { callback(kotlin.Result.success(volume)) }
+            } catch (e: Exception) {
+                mainHandler.post { callback(kotlin.Result.failure(e)) }
+            }
+        }
+    }
+
+    override fun setAudioVolume(level: Double, callback: (kotlin.Result<Boolean>) -> Unit) {
+        executor.execute {
+            try {
+                val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+                val max = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
+                audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, (level * max).toInt(), 0)
+                mainHandler.post { callback(kotlin.Result.success(true)) }
+            } catch (e: Exception) {
+                mainHandler.post { callback(kotlin.Result.failure(e)) }
+            }
+        }
+    }
+
+    override fun selectAudioInput(device: String, callback: (kotlin.Result<Boolean>) -> Unit) {
+        mainHandler.post { callback(kotlin.Result.success(true)) }
+    }
+
+    override fun setAudioGain(gain: Double, callback: (kotlin.Result<Boolean>) -> Unit) {
+        mainHandler.post { callback(kotlin.Result.success(true)) }
+    }
+
+    // --- LocationApi ---
+
+    override fun startLocation(callback: (kotlin.Result<Boolean>) -> Unit) {
+        executor.execute {
+            try {
+                if (!hasLocationPermission()) {
+                    mainHandler.post { callback(kotlin.Result.failure(FlutterError("PERMISSION_DENIED", "Location permission is required."))) }
+                    return@execute
+                }
+                location.startUpdates()
+                mainHandler.post { callback(kotlin.Result.success(true)) }
+            } catch (e: Exception) {
+                mainHandler.post { callback(kotlin.Result.failure(e)) }
+            }
+        }
+    }
+
+    override fun startLocationWithOptions(options: NexoraLocationOptions, callback: (kotlin.Result<Boolean>) -> Unit) {
+        executor.execute {
+            try {
+                if (!hasLocationPermission()) {
+                    mainHandler.post { callback(kotlin.Result.failure(FlutterError("PERMISSION_DENIED", "Location permission is required."))) }
+                    return@execute
+                }
+                location.startUpdates()
+                mainHandler.post { callback(kotlin.Result.success(true)) }
+            } catch (e: Exception) {
+                mainHandler.post { callback(kotlin.Result.failure(e)) }
+            }
+        }
+    }
+
+    override fun stopLocation(callback: (kotlin.Result<Boolean>) -> Unit) {
+        executor.execute {
+            try {
+                location.stopUpdates()
+                mainHandler.post { callback(kotlin.Result.success(true)) }
+            } catch (e: Exception) {
+                mainHandler.post { callback(kotlin.Result.failure(e)) }
+            }
+        }
+    }
+
+    override fun setBackgroundLocationEnabled(enabled: Boolean, callback: (kotlin.Result<Boolean>) -> Unit) {
+        executor.execute {
+            try {
+                location.setBackgroundEnabled(enabled)
+                mainHandler.post { callback(kotlin.Result.success(true)) }
+            } catch (e: Exception) {
+                mainHandler.post { callback(kotlin.Result.failure(e)) }
+            }
+        }
+    }
+
+    // --- SensorApi ---
+
+    override fun startSensor(frequencyHz: Long, callback: (kotlin.Result<Boolean>) -> Unit) {
+        executor.execute {
+            try {
+                sensors.start(frequencyHz.toInt())
+                mainHandler.post { callback(kotlin.Result.success(true)) }
+            } catch (e: Exception) {
+                mainHandler.post { callback(kotlin.Result.failure(e)) }
+            }
+        }
+    }
+
+    override fun startSensorWithOptions(options: NexoraSensorOptions, callback: (kotlin.Result<Boolean>) -> Unit) {
+        executor.execute {
+            try {
+                val freq = options.frequencyHz?.toInt() ?: 60
+                sensors.start(freq)
+                mainHandler.post { callback(kotlin.Result.success(true)) }
+            } catch (e: Exception) {
+                mainHandler.post { callback(kotlin.Result.failure(e)) }
+            }
+        }
+    }
+
+    override fun stopSensor(callback: (kotlin.Result<Boolean>) -> Unit) {
+        executor.execute {
+            try {
+                sensors.stop()
+                mainHandler.post { callback(kotlin.Result.success(true)) }
+            } catch (e: Exception) {
+                mainHandler.post { callback(kotlin.Result.failure(e)) }
+            }
+        }
+    }
+
+    override fun enableDeadReckoning(enabled: Boolean, callback: (kotlin.Result<Boolean>) -> Unit) {
+        executor.execute {
+            try {
+                location.enableDeadReckoning(enabled)
+                mainHandler.post { callback(kotlin.Result.success(true)) }
+            } catch (e: Exception) {
+                mainHandler.post { callback(kotlin.Result.failure(e)) }
+            }
+        }
+    }
+
+    // --- BiometricsApi ---
+
+    override fun authenticate(reason: String, callback: (kotlin.Result<Boolean>) -> Unit) {
+        mainHandler.post {
+            val act = activity
+            if (act != null) {
+                biometrics.authenticate(act, reason) { success ->
+                    callback(kotlin.Result.success(success))
+                }
+            } else {
+                callback(kotlin.Result.failure(FlutterError("NO_ACTIVITY", "Biometric authentication requires a foreground activity.")))
+            }
+        }
+    }
+
+    override fun authenticateWithOptions(options: NexoraBiometricOptions, callback: (kotlin.Result<Boolean>) -> Unit) {
+        mainHandler.post {
+            val act = activity
+            if (act != null) {
+                val title = options.title ?: "Authentication Required"
+                biometrics.authenticate(act, title) { success ->
+                    callback(kotlin.Result.success(success))
+                }
+            } else {
+                callback(kotlin.Result.failure(FlutterError("NO_ACTIVITY", "Biometric authentication requires a foreground activity.")))
+            }
+        }
+    }
+
+    override fun canAuthenticate(callback: (kotlin.Result<Boolean>) -> Unit) {
+        mainHandler.post {
+            callback(kotlin.Result.success(biometrics.canAuthenticate()))
+        }
+    }
+
+    // --- BluetoothApi ---
+
+    override fun startBluetoothScan(callback: (kotlin.Result<Boolean>) -> Unit) {
+        executor.execute {
+            try {
+                if (!hasBluetoothPermissions()) {
+                    mainHandler.post { callback(kotlin.Result.failure(FlutterError("PERMISSION_DENIED", "Bluetooth scan/connect permission is required."))) }
+                    return@execute
+                }
+                val success = bluetooth.startScan()
+                mainHandler.post { callback(kotlin.Result.success(success)) }
+            } catch (e: Exception) {
+                mainHandler.post { callback(kotlin.Result.failure(e)) }
+            }
+        }
+    }
+
+    override fun startBluetoothScanWithOptions(options: NexoraBluetoothScanOptions, callback: (kotlin.Result<Boolean>) -> Unit) {
+        executor.execute {
+            try {
+                if (!hasBluetoothPermissions()) {
+                    mainHandler.post { callback(kotlin.Result.failure(FlutterError("PERMISSION_DENIED", "Bluetooth scan/connect permission is required."))) }
+                    return@execute
+                }
+                val success = bluetooth.startScan()
+                mainHandler.post { callback(kotlin.Result.success(success)) }
+            } catch (e: Exception) {
+                mainHandler.post { callback(kotlin.Result.failure(e)) }
+            }
+        }
+    }
+
+    override fun stopBluetoothScan(callback: (kotlin.Result<Boolean>) -> Unit) {
+        executor.execute {
+            try {
+                val success = bluetooth.stopScan()
+                mainHandler.post { callback(kotlin.Result.success(success)) }
+            } catch (e: Exception) {
+                mainHandler.post { callback(kotlin.Result.failure(e)) }
+            }
+        }
+    }
+
+    override fun connectDevice(id: String, callback: (kotlin.Result<Boolean>) -> Unit) {
+        executor.execute {
+            try {
+                if (!hasBluetoothPermissions()) {
+                    mainHandler.post { callback(kotlin.Result.failure(FlutterError("PERMISSION_DENIED", "Bluetooth connect permission is required."))) }
+                    return@execute
+                }
+                val success = bluetooth.connect(id)
+                mainHandler.post { callback(kotlin.Result.success(success)) }
+            } catch (e: Exception) {
+                mainHandler.post { callback(kotlin.Result.failure(e)) }
+            }
+        }
+    }
+
+    override fun disconnectDevice(id: String, callback: (kotlin.Result<Boolean>) -> Unit) {
+        executor.execute {
+            try {
+                bluetooth.disconnect()
+                mainHandler.post { callback(kotlin.Result.success(true)) }
+            } catch (e: Exception) {
+                mainHandler.post { callback(kotlin.Result.failure(e)) }
+            }
+        }
+    }
+
+    override fun discoverServices(deviceId: String, callback: (kotlin.Result<List<String?>>) -> Unit) {
+        executor.execute {
+            try {
+                bluetooth.discoverServices(deviceId) { services ->
+                    mainHandler.post { callback(kotlin.Result.success(services)) }
+                }
+            } catch (e: Exception) {
+                mainHandler.post { callback(kotlin.Result.failure(e)) }
+            }
+        }
+    }
+
+    override fun sendData(deviceId: String, serviceId: String, charId: String, data: List<Long?>, callback: (kotlin.Result<Boolean>) -> Unit) {
+        executor.execute {
+            try {
+                val byteArray = data.filterNotNull().map { it.toByte() }.toByteArray()
+                val success = bluetooth.sendData(deviceId, serviceId, charId, byteArray)
+                mainHandler.post { callback(kotlin.Result.success(success)) }
+            } catch (e: Exception) {
+                mainHandler.post { callback(kotlin.Result.failure(e)) }
+            }
+        }
+    }
+
+    override fun readData(deviceId: String, serviceId: String, charId: String, callback: (kotlin.Result<ByteArray?>) -> Unit) {
+        executor.execute {
+            try {
+                bluetooth.readData(deviceId, serviceId, charId) { response ->
+                    mainHandler.post { callback(kotlin.Result.success(response)) }
+                }
+            } catch (e: Exception) {
+                mainHandler.post { callback(kotlin.Result.failure(e)) }
+            }
+        }
+    }
+
+    override fun subscribeToCharacteristic(deviceId: String, serviceId: String, charId: String, enable: Boolean, callback: (kotlin.Result<Boolean>) -> Unit) {
+        executor.execute {
+            try {
+                if (!hasBluetoothPermissions()) {
+                    mainHandler.post { callback(kotlin.Result.failure(FlutterError("PERMISSION_DENIED", "Bluetooth connect permission is required."))) }
+                    return@execute
+                }
+                bluetooth.subscribeToCharacteristic(deviceId, serviceId, charId, enable) { res ->
+                    mainHandler.post { callback(kotlin.Result.success(res)) }
+                }
+            } catch (e: Exception) {
+                mainHandler.post { callback(kotlin.Result.failure(e)) }
+            }
+        }
+    }
+
+    override fun requestMtu(deviceId: String, mtu: Long, callback: (kotlin.Result<Boolean>) -> Unit) {
+        executor.execute {
+            try {
+                if (!hasBluetoothPermissions()) {
+                    mainHandler.post { callback(kotlin.Result.failure(FlutterError("PERMISSION_DENIED", "Bluetooth connect permission is required."))) }
+                    return@execute
+                }
+                bluetooth.requestMtu(deviceId, mtu.toInt()) { res ->
+                    mainHandler.post { callback(kotlin.Result.success(res)) }
+                }
+            } catch (e: Exception) {
+                mainHandler.post { callback(kotlin.Result.failure(e)) }
+            }
+        }
+    }
+
+    override fun startBlePeripheral(uuid: String, callback: (kotlin.Result<Boolean>) -> Unit) {
+        executor.execute {
+            try {
+                val success = blePeripheralManager.startAdvertising(uuid)
+                mainHandler.post { callback(kotlin.Result.success(success)) }
+            } catch (e: Exception) {
+                mainHandler.post { callback(kotlin.Result.failure(e)) }
+            }
+        }
+    }
+
+    override fun stopBlePeripheral(callback: (kotlin.Result<Unit>) -> Unit) {
+        executor.execute {
+            try {
+                blePeripheralManager.stopAdvertising()
+                mainHandler.post { callback(kotlin.Result.success(Unit)) }
+            } catch (e: Exception) {
+                mainHandler.post { callback(kotlin.Result.failure(e)) }
+            }
+        }
+    }
+
+    // --- SecureStorageApi ---
+
+    override fun getStorageInfo(callback: (kotlin.Result<NexoraStorageInfo?>) -> Unit) {
+        executor.execute {
+            try {
+                val info = storage.getStorageInfo()
+                val storageInfo = NexoraStorageInfo(
+                    internalTotal = info["internalTotal"] as? Long,
+                    internalFree = info["internalFree"] as? Long,
+                    externalTotal = info["externalTotal"] as? Long,
+                    externalFree = info["externalFree"] as? Long,
+                    appCacheSize = info["appCacheSize"] as? Long,
+                    appDataSize = info["appDataSize"] as? Long
+                )
+                mainHandler.post { callback(kotlin.Result.success(storageInfo)) }
+            } catch (e: Exception) {
+                mainHandler.post { callback(kotlin.Result.failure(e)) }
+            }
+        }
+    }
+
+    override fun writeFile(fileName: String, content: String, callback: (kotlin.Result<String?>) -> Unit) {
+        executor.execute {
+            try {
+                val path = storage.writeFile(fileName, content)
+                mainHandler.post { callback(kotlin.Result.success(path)) }
+            } catch (e: Exception) {
+                mainHandler.post { callback(kotlin.Result.failure(e)) }
+            }
+        }
+    }
+
+    override fun appendFile(fileName: String, content: String, callback: (kotlin.Result<String?>) -> Unit) {
+        executor.execute {
+            try {
+                val path = storage.appendFile(fileName, content)
+                mainHandler.post { callback(kotlin.Result.success(path)) }
+            } catch (e: Exception) {
+                mainHandler.post { callback(kotlin.Result.failure(e)) }
+            }
+        }
+    }
+
+    override fun readFile(fileName: String, callback: (kotlin.Result<String?>) -> Unit) {
+        executor.execute {
+            try {
+                val content = storage.readFile(fileName)
+                mainHandler.post { callback(kotlin.Result.success(content)) }
+            } catch (e: Exception) {
+                mainHandler.post { callback(kotlin.Result.failure(e)) }
+            }
+        }
+    }
+
+    override fun deleteFile(fileName: String, callback: (kotlin.Result<Boolean>) -> Unit) {
+        executor.execute {
+            try {
+                val deleted = storage.deleteFile(fileName)
+                mainHandler.post { callback(kotlin.Result.success(deleted)) }
+            } catch (e: Exception) {
+                mainHandler.post { callback(kotlin.Result.failure(e)) }
+            }
+        }
+    }
+
+    override fun fileExists(fileName: String, callback: (kotlin.Result<Boolean>) -> Unit) {
+        executor.execute {
+            try {
+                val exists = storage.fileExists(fileName)
+                mainHandler.post { callback(kotlin.Result.success(exists)) }
+            } catch (e: Exception) {
+                mainHandler.post { callback(kotlin.Result.failure(e)) }
+            }
+        }
+    }
+
+    override fun listFiles(callback: (kotlin.Result<List<NexoraFileInfo?>>) -> Unit) {
+        executor.execute {
+            try {
+                val list = storage.listFiles() ?: emptyList<Map<String, Any>>()
+                val fileInfos = list.map { item ->
+                    NexoraFileInfo(
+                        name = item["name"] as? String,
+                        size = (item["size"] as? Number)?.toLong(),
+                        isDirectory = item["isDirectory"] as? Boolean,
+                        lastModifiedMs = (item["lastModified"] as? Number)?.toLong()
+                    )
+                }
+                mainHandler.post { callback(kotlin.Result.success(fileInfos)) }
+            } catch (e: Exception) {
+                mainHandler.post { callback(kotlin.Result.failure(e)) }
+            }
+        }
+    }
+
+    override fun writeBytes(fileName: String, bytes: ByteArray, callback: (kotlin.Result<String?>) -> Unit) {
+        executor.execute {
+            try {
+                val path = storage.writeBytes(fileName, bytes)
+                mainHandler.post { callback(kotlin.Result.success(path)) }
+            } catch (e: Exception) {
+                mainHandler.post { callback(kotlin.Result.failure(e)) }
+            }
+        }
+    }
+
+    override fun readBytes(fileName: String, callback: (kotlin.Result<ByteArray?>) -> Unit) {
+        executor.execute {
+            try {
+                val data = storage.readBytes(fileName)
+                mainHandler.post { callback(kotlin.Result.success(data)) }
+            } catch (e: Exception) {
+                mainHandler.post { callback(kotlin.Result.failure(e)) }
+            }
+        }
+    }
+
+    override fun clearCache(callback: (kotlin.Result<Boolean>) -> Unit) {
+        executor.execute {
+            try {
+                val cleared = storage.clearCache()
+                mainHandler.post { callback(kotlin.Result.success(cleared)) }
+            } catch (e: Exception) {
+                mainHandler.post { callback(kotlin.Result.failure(e)) }
+            }
+        }
+    }
+
+    override fun getAppDirectory(callback: (kotlin.Result<String?>) -> Unit) {
+        mainHandler.post { callback(kotlin.Result.success(storage.getAppDirectory())) }
+    }
+
+    override fun getCacheDirectory(callback: (kotlin.Result<String?>) -> Unit) {
+        mainHandler.post { callback(kotlin.Result.success(storage.getCacheDirectory())) }
+    }
+
+    override fun getExternalDirectory(callback: (kotlin.Result<String?>) -> Unit) {
+        mainHandler.post { callback(kotlin.Result.success(storage.getExternalDirectory())) }
+    }
+
+    // --- SystemApi ---
+
+    override fun configureSdk(config: NexoraSdkConfig, callback: (kotlin.Result<Boolean>) -> Unit) {
+        mainHandler.post {
+            val confMap = mutableMapOf<String, Any?>()
+            confMap["enableLogging"] = config.enableLogging
+            confMap["ecoMode"] = config.ecoMode
+            sdkConfig = confMap
+            logNativeCalls = config.enableLogging ?: false
+            callback(kotlin.Result.success(true))
+        }
+    }
+
+    override fun requestPermissions(callback: (kotlin.Result<Boolean>) -> Unit) {
+        mainHandler.post {
+            val act = activity
+            if (act == null) {
+                callback(kotlin.Result.success(hasAllCriticalPermissions()))
+                return@post
+            }
+            val missing = criticalRuntimePermissions().filter { !hasPermission(it) }.toTypedArray()
+            if (missing.isEmpty()) {
+                callback(kotlin.Result.success(true))
+                return@post
+            }
+            if (pendingPermissionResult != null) {
+                callback(kotlin.Result.failure(FlutterError("PERMISSION_REQUEST_IN_PROGRESS", "A permission request is already running.")))
+                return@post
+            }
+            val wrapperResult = object : Result {
+                override fun success(res: Any?) {
+                    callback(kotlin.Result.success(res as? Boolean ?: false))
+                }
+                override fun error(code: String, msg: String?, details: Any?) {
+                    callback(kotlin.Result.failure(FlutterError(code, msg, details)))
+                }
+                override fun notImplemented() {
+                    callback(kotlin.Result.failure(FlutterError("NOT_IMPLEMENTED", "Not implemented")))
+                }
+            }
+            pendingPermissionResult = wrapperResult
+            pendingPermissionType = null
+            act.requestPermissions(missing, PERMISSION_REQUEST_CODE)
+        }
+    }
+
+    override fun requestPermission(type: String, callback: (kotlin.Result<Boolean>) -> Unit) {
+        mainHandler.post {
+            val permissions = when (type) {
+                "camera" -> listOf(Manifest.permission.CAMERA)
+                "audio" -> listOf(Manifest.permission.RECORD_AUDIO)
+                "location" -> listOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
+                "bluetooth" -> bluetoothRuntimePermissions()
+                else -> {
+                    callback(kotlin.Result.failure(FlutterError("INVALID_ARGUMENT", "Unknown permission type: $type")))
+                    return@post
+                }
+            }
+            val act = activity
+            if (act == null) {
+                callback(kotlin.Result.success(permissionsSatisfied(type)))
+                return@post
+            }
+            val missing = permissions.filter { !hasPermission(it) }.toTypedArray()
+            if (missing.isEmpty()) {
+                callback(kotlin.Result.success(true))
+                return@post
+            }
+            if (pendingPermissionResult != null) {
+                callback(kotlin.Result.failure(FlutterError("PERMISSION_REQUEST_IN_PROGRESS", "A permission request is already running.")))
+                return@post
+            }
+            val wrapperResult = object : Result {
+                override fun success(res: Any?) {
+                    callback(kotlin.Result.success(res as? Boolean ?: false))
+                }
+                override fun error(code: String, msg: String?, details: Any?) {
+                    callback(kotlin.Result.failure(FlutterError(code, msg, details)))
+                }
+                override fun notImplemented() {
+                    callback(kotlin.Result.failure(FlutterError("NOT_IMPLEMENTED", "Not implemented")))
+                }
+            }
+            pendingPermissionResult = wrapperResult
+            pendingPermissionType = type
+            act.requestPermissions(missing, PERMISSION_REQUEST_CODE)
+        }
+    }
+
+    override fun getPermissionStatus(type: String, callback: (kotlin.Result<NexoraPermissionStatus>) -> Unit) {
+        mainHandler.post {
+            val statusMap = getPermissionStatus(type)
+            val state = statusMap["state"] as? String ?: "denied"
+            val canRequest = statusMap["canRequest"] as? Boolean ?: false
+            callback(kotlin.Result.success(NexoraPermissionStatus(type, state, canRequest)))
+        }
+    }
+
+    override fun openAppSettings(callback: (kotlin.Result<Boolean>) -> Unit) {
+        mainHandler.post {
+            callback(kotlin.Result.success(openAppSettings()))
+        }
+    }
+
+    override fun getDeviceInfo(callback: (kotlin.Result<NexoraDeviceInfo>) -> Unit) {
+        executor.execute {
+            try {
+                val info = getDeviceInfo()
+                val deviceInfo = NexoraDeviceInfo(
+                    platform = info["platform"] as? String,
+                    manufacturer = info["manufacturer"] as? String,
+                    model = info["model"] as? String,
+                    osVersion = info["osVersion"] as? String,
+                    sdkVersion = info["sdkVersion"] as? String,
+                    isPhysicalDevice = info["isPhysicalDevice"] as? Boolean,
+                    totalRamBytes = info["totalRamBytes"] as? Long,
+                    availableRamBytes = info["availableRamBytes"] as? Long,
+                    cpuArchitecture = info["cpuArchitecture"] as? String,
+                    screenRefreshRate = info["screenRefreshRate"] as? Double,
+                    thermalState = info["thermalState"] as? String
+                )
+                mainHandler.post { callback(kotlin.Result.success(deviceInfo)) }
+            } catch (e: Exception) {
+                mainHandler.post { callback(kotlin.Result.failure(e)) }
+            }
+        }
+    }
+
+    override fun getConnectivityInfo(callback: (kotlin.Result<NexoraConnectivityInfo>) -> Unit) {
+        executor.execute {
+            try {
+                val info = getConnectivityInfo()
+                val connInfo = NexoraConnectivityInfo(
+                    isConnected = info["isConnected"] as? Boolean,
+                    networkType = info["networkType"] as? String,
+                    isMetered = info["isMetered"] as? Boolean,
+                    isVpn = info["isVpn"] as? Boolean,
+                    signalStrength = (info["signalStrength"] as? Number)?.toLong(),
+                    ipAddress = info["ipAddress"] as? String
+                )
+                mainHandler.post { callback(kotlin.Result.success(connInfo)) }
+            } catch (e: Exception) {
+                mainHandler.post { callback(kotlin.Result.failure(e)) }
+            }
+        }
+    }
+
+    override fun getBatteryInfo(callback: (kotlin.Result<NexoraBatteryInfo?>) -> Unit) {
+        executor.execute {
+            try {
+                val info = health.getBatteryInfo()
+                if (info != null) {
+                    val batteryInfo = NexoraBatteryInfo(
+                        level = info["level"] as? Double,
+                        isCharging = info["isCharging"] as? Boolean,
+                        status = info["status"] as? String,
+                        temperature = info["temperature"] as? Double
+                    )
+                    mainHandler.post { callback(kotlin.Result.success(batteryInfo)) }
+                } else {
+                    mainHandler.post { callback(kotlin.Result.success(null)) }
+                }
+            } catch (e: Exception) {
+                mainHandler.post { callback(kotlin.Result.failure(e)) }
+            }
+        }
+    }
+
+    override fun getWifiInfo(callback: (kotlin.Result<NexoraWifiInfo?>) -> Unit) {
+        executor.execute {
+            try {
+                val info = health.getWifiInfo()
+                if (info != null) {
+                    val wifiInfo = NexoraWifiInfo(
+                        ssid = info["ssid"] as? String,
+                        bssid = info["bssid"] as? String,
+                        signalStrength = (info["signalStrength"] as? Number)?.toLong(),
+                        frequency = (info["frequency"] as? Number)?.toLong(),
+                        linkSpeed = (info["linkSpeed"] as? Number)?.toLong()
+                    )
+                    mainHandler.post { callback(kotlin.Result.success(wifiInfo)) }
+                } else {
+                    mainHandler.post { callback(kotlin.Result.success(null)) }
+                }
+            } catch (e: Exception) {
+                mainHandler.post { callback(kotlin.Result.failure(e)) }
+            }
+        }
+    }
+
+    override fun vibrate(durationMs: Long, callback: (kotlin.Result<Unit>) -> Unit) {
+        mainHandler.post {
+            feedback.vibrate(durationMs)
+            callback(kotlin.Result.success(Unit))
+        }
+    }
+
+    override fun hapticFeedback(type: String, callback: (kotlin.Result<Unit>) -> Unit) {
+        mainHandler.post {
+            feedback.haptic(type)
+            callback(kotlin.Result.success(Unit))
+        }
+    }
+
+    override fun performHapticWithOptions(options: NexoraHapticOptions, callback: (kotlin.Result<Unit>) -> Unit) {
+        mainHandler.post {
+            feedback.haptic(options.type ?: "medium")
+            callback(kotlin.Result.success(Unit))
+        }
+    }
+
+    override fun copyText(text: String, callback: (kotlin.Result<Boolean>) -> Unit) {
+        mainHandler.post {
+            callback(kotlin.Result.success(copyText(text)))
+        }
+    }
+
+    override fun pasteText(callback: (kotlin.Result<String?>) -> Unit) {
+        mainHandler.post {
+            callback(kotlin.Result.success(pasteText()))
+        }
+    }
+
+    override fun openUrl(url: String, callback: (kotlin.Result<Boolean>) -> Unit) {
+        mainHandler.post {
+            callback(kotlin.Result.success(openUrl(url)))
+        }
+    }
+
+    override fun shareText(text: String, subject: String?, callback: (kotlin.Result<Boolean>) -> Unit) {
+        mainHandler.post {
+            callback(kotlin.Result.success(shareText(text, subject)))
+        }
+    }
+
+    override fun saveToGallery(filePath: String, callback: (kotlin.Result<String?>) -> Unit) {
+        executor.execute {
+            try {
+                storage.saveToGallery(filePath) { uri ->
+                    mainHandler.post { callback(kotlin.Result.success(uri)) }
+                }
+            } catch (e: Exception) {
+                mainHandler.post { callback(kotlin.Result.failure(e)) }
+            }
+        }
+    }
+
+    override fun enterPictureInPicture(callback: (kotlin.Result<Boolean>) -> Unit) {
+        mainHandler.post {
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                val params = android.app.PictureInPictureParams.Builder().build()
+                val pipResult = activity?.enterPictureInPictureMode(params) ?: false
+                callback(kotlin.Result.success(pipResult))
+            } else {
+                callback(kotlin.Result.failure(FlutterError("UNSUPPORTED", "PiP requires Android 8.0+")))
+            }
+        }
+    }
+
+    override fun getConnectedUsbDevices(callback: (kotlin.Result<List<String?>>) -> Unit) {
+        mainHandler.post {
+            callback(kotlin.Result.success(usb.getConnectedDevices()))
+        }
+    }
+
+    override fun startForegroundService(title: String, content: String, callback: (kotlin.Result<Boolean>) -> Unit) {
+        mainHandler.post {
+            val intent = Intent(context, NexoraForegroundService::class.java).apply {
+                putExtra("title", title)
+                putExtra("content", content)
+                putExtra("channelId", "NexoraHardwareChannel")
+                putExtra("channelName", title)
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                context.startForegroundService(intent)
+            } else {
+                context.startService(intent)
+            }
+            callback(kotlin.Result.success(true))
+        }
+    }
+
+    override fun updateForegroundService(title: String, text: String, callback: (kotlin.Result<Boolean>) -> Unit) {
+        mainHandler.post {
+            callback(kotlin.Result.success(true))
+        }
+    }
+
+    override fun stopForegroundService(callback: (kotlin.Result<Boolean>) -> Unit) {
+        mainHandler.post {
+            val intent = Intent(context, NexoraForegroundService::class.java)
+            context.stopService(intent)
+            callback(kotlin.Result.success(true))
+        }
+    }
+
+    override fun enableSmartSync(uploadEndpointUrl: String, headers: Map<String?, String?>, rollLimitBytes: Long, requireWifi: Boolean, callback: (kotlin.Result<Boolean>) -> Unit) {
+        executor.execute {
+            try {
+                val nonNullHeaders = headers.filterKeys { it != null }.filterValues { it != null } as Map<String, String>
+                smartSync.enable(uploadEndpointUrl, nonNullHeaders, rollLimitBytes.toInt(), requireWifi)
+                mainHandler.post { callback(kotlin.Result.success(true)) }
+            } catch (e: Exception) {
+                mainHandler.post { callback(kotlin.Result.failure(e)) }
+            }
+        }
+    }
+
+    override fun setEcoModeEnabled(enabled: Boolean, callback: (kotlin.Result<Unit>) -> Unit) {
+        mainHandler.post {
+            ecoModeUserEnabled = enabled
+            callback(kotlin.Result.success(Unit))
+        }
+    }
+
+    override fun isEcoModeActive(callback: (kotlin.Result<Boolean>) -> Unit) {
+        mainHandler.post {
+            val powerManager = context.getSystemService(Context.POWER_SERVICE) as PowerManager
+            val isPowerSave = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                powerManager.isPowerSaveMode
+            } else {
+                false
+            }
+            callback(kotlin.Result.success(ecoModeUserEnabled || isPowerSave))
+        }
+    }
+
+    override fun getThermalState(callback: (kotlin.Result<String>) -> Unit) {
+        mainHandler.post {
+            val powerManager = context.getSystemService(Context.POWER_SERVICE) as PowerManager
+            val state = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                when (powerManager.currentThermalStatus) {
+                    PowerManager.THERMAL_STATUS_NONE -> "normal"
+                    PowerManager.THERMAL_STATUS_LIGHT -> "fair"
+                    PowerManager.THERMAL_STATUS_MODERATE -> "serious"
+                    PowerManager.THERMAL_STATUS_SEVERE, PowerManager.THERMAL_STATUS_CRITICAL -> "critical"
+                    else -> "normal"
+                }
+            } else {
+                "normal"
+            }
+            callback(kotlin.Result.success(state))
         }
     }
 
@@ -831,6 +1255,16 @@ class NexoraSdk: FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry
         eventChannel.setStreamHandler(null)
         context.unregisterComponentCallbacks(this)
         executor.shutdown()
+
+        // Clean up Pigeon host APIs
+        HardwareApi.setUp(binding.binaryMessenger, null)
+        AudioApi.setUp(binding.binaryMessenger, null)
+        LocationApi.setUp(binding.binaryMessenger, null)
+        SensorApi.setUp(binding.binaryMessenger, null)
+        BiometricsApi.setUp(binding.binaryMessenger, null)
+        BluetoothApi.setUp(binding.binaryMessenger, null)
+        SecureStorageApi.setUp(binding.binaryMessenger, null)
+        SystemApi.setUp(binding.binaryMessenger, null)
     }
 
     override fun onTrimMemory(level: Int) {
@@ -884,13 +1318,7 @@ class NexoraSdk: FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry
 
     private fun shouldRunInBackground(method: String): Boolean {
         return when (method) {
-            "getStorageInfo", "writeFile", "appendFile", "readFile", "deleteFile", "fileExists", 
-            "listFiles", "writeBytes", "readBytes", "clearCache", "getAppDirectory", "getCacheDirectory", "getExternalDirectory",
-            "startBluetoothScan", "startBluetoothScanWithOptions", "stopBluetoothScan", "connectDevice", 
-            "disconnectDevice", "discoverServices", "sendData", "readData", "subscribeToCharacteristic", "requestMtu", "saveToGallery",
-            "startHardwareLogging", "stopHardwareLogging", "addGeofence",
-            "enableSmartSync", "enableDeadReckoning",
-            "getBatteryInfo", "getWifiInfo", "getDeviceInfo", "getConnectivityInfo" -> true
+            "configureSdk" -> true
             else -> false
         }
     }
@@ -904,77 +1332,6 @@ class NexoraSdk: FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry
         try { health.stopLogging() } catch (_: Exception) {}
         textureEntry?.release()
         textureEntry = null
-    }
-
-    private fun requestNativePermissions(result: Result) {
-        val act = activity
-        if (act == null) {
-            result.success(hasAllCriticalPermissions())
-            return
-        }
-
-        val missing = criticalRuntimePermissions().filter { !hasPermission(it) }.toTypedArray()
-        if (missing.isEmpty()) {
-            result.success(true)
-            return
-        }
-
-        if (pendingPermissionResult != null) {
-            result.error("PERMISSION_REQUEST_IN_PROGRESS", "A permission request is already running.", null)
-            return
-        }
-
-        pendingPermissionResult = result
-        pendingPermissionType = null
-        act.requestPermissions(missing, PERMISSION_REQUEST_CODE)
-    }
-
-    private fun requestNativePermission(type: String?, result: Result) {
-        val permissions = when (type) {
-            "camera" -> listOf(Manifest.permission.CAMERA)
-            "audio" -> listOf(Manifest.permission.RECORD_AUDIO)
-            "location" -> listOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
-            "bluetooth" -> bluetoothRuntimePermissions()
-            else -> {
-                result.error("INVALID_ARGUMENT", "Unknown permission type: $type", null)
-                return
-            }
-        }
-
-        val act = activity
-        if (act == null) {
-            result.success(permissionsSatisfied(type))
-            return
-        }
-
-        val missing = permissions.filter { !hasPermission(it) }.toTypedArray()
-        if (missing.isEmpty()) {
-            result.success(true)
-            return
-        }
-
-        if (pendingPermissionResult != null) {
-            result.error("PERMISSION_REQUEST_IN_PROGRESS", "A permission request is already running.", null)
-            return
-        }
-
-        pendingPermissionResult = result
-        pendingPermissionType = type
-        act.requestPermissions(missing, PERMISSION_REQUEST_CODE)
-    }
-
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray): Boolean {
-        if (requestCode != PERMISSION_REQUEST_CODE) return false
-        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        val editor = prefs.edit()
-        permissions.forEach { editor.putBoolean("requested:$it", true) }
-        editor.apply()
-        pendingPermissionResult?.success(
-            if (pendingPermissionType == null) hasAllCriticalPermissions() else permissionsSatisfied(pendingPermissionType)
-        )
-        pendingPermissionResult = null
-        pendingPermissionType = null
-        return true
     }
 
     private fun criticalRuntimePermissions(): List<String> {

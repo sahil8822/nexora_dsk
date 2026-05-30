@@ -175,74 +175,856 @@ func deepHashHardwareApi(value: Any?, hasher: inout Hasher) {
 
 
 /// Generated class from Pigeon that represents data sent in messages.
-struct BasicCameraOptions: Hashable {
-  var enableFlash: Bool? = nil
+struct NexoraCameraOptions: Hashable {
   var resolution: String? = nil
+  var focusMode: String? = nil
+  var exposureMode: String? = nil
+  var exposureCompensation: Double? = nil
+  var mirrorFrontCamera: Bool? = nil
 
 
   // swift-format-ignore: AlwaysUseLowerCamelCase
-  static func fromList(_ pigeonVar_list: [Any?]) -> BasicCameraOptions? {
-    let enableFlash: Bool? = nilOrValue(pigeonVar_list[0])
-    let resolution: String? = nilOrValue(pigeonVar_list[1])
+  static func fromList(_ pigeonVar_list: [Any?]) -> NexoraCameraOptions? {
+    let resolution: String? = nilOrValue(pigeonVar_list[0])
+    let focusMode: String? = nilOrValue(pigeonVar_list[1])
+    let exposureMode: String? = nilOrValue(pigeonVar_list[2])
+    let exposureCompensation: Double? = nilOrValue(pigeonVar_list[3])
+    let mirrorFrontCamera: Bool? = nilOrValue(pigeonVar_list[4])
 
-    return BasicCameraOptions(
-      enableFlash: enableFlash,
-      resolution: resolution
+    return NexoraCameraOptions(
+      resolution: resolution,
+      focusMode: focusMode,
+      exposureMode: exposureMode,
+      exposureCompensation: exposureCompensation,
+      mirrorFrontCamera: mirrorFrontCamera
     )
   }
   func toList() -> [Any?] {
     return [
-      enableFlash,
       resolution,
+      focusMode,
+      exposureMode,
+      exposureCompensation,
+      mirrorFrontCamera,
     ]
   }
-  static func == (lhs: BasicCameraOptions, rhs: BasicCameraOptions) -> Bool {
+  static func == (lhs: NexoraCameraOptions, rhs: NexoraCameraOptions) -> Bool {
     if Swift.type(of: lhs) != Swift.type(of: rhs) {
       return false
     }
-    return deepEqualsHardwareApi(lhs.enableFlash, rhs.enableFlash) && deepEqualsHardwareApi(lhs.resolution, rhs.resolution)
+    return deepEqualsHardwareApi(lhs.resolution, rhs.resolution) && deepEqualsHardwareApi(lhs.focusMode, rhs.focusMode) && deepEqualsHardwareApi(lhs.exposureMode, rhs.exposureMode) && deepEqualsHardwareApi(lhs.exposureCompensation, rhs.exposureCompensation) && deepEqualsHardwareApi(lhs.mirrorFrontCamera, rhs.mirrorFrontCamera)
   }
 
   func hash(into hasher: inout Hasher) {
-    hasher.combine("BasicCameraOptions")
-    deepHashHardwareApi(value: enableFlash, hasher: &hasher)
+    hasher.combine("NexoraCameraOptions")
     deepHashHardwareApi(value: resolution, hasher: &hasher)
+    deepHashHardwareApi(value: focusMode, hasher: &hasher)
+    deepHashHardwareApi(value: exposureMode, hasher: &hasher)
+    deepHashHardwareApi(value: exposureCompensation, hasher: &hasher)
+    deepHashHardwareApi(value: mirrorFrontCamera, hasher: &hasher)
   }
 }
 
 /// Generated class from Pigeon that represents data sent in messages.
-struct StartCameraResult: Hashable {
-  var textureId: Int64? = nil
-  var error: String? = nil
+struct CustomClassifierOptions: Hashable {
+  var modelAssetPath: String? = nil
+  var labels: [String?]? = nil
+  var threshold: Double? = nil
 
 
   // swift-format-ignore: AlwaysUseLowerCamelCase
-  static func fromList(_ pigeonVar_list: [Any?]) -> StartCameraResult? {
-    let textureId: Int64? = nilOrValue(pigeonVar_list[0])
-    let error: String? = nilOrValue(pigeonVar_list[1])
+  static func fromList(_ pigeonVar_list: [Any?]) -> CustomClassifierOptions? {
+    let modelAssetPath: String? = nilOrValue(pigeonVar_list[0])
+    let labels: [String?]? = nilOrValue(pigeonVar_list[1])
+    let threshold: Double? = nilOrValue(pigeonVar_list[2])
 
-    return StartCameraResult(
-      textureId: textureId,
-      error: error
+    return CustomClassifierOptions(
+      modelAssetPath: modelAssetPath,
+      labels: labels,
+      threshold: threshold
     )
   }
   func toList() -> [Any?] {
     return [
-      textureId,
-      error,
+      modelAssetPath,
+      labels,
+      threshold,
     ]
   }
-  static func == (lhs: StartCameraResult, rhs: StartCameraResult) -> Bool {
+  static func == (lhs: CustomClassifierOptions, rhs: CustomClassifierOptions) -> Bool {
     if Swift.type(of: lhs) != Swift.type(of: rhs) {
       return false
     }
-    return deepEqualsHardwareApi(lhs.textureId, rhs.textureId) && deepEqualsHardwareApi(lhs.error, rhs.error)
+    return deepEqualsHardwareApi(lhs.modelAssetPath, rhs.modelAssetPath) && deepEqualsHardwareApi(lhs.labels, rhs.labels) && deepEqualsHardwareApi(lhs.threshold, rhs.threshold)
   }
 
   func hash(into hasher: inout Hasher) {
-    hasher.combine("StartCameraResult")
-    deepHashHardwareApi(value: textureId, hasher: &hasher)
-    deepHashHardwareApi(value: error, hasher: &hasher)
+    hasher.combine("CustomClassifierOptions")
+    deepHashHardwareApi(value: modelAssetPath, hasher: &hasher)
+    deepHashHardwareApi(value: labels, hasher: &hasher)
+    deepHashHardwareApi(value: threshold, hasher: &hasher)
+  }
+}
+
+/// Generated class from Pigeon that represents data sent in messages.
+struct VisionModeOptions: Hashable {
+  var barcode: Bool? = nil
+  var face: Bool? = nil
+
+
+  // swift-format-ignore: AlwaysUseLowerCamelCase
+  static func fromList(_ pigeonVar_list: [Any?]) -> VisionModeOptions? {
+    let barcode: Bool? = nilOrValue(pigeonVar_list[0])
+    let face: Bool? = nilOrValue(pigeonVar_list[1])
+
+    return VisionModeOptions(
+      barcode: barcode,
+      face: face
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      barcode,
+      face,
+    ]
+  }
+  static func == (lhs: VisionModeOptions, rhs: VisionModeOptions) -> Bool {
+    if Swift.type(of: lhs) != Swift.type(of: rhs) {
+      return false
+    }
+    return deepEqualsHardwareApi(lhs.barcode, rhs.barcode) && deepEqualsHardwareApi(lhs.face, rhs.face)
+  }
+
+  func hash(into hasher: inout Hasher) {
+    hasher.combine("VisionModeOptions")
+    deepHashHardwareApi(value: barcode, hasher: &hasher)
+    deepHashHardwareApi(value: face, hasher: &hasher)
+  }
+}
+
+/// Generated class from Pigeon that represents data sent in messages.
+struct BasicAudioOptions: Hashable {
+  var enableFFT: Bool? = nil
+  var streamBytes: Bool? = nil
+  var updateIntervalMs: Int64? = nil
+
+
+  // swift-format-ignore: AlwaysUseLowerCamelCase
+  static func fromList(_ pigeonVar_list: [Any?]) -> BasicAudioOptions? {
+    let enableFFT: Bool? = nilOrValue(pigeonVar_list[0])
+    let streamBytes: Bool? = nilOrValue(pigeonVar_list[1])
+    let updateIntervalMs: Int64? = nilOrValue(pigeonVar_list[2])
+
+    return BasicAudioOptions(
+      enableFFT: enableFFT,
+      streamBytes: streamBytes,
+      updateIntervalMs: updateIntervalMs
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      enableFFT,
+      streamBytes,
+      updateIntervalMs,
+    ]
+  }
+  static func == (lhs: BasicAudioOptions, rhs: BasicAudioOptions) -> Bool {
+    if Swift.type(of: lhs) != Swift.type(of: rhs) {
+      return false
+    }
+    return deepEqualsHardwareApi(lhs.enableFFT, rhs.enableFFT) && deepEqualsHardwareApi(lhs.streamBytes, rhs.streamBytes) && deepEqualsHardwareApi(lhs.updateIntervalMs, rhs.updateIntervalMs)
+  }
+
+  func hash(into hasher: inout Hasher) {
+    hasher.combine("BasicAudioOptions")
+    deepHashHardwareApi(value: enableFFT, hasher: &hasher)
+    deepHashHardwareApi(value: streamBytes, hasher: &hasher)
+    deepHashHardwareApi(value: updateIntervalMs, hasher: &hasher)
+  }
+}
+
+/// Generated class from Pigeon that represents data sent in messages.
+struct NexoraAudioOptions: Hashable {
+  var sampleRate: Int64? = nil
+  var channels: String? = nil
+  var enableEchoCancellation: Bool? = nil
+  var enableNoiseSuppression: Bool? = nil
+
+
+  // swift-format-ignore: AlwaysUseLowerCamelCase
+  static func fromList(_ pigeonVar_list: [Any?]) -> NexoraAudioOptions? {
+    let sampleRate: Int64? = nilOrValue(pigeonVar_list[0])
+    let channels: String? = nilOrValue(pigeonVar_list[1])
+    let enableEchoCancellation: Bool? = nilOrValue(pigeonVar_list[2])
+    let enableNoiseSuppression: Bool? = nilOrValue(pigeonVar_list[3])
+
+    return NexoraAudioOptions(
+      sampleRate: sampleRate,
+      channels: channels,
+      enableEchoCancellation: enableEchoCancellation,
+      enableNoiseSuppression: enableNoiseSuppression
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      sampleRate,
+      channels,
+      enableEchoCancellation,
+      enableNoiseSuppression,
+    ]
+  }
+  static func == (lhs: NexoraAudioOptions, rhs: NexoraAudioOptions) -> Bool {
+    if Swift.type(of: lhs) != Swift.type(of: rhs) {
+      return false
+    }
+    return deepEqualsHardwareApi(lhs.sampleRate, rhs.sampleRate) && deepEqualsHardwareApi(lhs.channels, rhs.channels) && deepEqualsHardwareApi(lhs.enableEchoCancellation, rhs.enableEchoCancellation) && deepEqualsHardwareApi(lhs.enableNoiseSuppression, rhs.enableNoiseSuppression)
+  }
+
+  func hash(into hasher: inout Hasher) {
+    hasher.combine("NexoraAudioOptions")
+    deepHashHardwareApi(value: sampleRate, hasher: &hasher)
+    deepHashHardwareApi(value: channels, hasher: &hasher)
+    deepHashHardwareApi(value: enableEchoCancellation, hasher: &hasher)
+    deepHashHardwareApi(value: enableNoiseSuppression, hasher: &hasher)
+  }
+}
+
+/// Generated class from Pigeon that represents data sent in messages.
+struct NexoraLocationOptions: Hashable {
+  var accuracy: String? = nil
+  var distanceFilter: Double? = nil
+  var intervalMs: Int64? = nil
+
+
+  // swift-format-ignore: AlwaysUseLowerCamelCase
+  static func fromList(_ pigeonVar_list: [Any?]) -> NexoraLocationOptions? {
+    let accuracy: String? = nilOrValue(pigeonVar_list[0])
+    let distanceFilter: Double? = nilOrValue(pigeonVar_list[1])
+    let intervalMs: Int64? = nilOrValue(pigeonVar_list[2])
+
+    return NexoraLocationOptions(
+      accuracy: accuracy,
+      distanceFilter: distanceFilter,
+      intervalMs: intervalMs
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      accuracy,
+      distanceFilter,
+      intervalMs,
+    ]
+  }
+  static func == (lhs: NexoraLocationOptions, rhs: NexoraLocationOptions) -> Bool {
+    if Swift.type(of: lhs) != Swift.type(of: rhs) {
+      return false
+    }
+    return deepEqualsHardwareApi(lhs.accuracy, rhs.accuracy) && deepEqualsHardwareApi(lhs.distanceFilter, rhs.distanceFilter) && deepEqualsHardwareApi(lhs.intervalMs, rhs.intervalMs)
+  }
+
+  func hash(into hasher: inout Hasher) {
+    hasher.combine("NexoraLocationOptions")
+    deepHashHardwareApi(value: accuracy, hasher: &hasher)
+    deepHashHardwareApi(value: distanceFilter, hasher: &hasher)
+    deepHashHardwareApi(value: intervalMs, hasher: &hasher)
+  }
+}
+
+/// Generated class from Pigeon that represents data sent in messages.
+struct NexoraSensorOptions: Hashable {
+  var frequencyHz: Int64? = nil
+
+
+  // swift-format-ignore: AlwaysUseLowerCamelCase
+  static func fromList(_ pigeonVar_list: [Any?]) -> NexoraSensorOptions? {
+    let frequencyHz: Int64? = nilOrValue(pigeonVar_list[0])
+
+    return NexoraSensorOptions(
+      frequencyHz: frequencyHz
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      frequencyHz
+    ]
+  }
+  static func == (lhs: NexoraSensorOptions, rhs: NexoraSensorOptions) -> Bool {
+    if Swift.type(of: lhs) != Swift.type(of: rhs) {
+      return false
+    }
+    return deepEqualsHardwareApi(lhs.frequencyHz, rhs.frequencyHz)
+  }
+
+  func hash(into hasher: inout Hasher) {
+    hasher.combine("NexoraSensorOptions")
+    deepHashHardwareApi(value: frequencyHz, hasher: &hasher)
+  }
+}
+
+/// Generated class from Pigeon that represents data sent in messages.
+struct NexoraBiometricOptions: Hashable {
+  var title: String? = nil
+  var subtitle: String? = nil
+  var description: String? = nil
+  var negativeButtonText: String? = nil
+
+
+  // swift-format-ignore: AlwaysUseLowerCamelCase
+  static func fromList(_ pigeonVar_list: [Any?]) -> NexoraBiometricOptions? {
+    let title: String? = nilOrValue(pigeonVar_list[0])
+    let subtitle: String? = nilOrValue(pigeonVar_list[1])
+    let description: String? = nilOrValue(pigeonVar_list[2])
+    let negativeButtonText: String? = nilOrValue(pigeonVar_list[3])
+
+    return NexoraBiometricOptions(
+      title: title,
+      subtitle: subtitle,
+      description: description,
+      negativeButtonText: negativeButtonText
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      title,
+      subtitle,
+      description,
+      negativeButtonText,
+    ]
+  }
+  static func == (lhs: NexoraBiometricOptions, rhs: NexoraBiometricOptions) -> Bool {
+    if Swift.type(of: lhs) != Swift.type(of: rhs) {
+      return false
+    }
+    return deepEqualsHardwareApi(lhs.title, rhs.title) && deepEqualsHardwareApi(lhs.subtitle, rhs.subtitle) && deepEqualsHardwareApi(lhs.description, rhs.description) && deepEqualsHardwareApi(lhs.negativeButtonText, rhs.negativeButtonText)
+  }
+
+  func hash(into hasher: inout Hasher) {
+    hasher.combine("NexoraBiometricOptions")
+    deepHashHardwareApi(value: title, hasher: &hasher)
+    deepHashHardwareApi(value: subtitle, hasher: &hasher)
+    deepHashHardwareApi(value: description, hasher: &hasher)
+    deepHashHardwareApi(value: negativeButtonText, hasher: &hasher)
+  }
+}
+
+/// Generated class from Pigeon that represents data sent in messages.
+struct NexoraBluetoothScanOptions: Hashable {
+  var serviceUuids: [String?]? = nil
+  var scanMode: String? = nil
+
+
+  // swift-format-ignore: AlwaysUseLowerCamelCase
+  static func fromList(_ pigeonVar_list: [Any?]) -> NexoraBluetoothScanOptions? {
+    let serviceUuids: [String?]? = nilOrValue(pigeonVar_list[0])
+    let scanMode: String? = nilOrValue(pigeonVar_list[1])
+
+    return NexoraBluetoothScanOptions(
+      serviceUuids: serviceUuids,
+      scanMode: scanMode
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      serviceUuids,
+      scanMode,
+    ]
+  }
+  static func == (lhs: NexoraBluetoothScanOptions, rhs: NexoraBluetoothScanOptions) -> Bool {
+    if Swift.type(of: lhs) != Swift.type(of: rhs) {
+      return false
+    }
+    return deepEqualsHardwareApi(lhs.serviceUuids, rhs.serviceUuids) && deepEqualsHardwareApi(lhs.scanMode, rhs.scanMode)
+  }
+
+  func hash(into hasher: inout Hasher) {
+    hasher.combine("NexoraBluetoothScanOptions")
+    deepHashHardwareApi(value: serviceUuids, hasher: &hasher)
+    deepHashHardwareApi(value: scanMode, hasher: &hasher)
+  }
+}
+
+/// Generated class from Pigeon that represents data sent in messages.
+struct NexoraStorageInfo: Hashable {
+  var internalTotal: Int64? = nil
+  var internalFree: Int64? = nil
+  var externalTotal: Int64? = nil
+  var externalFree: Int64? = nil
+  var appCacheSize: Int64? = nil
+  var appDataSize: Int64? = nil
+
+
+  // swift-format-ignore: AlwaysUseLowerCamelCase
+  static func fromList(_ pigeonVar_list: [Any?]) -> NexoraStorageInfo? {
+    let internalTotal: Int64? = nilOrValue(pigeonVar_list[0])
+    let internalFree: Int64? = nilOrValue(pigeonVar_list[1])
+    let externalTotal: Int64? = nilOrValue(pigeonVar_list[2])
+    let externalFree: Int64? = nilOrValue(pigeonVar_list[3])
+    let appCacheSize: Int64? = nilOrValue(pigeonVar_list[4])
+    let appDataSize: Int64? = nilOrValue(pigeonVar_list[5])
+
+    return NexoraStorageInfo(
+      internalTotal: internalTotal,
+      internalFree: internalFree,
+      externalTotal: externalTotal,
+      externalFree: externalFree,
+      appCacheSize: appCacheSize,
+      appDataSize: appDataSize
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      internalTotal,
+      internalFree,
+      externalTotal,
+      externalFree,
+      appCacheSize,
+      appDataSize,
+    ]
+  }
+  static func == (lhs: NexoraStorageInfo, rhs: NexoraStorageInfo) -> Bool {
+    if Swift.type(of: lhs) != Swift.type(of: rhs) {
+      return false
+    }
+    return deepEqualsHardwareApi(lhs.internalTotal, rhs.internalTotal) && deepEqualsHardwareApi(lhs.internalFree, rhs.internalFree) && deepEqualsHardwareApi(lhs.externalTotal, rhs.externalTotal) && deepEqualsHardwareApi(lhs.externalFree, rhs.externalFree) && deepEqualsHardwareApi(lhs.appCacheSize, rhs.appCacheSize) && deepEqualsHardwareApi(lhs.appDataSize, rhs.appDataSize)
+  }
+
+  func hash(into hasher: inout Hasher) {
+    hasher.combine("NexoraStorageInfo")
+    deepHashHardwareApi(value: internalTotal, hasher: &hasher)
+    deepHashHardwareApi(value: internalFree, hasher: &hasher)
+    deepHashHardwareApi(value: externalTotal, hasher: &hasher)
+    deepHashHardwareApi(value: externalFree, hasher: &hasher)
+    deepHashHardwareApi(value: appCacheSize, hasher: &hasher)
+    deepHashHardwareApi(value: appDataSize, hasher: &hasher)
+  }
+}
+
+/// Generated class from Pigeon that represents data sent in messages.
+struct NexoraFileInfo: Hashable {
+  var name: String? = nil
+  var size: Int64? = nil
+  var isDirectory: Bool? = nil
+  var lastModifiedMs: Int64? = nil
+
+
+  // swift-format-ignore: AlwaysUseLowerCamelCase
+  static func fromList(_ pigeonVar_list: [Any?]) -> NexoraFileInfo? {
+    let name: String? = nilOrValue(pigeonVar_list[0])
+    let size: Int64? = nilOrValue(pigeonVar_list[1])
+    let isDirectory: Bool? = nilOrValue(pigeonVar_list[2])
+    let lastModifiedMs: Int64? = nilOrValue(pigeonVar_list[3])
+
+    return NexoraFileInfo(
+      name: name,
+      size: size,
+      isDirectory: isDirectory,
+      lastModifiedMs: lastModifiedMs
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      name,
+      size,
+      isDirectory,
+      lastModifiedMs,
+    ]
+  }
+  static func == (lhs: NexoraFileInfo, rhs: NexoraFileInfo) -> Bool {
+    if Swift.type(of: lhs) != Swift.type(of: rhs) {
+      return false
+    }
+    return deepEqualsHardwareApi(lhs.name, rhs.name) && deepEqualsHardwareApi(lhs.size, rhs.size) && deepEqualsHardwareApi(lhs.isDirectory, rhs.isDirectory) && deepEqualsHardwareApi(lhs.lastModifiedMs, rhs.lastModifiedMs)
+  }
+
+  func hash(into hasher: inout Hasher) {
+    hasher.combine("NexoraFileInfo")
+    deepHashHardwareApi(value: name, hasher: &hasher)
+    deepHashHardwareApi(value: size, hasher: &hasher)
+    deepHashHardwareApi(value: isDirectory, hasher: &hasher)
+    deepHashHardwareApi(value: lastModifiedMs, hasher: &hasher)
+  }
+}
+
+/// Generated class from Pigeon that represents data sent in messages.
+struct NexoraDeviceInfo: Hashable {
+  var platform: String? = nil
+  var manufacturer: String? = nil
+  var model: String? = nil
+  var osVersion: String? = nil
+  var sdkVersion: String? = nil
+  var isPhysicalDevice: Bool? = nil
+  var totalRamBytes: Int64? = nil
+  var availableRamBytes: Int64? = nil
+  var cpuArchitecture: String? = nil
+  var screenRefreshRate: Double? = nil
+  var thermalState: String? = nil
+
+
+  // swift-format-ignore: AlwaysUseLowerCamelCase
+  static func fromList(_ pigeonVar_list: [Any?]) -> NexoraDeviceInfo? {
+    let platform: String? = nilOrValue(pigeonVar_list[0])
+    let manufacturer: String? = nilOrValue(pigeonVar_list[1])
+    let model: String? = nilOrValue(pigeonVar_list[2])
+    let osVersion: String? = nilOrValue(pigeonVar_list[3])
+    let sdkVersion: String? = nilOrValue(pigeonVar_list[4])
+    let isPhysicalDevice: Bool? = nilOrValue(pigeonVar_list[5])
+    let totalRamBytes: Int64? = nilOrValue(pigeonVar_list[6])
+    let availableRamBytes: Int64? = nilOrValue(pigeonVar_list[7])
+    let cpuArchitecture: String? = nilOrValue(pigeonVar_list[8])
+    let screenRefreshRate: Double? = nilOrValue(pigeonVar_list[9])
+    let thermalState: String? = nilOrValue(pigeonVar_list[10])
+
+    return NexoraDeviceInfo(
+      platform: platform,
+      manufacturer: manufacturer,
+      model: model,
+      osVersion: osVersion,
+      sdkVersion: sdkVersion,
+      isPhysicalDevice: isPhysicalDevice,
+      totalRamBytes: totalRamBytes,
+      availableRamBytes: availableRamBytes,
+      cpuArchitecture: cpuArchitecture,
+      screenRefreshRate: screenRefreshRate,
+      thermalState: thermalState
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      platform,
+      manufacturer,
+      model,
+      osVersion,
+      sdkVersion,
+      isPhysicalDevice,
+      totalRamBytes,
+      availableRamBytes,
+      cpuArchitecture,
+      screenRefreshRate,
+      thermalState,
+    ]
+  }
+  static func == (lhs: NexoraDeviceInfo, rhs: NexoraDeviceInfo) -> Bool {
+    if Swift.type(of: lhs) != Swift.type(of: rhs) {
+      return false
+    }
+    return deepEqualsHardwareApi(lhs.platform, rhs.platform) && deepEqualsHardwareApi(lhs.manufacturer, rhs.manufacturer) && deepEqualsHardwareApi(lhs.model, rhs.model) && deepEqualsHardwareApi(lhs.osVersion, rhs.osVersion) && deepEqualsHardwareApi(lhs.sdkVersion, rhs.sdkVersion) && deepEqualsHardwareApi(lhs.isPhysicalDevice, rhs.isPhysicalDevice) && deepEqualsHardwareApi(lhs.totalRamBytes, rhs.totalRamBytes) && deepEqualsHardwareApi(lhs.availableRamBytes, rhs.availableRamBytes) && deepEqualsHardwareApi(lhs.cpuArchitecture, rhs.cpuArchitecture) && deepEqualsHardwareApi(lhs.screenRefreshRate, rhs.screenRefreshRate) && deepEqualsHardwareApi(lhs.thermalState, rhs.thermalState)
+  }
+
+  func hash(into hasher: inout Hasher) {
+    hasher.combine("NexoraDeviceInfo")
+    deepHashHardwareApi(value: platform, hasher: &hasher)
+    deepHashHardwareApi(value: manufacturer, hasher: &hasher)
+    deepHashHardwareApi(value: model, hasher: &hasher)
+    deepHashHardwareApi(value: osVersion, hasher: &hasher)
+    deepHashHardwareApi(value: sdkVersion, hasher: &hasher)
+    deepHashHardwareApi(value: isPhysicalDevice, hasher: &hasher)
+    deepHashHardwareApi(value: totalRamBytes, hasher: &hasher)
+    deepHashHardwareApi(value: availableRamBytes, hasher: &hasher)
+    deepHashHardwareApi(value: cpuArchitecture, hasher: &hasher)
+    deepHashHardwareApi(value: screenRefreshRate, hasher: &hasher)
+    deepHashHardwareApi(value: thermalState, hasher: &hasher)
+  }
+}
+
+/// Generated class from Pigeon that represents data sent in messages.
+struct NexoraConnectivityInfo: Hashable {
+  var isConnected: Bool? = nil
+  var networkType: String? = nil
+  var isMetered: Bool? = nil
+  var isVpn: Bool? = nil
+  var signalStrength: Int64? = nil
+  var ipAddress: String? = nil
+
+
+  // swift-format-ignore: AlwaysUseLowerCamelCase
+  static func fromList(_ pigeonVar_list: [Any?]) -> NexoraConnectivityInfo? {
+    let isConnected: Bool? = nilOrValue(pigeonVar_list[0])
+    let networkType: String? = nilOrValue(pigeonVar_list[1])
+    let isMetered: Bool? = nilOrValue(pigeonVar_list[2])
+    let isVpn: Bool? = nilOrValue(pigeonVar_list[3])
+    let signalStrength: Int64? = nilOrValue(pigeonVar_list[4])
+    let ipAddress: String? = nilOrValue(pigeonVar_list[5])
+
+    return NexoraConnectivityInfo(
+      isConnected: isConnected,
+      networkType: networkType,
+      isMetered: isMetered,
+      isVpn: isVpn,
+      signalStrength: signalStrength,
+      ipAddress: ipAddress
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      isConnected,
+      networkType,
+      isMetered,
+      isVpn,
+      signalStrength,
+      ipAddress,
+    ]
+  }
+  static func == (lhs: NexoraConnectivityInfo, rhs: NexoraConnectivityInfo) -> Bool {
+    if Swift.type(of: lhs) != Swift.type(of: rhs) {
+      return false
+    }
+    return deepEqualsHardwareApi(lhs.isConnected, rhs.isConnected) && deepEqualsHardwareApi(lhs.networkType, rhs.networkType) && deepEqualsHardwareApi(lhs.isMetered, rhs.isMetered) && deepEqualsHardwareApi(lhs.isVpn, rhs.isVpn) && deepEqualsHardwareApi(lhs.signalStrength, rhs.signalStrength) && deepEqualsHardwareApi(lhs.ipAddress, rhs.ipAddress)
+  }
+
+  func hash(into hasher: inout Hasher) {
+    hasher.combine("NexoraConnectivityInfo")
+    deepHashHardwareApi(value: isConnected, hasher: &hasher)
+    deepHashHardwareApi(value: networkType, hasher: &hasher)
+    deepHashHardwareApi(value: isMetered, hasher: &hasher)
+    deepHashHardwareApi(value: isVpn, hasher: &hasher)
+    deepHashHardwareApi(value: signalStrength, hasher: &hasher)
+    deepHashHardwareApi(value: ipAddress, hasher: &hasher)
+  }
+}
+
+/// Generated class from Pigeon that represents data sent in messages.
+struct NexoraBatteryInfo: Hashable {
+  var level: Double? = nil
+  var isCharging: Bool? = nil
+  var status: String? = nil
+  var temperature: Double? = nil
+
+
+  // swift-format-ignore: AlwaysUseLowerCamelCase
+  static func fromList(_ pigeonVar_list: [Any?]) -> NexoraBatteryInfo? {
+    let level: Double? = nilOrValue(pigeonVar_list[0])
+    let isCharging: Bool? = nilOrValue(pigeonVar_list[1])
+    let status: String? = nilOrValue(pigeonVar_list[2])
+    let temperature: Double? = nilOrValue(pigeonVar_list[3])
+
+    return NexoraBatteryInfo(
+      level: level,
+      isCharging: isCharging,
+      status: status,
+      temperature: temperature
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      level,
+      isCharging,
+      status,
+      temperature,
+    ]
+  }
+  static func == (lhs: NexoraBatteryInfo, rhs: NexoraBatteryInfo) -> Bool {
+    if Swift.type(of: lhs) != Swift.type(of: rhs) {
+      return false
+    }
+    return deepEqualsHardwareApi(lhs.level, rhs.level) && deepEqualsHardwareApi(lhs.isCharging, rhs.isCharging) && deepEqualsHardwareApi(lhs.status, rhs.status) && deepEqualsHardwareApi(lhs.temperature, rhs.temperature)
+  }
+
+  func hash(into hasher: inout Hasher) {
+    hasher.combine("NexoraBatteryInfo")
+    deepHashHardwareApi(value: level, hasher: &hasher)
+    deepHashHardwareApi(value: isCharging, hasher: &hasher)
+    deepHashHardwareApi(value: status, hasher: &hasher)
+    deepHashHardwareApi(value: temperature, hasher: &hasher)
+  }
+}
+
+/// Generated class from Pigeon that represents data sent in messages.
+struct NexoraWifiInfo: Hashable {
+  var ssid: String? = nil
+  var bssid: String? = nil
+  var signalStrength: Int64? = nil
+  var frequency: Int64? = nil
+  var linkSpeed: Int64? = nil
+
+
+  // swift-format-ignore: AlwaysUseLowerCamelCase
+  static func fromList(_ pigeonVar_list: [Any?]) -> NexoraWifiInfo? {
+    let ssid: String? = nilOrValue(pigeonVar_list[0])
+    let bssid: String? = nilOrValue(pigeonVar_list[1])
+    let signalStrength: Int64? = nilOrValue(pigeonVar_list[2])
+    let frequency: Int64? = nilOrValue(pigeonVar_list[3])
+    let linkSpeed: Int64? = nilOrValue(pigeonVar_list[4])
+
+    return NexoraWifiInfo(
+      ssid: ssid,
+      bssid: bssid,
+      signalStrength: signalStrength,
+      frequency: frequency,
+      linkSpeed: linkSpeed
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      ssid,
+      bssid,
+      signalStrength,
+      frequency,
+      linkSpeed,
+    ]
+  }
+  static func == (lhs: NexoraWifiInfo, rhs: NexoraWifiInfo) -> Bool {
+    if Swift.type(of: lhs) != Swift.type(of: rhs) {
+      return false
+    }
+    return deepEqualsHardwareApi(lhs.ssid, rhs.ssid) && deepEqualsHardwareApi(lhs.bssid, rhs.bssid) && deepEqualsHardwareApi(lhs.signalStrength, rhs.signalStrength) && deepEqualsHardwareApi(lhs.frequency, rhs.frequency) && deepEqualsHardwareApi(lhs.linkSpeed, rhs.linkSpeed)
+  }
+
+  func hash(into hasher: inout Hasher) {
+    hasher.combine("NexoraWifiInfo")
+    deepHashHardwareApi(value: ssid, hasher: &hasher)
+    deepHashHardwareApi(value: bssid, hasher: &hasher)
+    deepHashHardwareApi(value: signalStrength, hasher: &hasher)
+    deepHashHardwareApi(value: frequency, hasher: &hasher)
+    deepHashHardwareApi(value: linkSpeed, hasher: &hasher)
+  }
+}
+
+/// Generated class from Pigeon that represents data sent in messages.
+struct NexoraHapticOptions: Hashable {
+  var type: String? = nil
+
+
+  // swift-format-ignore: AlwaysUseLowerCamelCase
+  static func fromList(_ pigeonVar_list: [Any?]) -> NexoraHapticOptions? {
+    let type: String? = nilOrValue(pigeonVar_list[0])
+
+    return NexoraHapticOptions(
+      type: type
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      type
+    ]
+  }
+  static func == (lhs: NexoraHapticOptions, rhs: NexoraHapticOptions) -> Bool {
+    if Swift.type(of: lhs) != Swift.type(of: rhs) {
+      return false
+    }
+    return deepEqualsHardwareApi(lhs.type, rhs.type)
+  }
+
+  func hash(into hasher: inout Hasher) {
+    hasher.combine("NexoraHapticOptions")
+    deepHashHardwareApi(value: type, hasher: &hasher)
+  }
+}
+
+/// Generated class from Pigeon that represents data sent in messages.
+struct NexoraSdkConfig: Hashable {
+  var enableLogging: Bool? = nil
+  var ecoMode: Bool? = nil
+
+
+  // swift-format-ignore: AlwaysUseLowerCamelCase
+  static func fromList(_ pigeonVar_list: [Any?]) -> NexoraSdkConfig? {
+    let enableLogging: Bool? = nilOrValue(pigeonVar_list[0])
+    let ecoMode: Bool? = nilOrValue(pigeonVar_list[1])
+
+    return NexoraSdkConfig(
+      enableLogging: enableLogging,
+      ecoMode: ecoMode
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      enableLogging,
+      ecoMode,
+    ]
+  }
+  static func == (lhs: NexoraSdkConfig, rhs: NexoraSdkConfig) -> Bool {
+    if Swift.type(of: lhs) != Swift.type(of: rhs) {
+      return false
+    }
+    return deepEqualsHardwareApi(lhs.enableLogging, rhs.enableLogging) && deepEqualsHardwareApi(lhs.ecoMode, rhs.ecoMode)
+  }
+
+  func hash(into hasher: inout Hasher) {
+    hasher.combine("NexoraSdkConfig")
+    deepHashHardwareApi(value: enableLogging, hasher: &hasher)
+    deepHashHardwareApi(value: ecoMode, hasher: &hasher)
+  }
+}
+
+/// Generated class from Pigeon that represents data sent in messages.
+struct NexoraPermissionStatus: Hashable {
+  var permission: String? = nil
+  var state: String? = nil
+  var canRequest: Bool? = nil
+
+
+  // swift-format-ignore: AlwaysUseLowerCamelCase
+  static func fromList(_ pigeonVar_list: [Any?]) -> NexoraPermissionStatus? {
+    let permission: String? = nilOrValue(pigeonVar_list[0])
+    let state: String? = nilOrValue(pigeonVar_list[1])
+    let canRequest: Bool? = nilOrValue(pigeonVar_list[2])
+
+    return NexoraPermissionStatus(
+      permission: permission,
+      state: state,
+      canRequest: canRequest
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      permission,
+      state,
+      canRequest,
+    ]
+  }
+  static func == (lhs: NexoraPermissionStatus, rhs: NexoraPermissionStatus) -> Bool {
+    if Swift.type(of: lhs) != Swift.type(of: rhs) {
+      return false
+    }
+    return deepEqualsHardwareApi(lhs.permission, rhs.permission) && deepEqualsHardwareApi(lhs.state, rhs.state) && deepEqualsHardwareApi(lhs.canRequest, rhs.canRequest)
+  }
+
+  func hash(into hasher: inout Hasher) {
+    hasher.combine("NexoraPermissionStatus")
+    deepHashHardwareApi(value: permission, hasher: &hasher)
+    deepHashHardwareApi(value: state, hasher: &hasher)
+    deepHashHardwareApi(value: canRequest, hasher: &hasher)
+  }
+}
+
+/// Generated class from Pigeon that represents data sent in messages.
+struct NexoraCryptoKeyOptions: Hashable {
+  var alias: String? = nil
+  var requireBiometric: Bool? = nil
+  var useStrongBox: Bool? = nil
+
+
+  // swift-format-ignore: AlwaysUseLowerCamelCase
+  static func fromList(_ pigeonVar_list: [Any?]) -> NexoraCryptoKeyOptions? {
+    let alias: String? = nilOrValue(pigeonVar_list[0])
+    let requireBiometric: Bool? = nilOrValue(pigeonVar_list[1])
+    let useStrongBox: Bool? = nilOrValue(pigeonVar_list[2])
+
+    return NexoraCryptoKeyOptions(
+      alias: alias,
+      requireBiometric: requireBiometric,
+      useStrongBox: useStrongBox
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      alias,
+      requireBiometric,
+      useStrongBox,
+    ]
+  }
+  static func == (lhs: NexoraCryptoKeyOptions, rhs: NexoraCryptoKeyOptions) -> Bool {
+    if Swift.type(of: lhs) != Swift.type(of: rhs) {
+      return false
+    }
+    return deepEqualsHardwareApi(lhs.alias, rhs.alias) && deepEqualsHardwareApi(lhs.requireBiometric, rhs.requireBiometric) && deepEqualsHardwareApi(lhs.useStrongBox, rhs.useStrongBox)
+  }
+
+  func hash(into hasher: inout Hasher) {
+    hasher.combine("NexoraCryptoKeyOptions")
+    deepHashHardwareApi(value: alias, hasher: &hasher)
+    deepHashHardwareApi(value: requireBiometric, hasher: &hasher)
+    deepHashHardwareApi(value: useStrongBox, hasher: &hasher)
   }
 }
 
@@ -250,9 +1032,43 @@ private class HardwareApiPigeonCodecReader: FlutterStandardReader {
   override func readValue(ofType type: UInt8) -> Any? {
     switch type {
     case 129:
-      return BasicCameraOptions.fromList(self.readValue() as! [Any?])
+      return NexoraCameraOptions.fromList(self.readValue() as! [Any?])
     case 130:
-      return StartCameraResult.fromList(self.readValue() as! [Any?])
+      return CustomClassifierOptions.fromList(self.readValue() as! [Any?])
+    case 131:
+      return VisionModeOptions.fromList(self.readValue() as! [Any?])
+    case 132:
+      return BasicAudioOptions.fromList(self.readValue() as! [Any?])
+    case 133:
+      return NexoraAudioOptions.fromList(self.readValue() as! [Any?])
+    case 134:
+      return NexoraLocationOptions.fromList(self.readValue() as! [Any?])
+    case 135:
+      return NexoraSensorOptions.fromList(self.readValue() as! [Any?])
+    case 136:
+      return NexoraBiometricOptions.fromList(self.readValue() as! [Any?])
+    case 137:
+      return NexoraBluetoothScanOptions.fromList(self.readValue() as! [Any?])
+    case 138:
+      return NexoraStorageInfo.fromList(self.readValue() as! [Any?])
+    case 139:
+      return NexoraFileInfo.fromList(self.readValue() as! [Any?])
+    case 140:
+      return NexoraDeviceInfo.fromList(self.readValue() as! [Any?])
+    case 141:
+      return NexoraConnectivityInfo.fromList(self.readValue() as! [Any?])
+    case 142:
+      return NexoraBatteryInfo.fromList(self.readValue() as! [Any?])
+    case 143:
+      return NexoraWifiInfo.fromList(self.readValue() as! [Any?])
+    case 144:
+      return NexoraHapticOptions.fromList(self.readValue() as! [Any?])
+    case 145:
+      return NexoraSdkConfig.fromList(self.readValue() as! [Any?])
+    case 146:
+      return NexoraPermissionStatus.fromList(self.readValue() as! [Any?])
+    case 147:
+      return NexoraCryptoKeyOptions.fromList(self.readValue() as! [Any?])
     default:
       return super.readValue(ofType: type)
     }
@@ -261,11 +1077,62 @@ private class HardwareApiPigeonCodecReader: FlutterStandardReader {
 
 private class HardwareApiPigeonCodecWriter: FlutterStandardWriter {
   override func writeValue(_ value: Any) {
-    if let value = value as? BasicCameraOptions {
+    if let value = value as? NexoraCameraOptions {
       super.writeByte(129)
       super.writeValue(value.toList())
-    } else if let value = value as? StartCameraResult {
+    } else if let value = value as? CustomClassifierOptions {
       super.writeByte(130)
+      super.writeValue(value.toList())
+    } else if let value = value as? VisionModeOptions {
+      super.writeByte(131)
+      super.writeValue(value.toList())
+    } else if let value = value as? BasicAudioOptions {
+      super.writeByte(132)
+      super.writeValue(value.toList())
+    } else if let value = value as? NexoraAudioOptions {
+      super.writeByte(133)
+      super.writeValue(value.toList())
+    } else if let value = value as? NexoraLocationOptions {
+      super.writeByte(134)
+      super.writeValue(value.toList())
+    } else if let value = value as? NexoraSensorOptions {
+      super.writeByte(135)
+      super.writeValue(value.toList())
+    } else if let value = value as? NexoraBiometricOptions {
+      super.writeByte(136)
+      super.writeValue(value.toList())
+    } else if let value = value as? NexoraBluetoothScanOptions {
+      super.writeByte(137)
+      super.writeValue(value.toList())
+    } else if let value = value as? NexoraStorageInfo {
+      super.writeByte(138)
+      super.writeValue(value.toList())
+    } else if let value = value as? NexoraFileInfo {
+      super.writeByte(139)
+      super.writeValue(value.toList())
+    } else if let value = value as? NexoraDeviceInfo {
+      super.writeByte(140)
+      super.writeValue(value.toList())
+    } else if let value = value as? NexoraConnectivityInfo {
+      super.writeByte(141)
+      super.writeValue(value.toList())
+    } else if let value = value as? NexoraBatteryInfo {
+      super.writeByte(142)
+      super.writeValue(value.toList())
+    } else if let value = value as? NexoraWifiInfo {
+      super.writeByte(143)
+      super.writeValue(value.toList())
+    } else if let value = value as? NexoraHapticOptions {
+      super.writeByte(144)
+      super.writeValue(value.toList())
+    } else if let value = value as? NexoraSdkConfig {
+      super.writeByte(145)
+      super.writeValue(value.toList())
+    } else if let value = value as? NexoraPermissionStatus {
+      super.writeByte(146)
+      super.writeValue(value.toList())
+    } else if let value = value as? NexoraCryptoKeyOptions {
+      super.writeByte(147)
       super.writeValue(value.toList())
     } else {
       super.writeValue(value)
@@ -287,10 +1154,21 @@ class HardwareApiPigeonCodec: FlutterStandardMessageCodec, @unchecked Sendable {
   static let shared = HardwareApiPigeonCodec(readerWriter: HardwareApiPigeonCodecReaderWriter())
 }
 
+
 /// Generated protocol from Pigeon that represents a handler of messages from Flutter.
 protocol HardwareApi {
-  func startCamera(options: BasicCameraOptions) throws -> StartCameraResult
-  func stopCamera() throws
+  func startCamera(width: Int64, height: Int64, completion: @escaping (Result<Int64, Error>) -> Void)
+  func startCameraWithOptions(options: NexoraCameraOptions, completion: @escaping (Result<Int64, Error>) -> Void)
+  func stopCamera(completion: @escaping (Result<Bool, Error>) -> Void)
+  func setVisionMode(options: VisionModeOptions, completion: @escaping (Result<Bool, Error>) -> Void)
+  func registerCustomClassifier(options: CustomClassifierOptions, completion: @escaping (Result<Bool, Error>) -> Void)
+  func setFlash(on: Bool, completion: @escaping (Result<Bool, Error>) -> Void)
+  func setZoom(level: Double, completion: @escaping (Result<Bool, Error>) -> Void)
+  func flipCamera(completion: @escaping (Result<Bool, Error>) -> Void)
+  func takePhoto(fileName: String?, completion: @escaping (Result<String?, Error>) -> Void)
+  func startVideoRecording(fileName: String?, completion: @escaping (Result<String?, Error>) -> Void)
+  func stopVideoRecording(completion: @escaping (Result<String?, Error>) -> Void)
+  func applyCameraFilterShader(shaderType: String, completion: @escaping (Result<Bool, Error>) -> Void)
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
@@ -303,29 +1181,1631 @@ class HardwareApiSetup {
     if let api = api {
       startCameraChannel.setMessageHandler { message, reply in
         let args = message as! [Any?]
-        let optionsArg = args[0] as! BasicCameraOptions
-        do {
-          let result = try api.startCamera(options: optionsArg)
-          reply(wrapResult(result))
-        } catch {
-          reply(wrapError(error))
+        let widthArg = args[0] as! Int64
+        let heightArg = args[1] as! Int64
+        api.startCamera(width: widthArg, height: heightArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
         }
       }
     } else {
       startCameraChannel.setMessageHandler(nil)
     }
+    let startCameraWithOptionsChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nexora_sdk_platform_interface.HardwareApi.startCameraWithOptions\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      startCameraWithOptionsChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let optionsArg = args[0] as! NexoraCameraOptions
+        api.startCameraWithOptions(options: optionsArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      startCameraWithOptionsChannel.setMessageHandler(nil)
+    }
     let stopCameraChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nexora_sdk_platform_interface.HardwareApi.stopCamera\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
       stopCameraChannel.setMessageHandler { _, reply in
-        do {
-          try api.stopCamera()
-          reply(wrapResult(nil))
-        } catch {
-          reply(wrapError(error))
+        api.stopCamera { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
         }
       }
     } else {
       stopCameraChannel.setMessageHandler(nil)
+    }
+    let setVisionModeChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nexora_sdk_platform_interface.HardwareApi.setVisionMode\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      setVisionModeChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let optionsArg = args[0] as! VisionModeOptions
+        api.setVisionMode(options: optionsArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      setVisionModeChannel.setMessageHandler(nil)
+    }
+    let registerCustomClassifierChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nexora_sdk_platform_interface.HardwareApi.registerCustomClassifier\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      registerCustomClassifierChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let optionsArg = args[0] as! CustomClassifierOptions
+        api.registerCustomClassifier(options: optionsArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      registerCustomClassifierChannel.setMessageHandler(nil)
+    }
+    let setFlashChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nexora_sdk_platform_interface.HardwareApi.setFlash\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      setFlashChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let onArg = args[0] as! Bool
+        api.setFlash(on: onArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      setFlashChannel.setMessageHandler(nil)
+    }
+    let setZoomChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nexora_sdk_platform_interface.HardwareApi.setZoom\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      setZoomChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let levelArg = args[0] as! Double
+        api.setZoom(level: levelArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      setZoomChannel.setMessageHandler(nil)
+    }
+    let flipCameraChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nexora_sdk_platform_interface.HardwareApi.flipCamera\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      flipCameraChannel.setMessageHandler { _, reply in
+        api.flipCamera { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      flipCameraChannel.setMessageHandler(nil)
+    }
+    let takePhotoChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nexora_sdk_platform_interface.HardwareApi.takePhoto\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      takePhotoChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let fileNameArg: String? = nilOrValue(args[0])
+        api.takePhoto(fileName: fileNameArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      takePhotoChannel.setMessageHandler(nil)
+    }
+    let startVideoRecordingChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nexora_sdk_platform_interface.HardwareApi.startVideoRecording\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      startVideoRecordingChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let fileNameArg: String? = nilOrValue(args[0])
+        api.startVideoRecording(fileName: fileNameArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      startVideoRecordingChannel.setMessageHandler(nil)
+    }
+    let stopVideoRecordingChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nexora_sdk_platform_interface.HardwareApi.stopVideoRecording\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      stopVideoRecordingChannel.setMessageHandler { _, reply in
+        api.stopVideoRecording { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      stopVideoRecordingChannel.setMessageHandler(nil)
+    }
+    let applyCameraFilterShaderChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nexora_sdk_platform_interface.HardwareApi.applyCameraFilterShader\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      applyCameraFilterShaderChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let shaderTypeArg = args[0] as! String
+        api.applyCameraFilterShader(shaderType: shaderTypeArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      applyCameraFilterShaderChannel.setMessageHandler(nil)
+    }
+  }
+}
+/// Generated protocol from Pigeon that represents a handler of messages from Flutter.
+protocol AudioApi {
+  func startAudio(options: BasicAudioOptions, completion: @escaping (Result<Bool, Error>) -> Void)
+  func startAudioWithOptions(options: NexoraAudioOptions, completion: @escaping (Result<Bool, Error>) -> Void)
+  func stopAudio(completion: @escaping (Result<Bool, Error>) -> Void)
+  func routeAudioOutput(route: String, completion: @escaping (Result<Bool, Error>) -> Void)
+  func getAudioVolume(completion: @escaping (Result<Double, Error>) -> Void)
+  func setAudioVolume(level: Double, completion: @escaping (Result<Bool, Error>) -> Void)
+  func selectAudioInput(device: String, completion: @escaping (Result<Bool, Error>) -> Void)
+  func setAudioGain(gain: Double, completion: @escaping (Result<Bool, Error>) -> Void)
+}
+
+/// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
+class AudioApiSetup {
+  static var codec: FlutterStandardMessageCodec { HardwareApiPigeonCodec.shared }
+  /// Sets up an instance of `AudioApi` to handle messages through the `binaryMessenger`.
+  static func setUp(binaryMessenger: FlutterBinaryMessenger, api: AudioApi?, messageChannelSuffix: String = "") {
+    let channelSuffix = messageChannelSuffix.count > 0 ? ".\(messageChannelSuffix)" : ""
+    let startAudioChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nexora_sdk_platform_interface.AudioApi.startAudio\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      startAudioChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let optionsArg = args[0] as! BasicAudioOptions
+        api.startAudio(options: optionsArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      startAudioChannel.setMessageHandler(nil)
+    }
+    let startAudioWithOptionsChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nexora_sdk_platform_interface.AudioApi.startAudioWithOptions\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      startAudioWithOptionsChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let optionsArg = args[0] as! NexoraAudioOptions
+        api.startAudioWithOptions(options: optionsArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      startAudioWithOptionsChannel.setMessageHandler(nil)
+    }
+    let stopAudioChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nexora_sdk_platform_interface.AudioApi.stopAudio\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      stopAudioChannel.setMessageHandler { _, reply in
+        api.stopAudio { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      stopAudioChannel.setMessageHandler(nil)
+    }
+    let routeAudioOutputChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nexora_sdk_platform_interface.AudioApi.routeAudioOutput\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      routeAudioOutputChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let routeArg = args[0] as! String
+        api.routeAudioOutput(route: routeArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      routeAudioOutputChannel.setMessageHandler(nil)
+    }
+    let getAudioVolumeChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nexora_sdk_platform_interface.AudioApi.getAudioVolume\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      getAudioVolumeChannel.setMessageHandler { _, reply in
+        api.getAudioVolume { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      getAudioVolumeChannel.setMessageHandler(nil)
+    }
+    let setAudioVolumeChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nexora_sdk_platform_interface.AudioApi.setAudioVolume\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      setAudioVolumeChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let levelArg = args[0] as! Double
+        api.setAudioVolume(level: levelArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      setAudioVolumeChannel.setMessageHandler(nil)
+    }
+    let selectAudioInputChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nexora_sdk_platform_interface.AudioApi.selectAudioInput\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      selectAudioInputChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let deviceArg = args[0] as! String
+        api.selectAudioInput(device: deviceArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      selectAudioInputChannel.setMessageHandler(nil)
+    }
+    let setAudioGainChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nexora_sdk_platform_interface.AudioApi.setAudioGain\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      setAudioGainChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let gainArg = args[0] as! Double
+        api.setAudioGain(gain: gainArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      setAudioGainChannel.setMessageHandler(nil)
+    }
+  }
+}
+/// Generated protocol from Pigeon that represents a handler of messages from Flutter.
+protocol LocationApi {
+  func startLocation(completion: @escaping (Result<Bool, Error>) -> Void)
+  func startLocationWithOptions(options: NexoraLocationOptions, completion: @escaping (Result<Bool, Error>) -> Void)
+  func stopLocation(completion: @escaping (Result<Bool, Error>) -> Void)
+  func setBackgroundLocationEnabled(enabled: Bool, completion: @escaping (Result<Bool, Error>) -> Void)
+}
+
+/// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
+class LocationApiSetup {
+  static var codec: FlutterStandardMessageCodec { HardwareApiPigeonCodec.shared }
+  /// Sets up an instance of `LocationApi` to handle messages through the `binaryMessenger`.
+  static func setUp(binaryMessenger: FlutterBinaryMessenger, api: LocationApi?, messageChannelSuffix: String = "") {
+    let channelSuffix = messageChannelSuffix.count > 0 ? ".\(messageChannelSuffix)" : ""
+    let startLocationChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nexora_sdk_platform_interface.LocationApi.startLocation\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      startLocationChannel.setMessageHandler { _, reply in
+        api.startLocation { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      startLocationChannel.setMessageHandler(nil)
+    }
+    let startLocationWithOptionsChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nexora_sdk_platform_interface.LocationApi.startLocationWithOptions\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      startLocationWithOptionsChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let optionsArg = args[0] as! NexoraLocationOptions
+        api.startLocationWithOptions(options: optionsArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      startLocationWithOptionsChannel.setMessageHandler(nil)
+    }
+    let stopLocationChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nexora_sdk_platform_interface.LocationApi.stopLocation\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      stopLocationChannel.setMessageHandler { _, reply in
+        api.stopLocation { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      stopLocationChannel.setMessageHandler(nil)
+    }
+    let setBackgroundLocationEnabledChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nexora_sdk_platform_interface.LocationApi.setBackgroundLocationEnabled\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      setBackgroundLocationEnabledChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let enabledArg = args[0] as! Bool
+        api.setBackgroundLocationEnabled(enabled: enabledArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      setBackgroundLocationEnabledChannel.setMessageHandler(nil)
+    }
+  }
+}
+/// Generated protocol from Pigeon that represents a handler of messages from Flutter.
+protocol SensorApi {
+  func startSensor(frequencyHz: Int64, completion: @escaping (Result<Bool, Error>) -> Void)
+  func startSensorWithOptions(options: NexoraSensorOptions, completion: @escaping (Result<Bool, Error>) -> Void)
+  func stopSensor(completion: @escaping (Result<Bool, Error>) -> Void)
+  func enableDeadReckoning(enabled: Bool, completion: @escaping (Result<Bool, Error>) -> Void)
+}
+
+/// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
+class SensorApiSetup {
+  static var codec: FlutterStandardMessageCodec { HardwareApiPigeonCodec.shared }
+  /// Sets up an instance of `SensorApi` to handle messages through the `binaryMessenger`.
+  static func setUp(binaryMessenger: FlutterBinaryMessenger, api: SensorApi?, messageChannelSuffix: String = "") {
+    let channelSuffix = messageChannelSuffix.count > 0 ? ".\(messageChannelSuffix)" : ""
+    let startSensorChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nexora_sdk_platform_interface.SensorApi.startSensor\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      startSensorChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let frequencyHzArg = args[0] as! Int64
+        api.startSensor(frequencyHz: frequencyHzArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      startSensorChannel.setMessageHandler(nil)
+    }
+    let startSensorWithOptionsChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nexora_sdk_platform_interface.SensorApi.startSensorWithOptions\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      startSensorWithOptionsChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let optionsArg = args[0] as! NexoraSensorOptions
+        api.startSensorWithOptions(options: optionsArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      startSensorWithOptionsChannel.setMessageHandler(nil)
+    }
+    let stopSensorChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nexora_sdk_platform_interface.SensorApi.stopSensor\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      stopSensorChannel.setMessageHandler { _, reply in
+        api.stopSensor { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      stopSensorChannel.setMessageHandler(nil)
+    }
+    let enableDeadReckoningChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nexora_sdk_platform_interface.SensorApi.enableDeadReckoning\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      enableDeadReckoningChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let enabledArg = args[0] as! Bool
+        api.enableDeadReckoning(enabled: enabledArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      enableDeadReckoningChannel.setMessageHandler(nil)
+    }
+  }
+}
+/// Generated protocol from Pigeon that represents a handler of messages from Flutter.
+protocol BiometricsApi {
+  func authenticate(reason: String, completion: @escaping (Result<Bool, Error>) -> Void)
+  func authenticateWithOptions(options: NexoraBiometricOptions, completion: @escaping (Result<Bool, Error>) -> Void)
+  func canAuthenticate(completion: @escaping (Result<Bool, Error>) -> Void)
+}
+
+/// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
+class BiometricsApiSetup {
+  static var codec: FlutterStandardMessageCodec { HardwareApiPigeonCodec.shared }
+  /// Sets up an instance of `BiometricsApi` to handle messages through the `binaryMessenger`.
+  static func setUp(binaryMessenger: FlutterBinaryMessenger, api: BiometricsApi?, messageChannelSuffix: String = "") {
+    let channelSuffix = messageChannelSuffix.count > 0 ? ".\(messageChannelSuffix)" : ""
+    let authenticateChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nexora_sdk_platform_interface.BiometricsApi.authenticate\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      authenticateChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let reasonArg = args[0] as! String
+        api.authenticate(reason: reasonArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      authenticateChannel.setMessageHandler(nil)
+    }
+    let authenticateWithOptionsChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nexora_sdk_platform_interface.BiometricsApi.authenticateWithOptions\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      authenticateWithOptionsChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let optionsArg = args[0] as! NexoraBiometricOptions
+        api.authenticateWithOptions(options: optionsArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      authenticateWithOptionsChannel.setMessageHandler(nil)
+    }
+    let canAuthenticateChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nexora_sdk_platform_interface.BiometricsApi.canAuthenticate\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      canAuthenticateChannel.setMessageHandler { _, reply in
+        api.canAuthenticate { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      canAuthenticateChannel.setMessageHandler(nil)
+    }
+  }
+}
+/// Generated protocol from Pigeon that represents a handler of messages from Flutter.
+protocol BluetoothApi {
+  func startBluetoothScan(completion: @escaping (Result<Bool, Error>) -> Void)
+  func startBluetoothScanWithOptions(options: NexoraBluetoothScanOptions, completion: @escaping (Result<Bool, Error>) -> Void)
+  func stopBluetoothScan(completion: @escaping (Result<Bool, Error>) -> Void)
+  func connectDevice(id: String, completion: @escaping (Result<Bool, Error>) -> Void)
+  func disconnectDevice(id: String, completion: @escaping (Result<Bool, Error>) -> Void)
+  func discoverServices(deviceId: String, completion: @escaping (Result<[String?], Error>) -> Void)
+  func sendData(deviceId: String, serviceId: String, charId: String, data: [Int64?], completion: @escaping (Result<Bool, Error>) -> Void)
+  func readData(deviceId: String, serviceId: String, charId: String, completion: @escaping (Result<FlutterStandardTypedData?, Error>) -> Void)
+  func subscribeToCharacteristic(deviceId: String, serviceId: String, charId: String, enable: Bool, completion: @escaping (Result<Bool, Error>) -> Void)
+  func requestMtu(deviceId: String, mtu: Int64, completion: @escaping (Result<Bool, Error>) -> Void)
+  func startBlePeripheral(uuid: String, completion: @escaping (Result<Bool, Error>) -> Void)
+  func stopBlePeripheral(completion: @escaping (Result<Void, Error>) -> Void)
+}
+
+/// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
+class BluetoothApiSetup {
+  static var codec: FlutterStandardMessageCodec { HardwareApiPigeonCodec.shared }
+  /// Sets up an instance of `BluetoothApi` to handle messages through the `binaryMessenger`.
+  static func setUp(binaryMessenger: FlutterBinaryMessenger, api: BluetoothApi?, messageChannelSuffix: String = "") {
+    let channelSuffix = messageChannelSuffix.count > 0 ? ".\(messageChannelSuffix)" : ""
+    let startBluetoothScanChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nexora_sdk_platform_interface.BluetoothApi.startBluetoothScan\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      startBluetoothScanChannel.setMessageHandler { _, reply in
+        api.startBluetoothScan { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      startBluetoothScanChannel.setMessageHandler(nil)
+    }
+    let startBluetoothScanWithOptionsChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nexora_sdk_platform_interface.BluetoothApi.startBluetoothScanWithOptions\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      startBluetoothScanWithOptionsChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let optionsArg = args[0] as! NexoraBluetoothScanOptions
+        api.startBluetoothScanWithOptions(options: optionsArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      startBluetoothScanWithOptionsChannel.setMessageHandler(nil)
+    }
+    let stopBluetoothScanChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nexora_sdk_platform_interface.BluetoothApi.stopBluetoothScan\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      stopBluetoothScanChannel.setMessageHandler { _, reply in
+        api.stopBluetoothScan { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      stopBluetoothScanChannel.setMessageHandler(nil)
+    }
+    let connectDeviceChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nexora_sdk_platform_interface.BluetoothApi.connectDevice\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      connectDeviceChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let idArg = args[0] as! String
+        api.connectDevice(id: idArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      connectDeviceChannel.setMessageHandler(nil)
+    }
+    let disconnectDeviceChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nexora_sdk_platform_interface.BluetoothApi.disconnectDevice\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      disconnectDeviceChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let idArg = args[0] as! String
+        api.disconnectDevice(id: idArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      disconnectDeviceChannel.setMessageHandler(nil)
+    }
+    let discoverServicesChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nexora_sdk_platform_interface.BluetoothApi.discoverServices\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      discoverServicesChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let deviceIdArg = args[0] as! String
+        api.discoverServices(deviceId: deviceIdArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      discoverServicesChannel.setMessageHandler(nil)
+    }
+    let sendDataChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nexora_sdk_platform_interface.BluetoothApi.sendData\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      sendDataChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let deviceIdArg = args[0] as! String
+        let serviceIdArg = args[1] as! String
+        let charIdArg = args[2] as! String
+        let dataArg = args[3] as! [Int64?]
+        api.sendData(deviceId: deviceIdArg, serviceId: serviceIdArg, charId: charIdArg, data: dataArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      sendDataChannel.setMessageHandler(nil)
+    }
+    let readDataChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nexora_sdk_platform_interface.BluetoothApi.readData\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      readDataChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let deviceIdArg = args[0] as! String
+        let serviceIdArg = args[1] as! String
+        let charIdArg = args[2] as! String
+        api.readData(deviceId: deviceIdArg, serviceId: serviceIdArg, charId: charIdArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      readDataChannel.setMessageHandler(nil)
+    }
+    let subscribeToCharacteristicChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nexora_sdk_platform_interface.BluetoothApi.subscribeToCharacteristic\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      subscribeToCharacteristicChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let deviceIdArg = args[0] as! String
+        let serviceIdArg = args[1] as! String
+        let charIdArg = args[2] as! String
+        let enableArg = args[3] as! Bool
+        api.subscribeToCharacteristic(deviceId: deviceIdArg, serviceId: serviceIdArg, charId: charIdArg, enable: enableArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      subscribeToCharacteristicChannel.setMessageHandler(nil)
+    }
+    let requestMtuChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nexora_sdk_platform_interface.BluetoothApi.requestMtu\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      requestMtuChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let deviceIdArg = args[0] as! String
+        let mtuArg = args[1] as! Int64
+        api.requestMtu(deviceId: deviceIdArg, mtu: mtuArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      requestMtuChannel.setMessageHandler(nil)
+    }
+    let startBlePeripheralChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nexora_sdk_platform_interface.BluetoothApi.startBlePeripheral\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      startBlePeripheralChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let uuidArg = args[0] as! String
+        api.startBlePeripheral(uuid: uuidArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      startBlePeripheralChannel.setMessageHandler(nil)
+    }
+    let stopBlePeripheralChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nexora_sdk_platform_interface.BluetoothApi.stopBlePeripheral\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      stopBlePeripheralChannel.setMessageHandler { _, reply in
+        api.stopBlePeripheral { result in
+          switch result {
+          case .success:
+            reply(wrapResult(nil))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      stopBlePeripheralChannel.setMessageHandler(nil)
+    }
+  }
+}
+/// Generated protocol from Pigeon that represents a handler of messages from Flutter.
+protocol SecureStorageApi {
+  func getStorageInfo(completion: @escaping (Result<NexoraStorageInfo?, Error>) -> Void)
+  func writeFile(fileName: String, content: String, completion: @escaping (Result<String?, Error>) -> Void)
+  func appendFile(fileName: String, content: String, completion: @escaping (Result<String?, Error>) -> Void)
+  func readFile(fileName: String, completion: @escaping (Result<String?, Error>) -> Void)
+  func deleteFile(fileName: String, completion: @escaping (Result<Bool, Error>) -> Void)
+  func fileExists(fileName: String, completion: @escaping (Result<Bool, Error>) -> Void)
+  func listFiles(completion: @escaping (Result<[NexoraFileInfo?], Error>) -> Void)
+  func writeBytes(fileName: String, bytes: FlutterStandardTypedData, completion: @escaping (Result<String?, Error>) -> Void)
+  func readBytes(fileName: String, completion: @escaping (Result<FlutterStandardTypedData?, Error>) -> Void)
+  func clearCache(completion: @escaping (Result<Bool, Error>) -> Void)
+  func getAppDirectory(completion: @escaping (Result<String?, Error>) -> Void)
+  func getCacheDirectory(completion: @escaping (Result<String?, Error>) -> Void)
+  func getExternalDirectory(completion: @escaping (Result<String?, Error>) -> Void)
+}
+
+/// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
+class SecureStorageApiSetup {
+  static var codec: FlutterStandardMessageCodec { HardwareApiPigeonCodec.shared }
+  /// Sets up an instance of `SecureStorageApi` to handle messages through the `binaryMessenger`.
+  static func setUp(binaryMessenger: FlutterBinaryMessenger, api: SecureStorageApi?, messageChannelSuffix: String = "") {
+    let channelSuffix = messageChannelSuffix.count > 0 ? ".\(messageChannelSuffix)" : ""
+    let getStorageInfoChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nexora_sdk_platform_interface.SecureStorageApi.getStorageInfo\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      getStorageInfoChannel.setMessageHandler { _, reply in
+        api.getStorageInfo { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      getStorageInfoChannel.setMessageHandler(nil)
+    }
+    let writeFileChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nexora_sdk_platform_interface.SecureStorageApi.writeFile\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      writeFileChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let fileNameArg = args[0] as! String
+        let contentArg = args[1] as! String
+        api.writeFile(fileName: fileNameArg, content: contentArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      writeFileChannel.setMessageHandler(nil)
+    }
+    let appendFileChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nexora_sdk_platform_interface.SecureStorageApi.appendFile\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      appendFileChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let fileNameArg = args[0] as! String
+        let contentArg = args[1] as! String
+        api.appendFile(fileName: fileNameArg, content: contentArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      appendFileChannel.setMessageHandler(nil)
+    }
+    let readFileChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nexora_sdk_platform_interface.SecureStorageApi.readFile\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      readFileChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let fileNameArg = args[0] as! String
+        api.readFile(fileName: fileNameArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      readFileChannel.setMessageHandler(nil)
+    }
+    let deleteFileChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nexora_sdk_platform_interface.SecureStorageApi.deleteFile\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      deleteFileChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let fileNameArg = args[0] as! String
+        api.deleteFile(fileName: fileNameArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      deleteFileChannel.setMessageHandler(nil)
+    }
+    let fileExistsChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nexora_sdk_platform_interface.SecureStorageApi.fileExists\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      fileExistsChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let fileNameArg = args[0] as! String
+        api.fileExists(fileName: fileNameArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      fileExistsChannel.setMessageHandler(nil)
+    }
+    let listFilesChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nexora_sdk_platform_interface.SecureStorageApi.listFiles\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      listFilesChannel.setMessageHandler { _, reply in
+        api.listFiles { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      listFilesChannel.setMessageHandler(nil)
+    }
+    let writeBytesChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nexora_sdk_platform_interface.SecureStorageApi.writeBytes\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      writeBytesChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let fileNameArg = args[0] as! String
+        let bytesArg = args[1] as! FlutterStandardTypedData
+        api.writeBytes(fileName: fileNameArg, bytes: bytesArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      writeBytesChannel.setMessageHandler(nil)
+    }
+    let readBytesChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nexora_sdk_platform_interface.SecureStorageApi.readBytes\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      readBytesChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let fileNameArg = args[0] as! String
+        api.readBytes(fileName: fileNameArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      readBytesChannel.setMessageHandler(nil)
+    }
+    let clearCacheChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nexora_sdk_platform_interface.SecureStorageApi.clearCache\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      clearCacheChannel.setMessageHandler { _, reply in
+        api.clearCache { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      clearCacheChannel.setMessageHandler(nil)
+    }
+    let getAppDirectoryChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nexora_sdk_platform_interface.SecureStorageApi.getAppDirectory\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      getAppDirectoryChannel.setMessageHandler { _, reply in
+        api.getAppDirectory { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      getAppDirectoryChannel.setMessageHandler(nil)
+    }
+    let getCacheDirectoryChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nexora_sdk_platform_interface.SecureStorageApi.getCacheDirectory\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      getCacheDirectoryChannel.setMessageHandler { _, reply in
+        api.getCacheDirectory { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      getCacheDirectoryChannel.setMessageHandler(nil)
+    }
+    let getExternalDirectoryChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nexora_sdk_platform_interface.SecureStorageApi.getExternalDirectory\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      getExternalDirectoryChannel.setMessageHandler { _, reply in
+        api.getExternalDirectory { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      getExternalDirectoryChannel.setMessageHandler(nil)
+    }
+  }
+}
+/// Generated protocol from Pigeon that represents a handler of messages from Flutter.
+protocol SystemApi {
+  func configureSdk(config: NexoraSdkConfig, completion: @escaping (Result<Bool, Error>) -> Void)
+  func requestPermissions(completion: @escaping (Result<Bool, Error>) -> Void)
+  func requestPermission(type: String, completion: @escaping (Result<Bool, Error>) -> Void)
+  func getPermissionStatus(type: String, completion: @escaping (Result<NexoraPermissionStatus, Error>) -> Void)
+  func openAppSettings(completion: @escaping (Result<Bool, Error>) -> Void)
+  func getDeviceInfo(completion: @escaping (Result<NexoraDeviceInfo, Error>) -> Void)
+  func getConnectivityInfo(completion: @escaping (Result<NexoraConnectivityInfo, Error>) -> Void)
+  func getBatteryInfo(completion: @escaping (Result<NexoraBatteryInfo?, Error>) -> Void)
+  func getWifiInfo(completion: @escaping (Result<NexoraWifiInfo?, Error>) -> Void)
+  func vibrate(durationMs: Int64, completion: @escaping (Result<Void, Error>) -> Void)
+  func hapticFeedback(type: String, completion: @escaping (Result<Void, Error>) -> Void)
+  func performHapticWithOptions(options: NexoraHapticOptions, completion: @escaping (Result<Void, Error>) -> Void)
+  func copyText(text: String, completion: @escaping (Result<Bool, Error>) -> Void)
+  func pasteText(completion: @escaping (Result<String?, Error>) -> Void)
+  func openUrl(url: String, completion: @escaping (Result<Bool, Error>) -> Void)
+  func shareText(text: String, subject: String?, completion: @escaping (Result<Bool, Error>) -> Void)
+  func saveToGallery(filePath: String, completion: @escaping (Result<String?, Error>) -> Void)
+  func enterPictureInPicture(completion: @escaping (Result<Bool, Error>) -> Void)
+  func getConnectedUsbDevices(completion: @escaping (Result<[String?], Error>) -> Void)
+  func startForegroundService(title: String, content: String, completion: @escaping (Result<Bool, Error>) -> Void)
+  func updateForegroundService(title: String, text: String, completion: @escaping (Result<Bool, Error>) -> Void)
+  func stopForegroundService(completion: @escaping (Result<Bool, Error>) -> Void)
+  func enableSmartSync(uploadEndpointUrl: String, headers: [String?: String?], rollLimitBytes: Int64, requireWifi: Bool, completion: @escaping (Result<Bool, Error>) -> Void)
+  func setEcoModeEnabled(enabled: Bool, completion: @escaping (Result<Void, Error>) -> Void)
+  func isEcoModeActive(completion: @escaping (Result<Bool, Error>) -> Void)
+  func getThermalState(completion: @escaping (Result<String, Error>) -> Void)
+}
+
+/// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
+class SystemApiSetup {
+  static var codec: FlutterStandardMessageCodec { HardwareApiPigeonCodec.shared }
+  /// Sets up an instance of `SystemApi` to handle messages through the `binaryMessenger`.
+  static func setUp(binaryMessenger: FlutterBinaryMessenger, api: SystemApi?, messageChannelSuffix: String = "") {
+    let channelSuffix = messageChannelSuffix.count > 0 ? ".\(messageChannelSuffix)" : ""
+    let configureSdkChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.configureSdk\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      configureSdkChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let configArg = args[0] as! NexoraSdkConfig
+        api.configureSdk(config: configArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      configureSdkChannel.setMessageHandler(nil)
+    }
+    let requestPermissionsChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.requestPermissions\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      requestPermissionsChannel.setMessageHandler { _, reply in
+        api.requestPermissions { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      requestPermissionsChannel.setMessageHandler(nil)
+    }
+    let requestPermissionChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.requestPermission\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      requestPermissionChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let typeArg = args[0] as! String
+        api.requestPermission(type: typeArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      requestPermissionChannel.setMessageHandler(nil)
+    }
+    let getPermissionStatusChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.getPermissionStatus\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      getPermissionStatusChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let typeArg = args[0] as! String
+        api.getPermissionStatus(type: typeArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      getPermissionStatusChannel.setMessageHandler(nil)
+    }
+    let openAppSettingsChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.openAppSettings\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      openAppSettingsChannel.setMessageHandler { _, reply in
+        api.openAppSettings { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      openAppSettingsChannel.setMessageHandler(nil)
+    }
+    let getDeviceInfoChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.getDeviceInfo\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      getDeviceInfoChannel.setMessageHandler { _, reply in
+        api.getDeviceInfo { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      getDeviceInfoChannel.setMessageHandler(nil)
+    }
+    let getConnectivityInfoChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.getConnectivityInfo\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      getConnectivityInfoChannel.setMessageHandler { _, reply in
+        api.getConnectivityInfo { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      getConnectivityInfoChannel.setMessageHandler(nil)
+    }
+    let getBatteryInfoChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.getBatteryInfo\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      getBatteryInfoChannel.setMessageHandler { _, reply in
+        api.getBatteryInfo { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      getBatteryInfoChannel.setMessageHandler(nil)
+    }
+    let getWifiInfoChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.getWifiInfo\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      getWifiInfoChannel.setMessageHandler { _, reply in
+        api.getWifiInfo { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      getWifiInfoChannel.setMessageHandler(nil)
+    }
+    let vibrateChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.vibrate\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      vibrateChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let durationMsArg = args[0] as! Int64
+        api.vibrate(durationMs: durationMsArg) { result in
+          switch result {
+          case .success:
+            reply(wrapResult(nil))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      vibrateChannel.setMessageHandler(nil)
+    }
+    let hapticFeedbackChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.hapticFeedback\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      hapticFeedbackChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let typeArg = args[0] as! String
+        api.hapticFeedback(type: typeArg) { result in
+          switch result {
+          case .success:
+            reply(wrapResult(nil))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      hapticFeedbackChannel.setMessageHandler(nil)
+    }
+    let performHapticWithOptionsChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.performHapticWithOptions\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      performHapticWithOptionsChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let optionsArg = args[0] as! NexoraHapticOptions
+        api.performHapticWithOptions(options: optionsArg) { result in
+          switch result {
+          case .success:
+            reply(wrapResult(nil))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      performHapticWithOptionsChannel.setMessageHandler(nil)
+    }
+    let copyTextChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.copyText\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      copyTextChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let textArg = args[0] as! String
+        api.copyText(text: textArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      copyTextChannel.setMessageHandler(nil)
+    }
+    let pasteTextChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.pasteText\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      pasteTextChannel.setMessageHandler { _, reply in
+        api.pasteText { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      pasteTextChannel.setMessageHandler(nil)
+    }
+    let openUrlChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.openUrl\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      openUrlChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let urlArg = args[0] as! String
+        api.openUrl(url: urlArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      openUrlChannel.setMessageHandler(nil)
+    }
+    let shareTextChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.shareText\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      shareTextChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let textArg = args[0] as! String
+        let subjectArg: String? = nilOrValue(args[1])
+        api.shareText(text: textArg, subject: subjectArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      shareTextChannel.setMessageHandler(nil)
+    }
+    let saveToGalleryChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.saveToGallery\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      saveToGalleryChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let filePathArg = args[0] as! String
+        api.saveToGallery(filePath: filePathArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      saveToGalleryChannel.setMessageHandler(nil)
+    }
+    let enterPictureInPictureChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.enterPictureInPicture\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      enterPictureInPictureChannel.setMessageHandler { _, reply in
+        api.enterPictureInPicture { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      enterPictureInPictureChannel.setMessageHandler(nil)
+    }
+    let getConnectedUsbDevicesChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.getConnectedUsbDevices\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      getConnectedUsbDevicesChannel.setMessageHandler { _, reply in
+        api.getConnectedUsbDevices { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      getConnectedUsbDevicesChannel.setMessageHandler(nil)
+    }
+    let startForegroundServiceChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.startForegroundService\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      startForegroundServiceChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let titleArg = args[0] as! String
+        let contentArg = args[1] as! String
+        api.startForegroundService(title: titleArg, content: contentArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      startForegroundServiceChannel.setMessageHandler(nil)
+    }
+    let updateForegroundServiceChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.updateForegroundService\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      updateForegroundServiceChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let titleArg = args[0] as! String
+        let textArg = args[1] as! String
+        api.updateForegroundService(title: titleArg, text: textArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      updateForegroundServiceChannel.setMessageHandler(nil)
+    }
+    let stopForegroundServiceChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.stopForegroundService\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      stopForegroundServiceChannel.setMessageHandler { _, reply in
+        api.stopForegroundService { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      stopForegroundServiceChannel.setMessageHandler(nil)
+    }
+    let enableSmartSyncChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.enableSmartSync\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      enableSmartSyncChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let uploadEndpointUrlArg = args[0] as! String
+        let headersArg = args[1] as! [String?: String?]
+        let rollLimitBytesArg = args[2] as! Int64
+        let requireWifiArg = args[3] as! Bool
+        api.enableSmartSync(uploadEndpointUrl: uploadEndpointUrlArg, headers: headersArg, rollLimitBytes: rollLimitBytesArg, requireWifi: requireWifiArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      enableSmartSyncChannel.setMessageHandler(nil)
+    }
+    let setEcoModeEnabledChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.setEcoModeEnabled\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      setEcoModeEnabledChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let enabledArg = args[0] as! Bool
+        api.setEcoModeEnabled(enabled: enabledArg) { result in
+          switch result {
+          case .success:
+            reply(wrapResult(nil))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      setEcoModeEnabledChannel.setMessageHandler(nil)
+    }
+    let isEcoModeActiveChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.isEcoModeActive\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      isEcoModeActiveChannel.setMessageHandler { _, reply in
+        api.isEcoModeActive { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      isEcoModeActiveChannel.setMessageHandler(nil)
+    }
+    let getThermalStateChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.getThermalState\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      getThermalStateChannel.setMessageHandler { _, reply in
+        api.getThermalState { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      getThermalStateChannel.setMessageHandler(nil)
+    }
+  }
+}
+/// Generated protocol from Pigeon that represents a handler of messages from Flutter.
+protocol CryptoApi {
+  func generateBiometricKey(options: NexoraCryptoKeyOptions, completion: @escaping (Result<Bool, Error>) -> Void)
+  func deleteKey(alias: String, completion: @escaping (Result<Bool, Error>) -> Void)
+  func keyExists(alias: String, completion: @escaping (Result<Bool, Error>) -> Void)
+  func signWithBiometricKey(alias: String, data: FlutterStandardTypedData, completion: @escaping (Result<FlutterStandardTypedData?, Error>) -> Void)
+  func encryptWithBiometricKey(alias: String, plaintext: FlutterStandardTypedData, completion: @escaping (Result<FlutterStandardTypedData?, Error>) -> Void)
+  func decryptWithBiometricKey(alias: String, ciphertext: FlutterStandardTypedData, completion: @escaping (Result<FlutterStandardTypedData?, Error>) -> Void)
+}
+
+/// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
+class CryptoApiSetup {
+  static var codec: FlutterStandardMessageCodec { HardwareApiPigeonCodec.shared }
+  /// Sets up an instance of `CryptoApi` to handle messages through the `binaryMessenger`.
+  static func setUp(binaryMessenger: FlutterBinaryMessenger, api: CryptoApi?, messageChannelSuffix: String = "") {
+    let channelSuffix = messageChannelSuffix.count > 0 ? ".\(messageChannelSuffix)" : ""
+    let generateBiometricKeyChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nexora_sdk_platform_interface.CryptoApi.generateBiometricKey\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      generateBiometricKeyChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let optionsArg = args[0] as! NexoraCryptoKeyOptions
+        api.generateBiometricKey(options: optionsArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      generateBiometricKeyChannel.setMessageHandler(nil)
+    }
+    let deleteKeyChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nexora_sdk_platform_interface.CryptoApi.deleteKey\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      deleteKeyChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let aliasArg = args[0] as! String
+        api.deleteKey(alias: aliasArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      deleteKeyChannel.setMessageHandler(nil)
+    }
+    let keyExistsChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nexora_sdk_platform_interface.CryptoApi.keyExists\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      keyExistsChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let aliasArg = args[0] as! String
+        api.keyExists(alias: aliasArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      keyExistsChannel.setMessageHandler(nil)
+    }
+    let signWithBiometricKeyChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nexora_sdk_platform_interface.CryptoApi.signWithBiometricKey\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      signWithBiometricKeyChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let aliasArg = args[0] as! String
+        let dataArg = args[1] as! FlutterStandardTypedData
+        api.signWithBiometricKey(alias: aliasArg, data: dataArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      signWithBiometricKeyChannel.setMessageHandler(nil)
+    }
+    let encryptWithBiometricKeyChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nexora_sdk_platform_interface.CryptoApi.encryptWithBiometricKey\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      encryptWithBiometricKeyChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let aliasArg = args[0] as! String
+        let plaintextArg = args[1] as! FlutterStandardTypedData
+        api.encryptWithBiometricKey(alias: aliasArg, plaintext: plaintextArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      encryptWithBiometricKeyChannel.setMessageHandler(nil)
+    }
+    let decryptWithBiometricKeyChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nexora_sdk_platform_interface.CryptoApi.decryptWithBiometricKey\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      decryptWithBiometricKeyChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let aliasArg = args[0] as! String
+        let ciphertextArg = args[1] as! FlutterStandardTypedData
+        api.decryptWithBiometricKey(alias: aliasArg, ciphertext: ciphertextArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      decryptWithBiometricKeyChannel.setMessageHandler(nil)
     }
   }
 }

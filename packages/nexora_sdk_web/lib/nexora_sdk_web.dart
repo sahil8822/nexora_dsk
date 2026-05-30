@@ -1,5 +1,6 @@
 // ignore_for_file: avoid_catches_without_on_clauses, avoid_web_libraries_in_flutter
 import 'dart:async';
+import 'dart:ui_web' as ui_web;
 import 'dart:convert';
 import 'dart:js_interop';
 import 'dart:js_interop_unsafe';
@@ -20,6 +21,14 @@ class NexoraSdkWeb extends NexoraSdkPlatform {
       StreamController<HardwareEvent>.broadcast();
 
   int? _watchId;
+  web.MediaStream? _cameraStream;
+  web.HTMLVideoElement? _cameraVideoElement;
+  int? _cameraViewId;
+  web.MediaStream? _audioStream;
+  web.AudioContext? _audioContext;
+  web.AnalyserNode? _audioAnalyser;
+  Timer? _audioTimer;
+  web.ScriptProcessorNode? _audioScriptNode;
 
   /// API Documentation for registerWith.
   static void registerWith(Registrar registrar) {
@@ -35,35 +44,158 @@ class NexoraSdkWeb extends NexoraSdkPlatform {
   }
 
   @override
-  Future<bool> requestPermissions({dynamic options}) async =>
-      throw HardwareException.unsupported('requestPermissions');
+  Future<bool> requestCameraPermission() async {
+    try {
+      final nav = web.window.navigator;
+      final mediaDevices = nav.mediaDevices;
+      final constraints = {'video': true}.jsify()! as web.MediaStreamConstraints;
+      final promise = mediaDevices.getUserMedia(constraints);
+      final stream = (await promise.toDart)! as web.MediaStream;
+      final tracks = stream.getVideoTracks().toDart;
+      for (var i = 0; i < tracks.length; i++) {
+        final track = tracks[i] as web.MediaStreamTrack;
+        track.stop();
+      }
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
 
   @override
-  Future<bool> requestCameraPermission({dynamic options}) async =>
-      throw HardwareException.unsupported('requestCameraPermission');
+  Future<bool> requestAudioPermission() async {
+    try {
+      final nav = web.window.navigator;
+      final mediaDevices = nav.mediaDevices;
+      final constraints = {'audio': true}.jsify()! as web.MediaStreamConstraints;
+      final promise = mediaDevices.getUserMedia(constraints);
+      final stream = (await promise.toDart)! as web.MediaStream;
+      final tracks = stream.getAudioTracks().toDart;
+      for (var i = 0; i < tracks.length; i++) {
+        final track = tracks[i] as web.MediaStreamTrack;
+        track.stop();
+      }
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
 
   @override
-  Future<bool> requestAudioPermission({dynamic options}) async =>
-      throw HardwareException.unsupported('requestAudioPermission');
+  Future<bool> requestLocationPermission() async {
+    try {
+      final nav = web.window.navigator;
+      if (!nav.hasProperty('geolocation'.toJS).toDart) {
+        return false;
+      }
+      final geolocation = nav.getProperty('geolocation'.toJS)! as JSObject;
+      final completer = Completer<bool>();
+      
+      final successCallback = ((JSObject position) {
+        if (!completer.isCompleted) completer.complete(true);
+      }).toJS;
+
+      final errorCallback = ((JSObject error) {
+        if (!completer.isCompleted) completer.complete(false);
+      }).toJS;
+
+      geolocation.callMethod(
+        'getCurrentPosition'.toJS,
+        successCallback,
+        errorCallback,
+      );
+      return completer.future;
+    } catch (_) {
+      return false;
+    }
+  }
 
   @override
-  Future<bool> requestLocationPermission({dynamic options}) async =>
-      throw HardwareException.unsupported('requestLocationPermission');
+  Future<bool> requestBluetoothPermission() async {
+    final nav = web.window.navigator;
+    return nav.hasProperty('bluetooth'.toJS).toDart;
+  }
 
   @override
-  Future<bool> requestBluetoothPermission({dynamic options}) async =>
-      throw HardwareException.unsupported('requestBluetoothPermission');
+  Future<bool> requestPermissions() async {
+    final camera = await requestCameraPermission();
+    final audio = await requestAudioPermission();
+    final location = await requestLocationPermission();
+    return camera && audio && location;
+  }
 
   @override
   Future<HardwarePermissionStatus> getPermissionStatus(
     HardwarePermission permission,
   ) async {
-    throw HardwareException.unsupported('getPermissionStatus');
+    final name = _mapPermissionToWebName(permission);
+    if (name == null) {
+      return HardwarePermissionStatus(
+        permission: permission,
+        state: HardwarePermissionState.unsupported,
+        canRequest: false,
+      );
+    }
+
+    try {
+      final nav = web.window.navigator;
+      if (!nav.hasProperty('permissions'.toJS).toDart) {
+        return HardwarePermissionStatus(
+          permission: permission,
+          state: HardwarePermissionState.unsupported,
+          canRequest: false,
+        );
+      }
+      final permissions = nav.getProperty('permissions'.toJS)! as JSObject;
+      final descriptor = JSObject();
+      descriptor.setProperty('name'.toJS, name.toJS);
+
+      final promise = permissions.callMethod<JSPromise>('query'.toJS, descriptor);
+      final status = (await promise.toDart)! as JSObject;
+      final stateStr = (status.getProperty('state'.toJS)! as JSString).toDart;
+
+      HardwarePermissionState state;
+      if (stateStr == 'granted') {
+        state = HardwarePermissionState.granted;
+      } else if (stateStr == 'denied') {
+        state = HardwarePermissionState.denied;
+      } else {
+        state = HardwarePermissionState.notDetermined;
+      }
+
+      return HardwarePermissionStatus(
+        permission: permission,
+        state: state,
+        canRequest: state != HardwarePermissionState.denied,
+      );
+    } catch (_) {
+      return HardwarePermissionStatus(
+        permission: permission,
+        state: HardwarePermissionState.unsupported,
+        canRequest: false,
+      );
+    }
+  }
+
+  String? _mapPermissionToWebName(HardwarePermission permission) {
+    switch (permission) {
+      case HardwarePermission.camera:
+        return 'camera';
+      case HardwarePermission.audio:
+        return 'microphone';
+      case HardwarePermission.location:
+        return 'geolocation';
+      case HardwarePermission.bluetooth:
+        return 'bluetooth';
+      default:
+        return null;
+    }
   }
 
   @override
-  Future<bool> openAppSettings({dynamic options}) async =>
-      throw HardwareException.unsupported('openAppSettings');
+  Future<bool> openAppSettings({dynamic options}) async {
+    return false;
+  }
 
   @override
   Future<DeviceInfo> getDeviceInfo() async {
@@ -139,16 +271,70 @@ class NexoraSdkWeb extends NexoraSdkPlatform {
 
   @override
   Future<int?> startCamera({int width = 1280, int height = 720}) async {
-    throw HardwareException.unsupported('startCamera');
+    try {
+      final nav = web.window.navigator;
+      final mediaDevices = nav.mediaDevices;
+
+      final constraints = {
+        'video': {
+          'width': width,
+          'height': height,
+        }
+      }.jsify()! as web.MediaStreamConstraints;
+
+      final promise = mediaDevices.getUserMedia(constraints);
+      final stream = (await promise.toDart)! as web.MediaStream;
+      _cameraStream = stream;
+
+      final viewId = DateTime.now().millisecondsSinceEpoch;
+      _cameraViewId = viewId;
+      final viewType = 'nexora_camera_preview_$viewId';
+
+      ui_web.platformViewRegistry.registerViewFactory(viewType, (int viewId) {
+        final video = web.HTMLVideoElement()
+          ..autoplay = true
+          ..playsInline = true
+          ..muted = true
+          ..style.width = '100%'
+          ..style.height = '100%'
+          ..style.objectFit = 'cover';
+        video.srcObject = stream;
+        _cameraVideoElement = video;
+        return video;
+      });
+
+      return viewId;
+    } catch (_) {
+      return null;
+    }
   }
 
   @override
   Future<int?> startCameraWithOptions(CameraOptions options) async {
-    throw HardwareException.unsupported('startCameraWithOptions');
+    final width = options.resolution.width;
+    final height = options.resolution.height;
+    return startCamera(width: width, height: height);
   }
 
   @override
-  Future<bool> stopCamera() async => true;
+  Future<bool> stopCamera() async {
+    try {
+      final stream = _cameraStream;
+      if (stream != null) {
+        final tracks = stream.getTracks().toDart;
+        for (var i = 0; i < tracks.length; i++) {
+          final track = tracks[i] as web.MediaStreamTrack;
+          track.stop();
+        }
+        _cameraStream = null;
+      }
+      _cameraVideoElement = null;
+      _cameraViewId = null;
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
 
   @override
   Future<bool> setVisionMode({bool barcode = false, bool face = false}) async {
@@ -173,12 +359,31 @@ class NexoraSdkWeb extends NexoraSdkPlatform {
       throw HardwareException.unsupported('setZoom');
 
   @override
-  Future<bool> flipCamera({dynamic options}) async =>
+  Future<bool> flipCamera() async =>
       throw HardwareException.unsupported('flipCamera');
 
   @override
-  Future<String?> takePhoto({String? fileName}) async =>
-      throw HardwareException.unsupported('takePhoto');
+  Future<String?> takePhoto({String? fileName}) async {
+    final video = _cameraVideoElement;
+    if (video == null) return null;
+
+    try {
+      final width = video.videoWidth;
+      final height = video.videoHeight;
+      
+      final canvas = web.HTMLCanvasElement()
+        ..width = width
+        ..height = height;
+        
+      final ctx = canvas.getContext('2d')! as web.CanvasRenderingContext2D;
+      ctx.drawImage(video, 0, 0);
+      
+      final dataUrl = canvas.toDataURL('image/jpeg');
+      return dataUrl;
+    } catch (_) {
+      return null;
+    }
+  }
 
   @override
   Future<String?> startVideoRecording({String? fileName}) async =>
@@ -194,16 +399,183 @@ class NexoraSdkWeb extends NexoraSdkPlatform {
     bool streamBytes = false,
     int updateIntervalMs = 80,
   }) async {
-    throw HardwareException.unsupported('startAudio');
+    try {
+      final nav = web.window.navigator;
+      final mediaDevices = nav.mediaDevices;
+
+      final constraints = {
+        'audio': true,
+      }.jsify()! as web.MediaStreamConstraints;
+
+      final promise = mediaDevices.getUserMedia(constraints);
+      final stream = (await promise.toDart)! as web.MediaStream;
+      _audioStream = stream;
+
+      final audioCtx = web.AudioContext();
+      _audioContext = audioCtx;
+
+      final source = audioCtx.createMediaStreamSource(stream);
+
+      if (enableFFT) {
+        final analyser = audioCtx.createAnalyser();
+        analyser.fftSize = 256; // 128 frequency bins
+        source.connect(analyser);
+        _audioAnalyser = analyser;
+
+        _audioTimer = Timer.periodic(Duration(milliseconds: updateIntervalMs), (timer) {
+          final bufferLength = analyser.frequencyBinCount;
+          final dataArray = Uint8List(bufferLength).toJS;
+          analyser.getByteFrequencyData(dataArray);
+
+          final list = dataArray.toDart;
+          final spectrum = list.map((e) => e.toDouble()).toList();
+
+          _eventController.add(
+            HardwareEvent(
+              module: 'audio',
+              type: 'audio_frame',
+              data: AudioFrame(
+                spectrum: spectrum,
+                sampleRate: audioCtx.sampleRate.toInt(),
+                bytes: null,
+              ).toMap(),
+              timestamp: DateTime.now(),
+            ),
+          );
+        });
+      }
+
+      if (streamBytes) {
+        final scriptNode = audioCtx.createScriptProcessor(4096, 1, 1);
+        source.connect(scriptNode);
+        scriptNode.connect(audioCtx.destination);
+        _audioScriptNode = scriptNode;
+
+        scriptNode.onaudioprocess = ((web.AudioProcessingEvent event) {
+          final inputBuffer = event.inputBuffer;
+          final channelData = inputBuffer.getChannelData(0).toDart;
+          final length = channelData.length;
+          final pcmBytes = Uint8List(length * 2);
+          final pcmData = ByteData.sublistView(pcmBytes);
+
+          for (var i = 0; i < length; i++) {
+            final sample = channelData[i];
+            final clamped = sample < -1.0 ? -1.0 : (sample > 1.0 ? 1.0 : sample);
+            final intSample = (clamped * 32767).toInt();
+            pcmData.setInt16(i * 2, intSample, Endian.little);
+          }
+
+          _eventController.add(
+            HardwareEvent(
+              module: 'audio',
+              type: 'audio_frame',
+              data: AudioFrame(
+                spectrum: [],
+                sampleRate: audioCtx.sampleRate.toInt(),
+                bytes: pcmBytes,
+              ).toMap(),
+              timestamp: DateTime.now(),
+            ),
+          );
+        }).toJS;
+      }
+
+      return true;
+    } catch (_) {
+      return false;
+    }
   }
 
   @override
   Future<bool> startAudioWithOptions(AudioOptions options) async {
-    throw HardwareException.unsupported('startAudioWithOptions');
+    try {
+      final nav = web.window.navigator;
+      final mediaDevices = nav.mediaDevices;
+
+      final constraints = {
+        'audio': {
+          'sampleRate': options.sampleRate,
+          'echoCancellation': options.enableEchoCancellation,
+          'noiseSuppression': options.enableNoiseSuppression,
+        }
+      }.jsify()! as web.MediaStreamConstraints;
+
+      final promise = mediaDevices.getUserMedia(constraints);
+      final stream = (await promise.toDart)! as web.MediaStream;
+      _audioStream = stream;
+
+      final audioCtx = web.AudioContext();
+      _audioContext = audioCtx;
+
+      final source = audioCtx.createMediaStreamSource(stream);
+
+      final analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 256;
+      source.connect(analyser);
+      _audioAnalyser = analyser;
+
+      _audioTimer = Timer.periodic(const Duration(milliseconds: 80), (timer) {
+        final bufferLength = analyser.frequencyBinCount;
+        final dataArray = Uint8List(bufferLength).toJS;
+        analyser.getByteFrequencyData(dataArray);
+
+        final list = dataArray.toDart;
+        final spectrum = list.map((e) => e.toDouble()).toList();
+
+        _eventController.add(
+          HardwareEvent(
+            module: 'audio',
+            type: 'audio_frame',
+            data: AudioFrame(
+              spectrum: spectrum,
+              sampleRate: audioCtx.sampleRate.toInt(),
+              bytes: null,
+            ).toMap(),
+            timestamp: DateTime.now(),
+          ),
+        );
+      });
+
+      return true;
+    } catch (_) {
+      return false;
+    }
   }
 
   @override
-  Future<bool> stopAudio() async => true;
+  Future<bool> stopAudio() async {
+    try {
+      _audioTimer?.cancel();
+      _audioTimer = null;
+
+      final scriptNode = _audioScriptNode;
+      if (scriptNode != null) {
+        scriptNode.disconnect();
+        _audioScriptNode = null;
+      }
+
+      final stream = _audioStream;
+      if (stream != null) {
+        final tracks = stream.getTracks().toDart;
+        for (var i = 0; i < tracks.length; i++) {
+          final track = tracks[i] as web.MediaStreamTrack;
+          track.stop();
+        }
+        _audioStream = null;
+      }
+
+      final ctx = _audioContext;
+      if (ctx != null) {
+        ctx.close();
+        _audioContext = null;
+      }
+
+      _audioAnalyser = null;
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
 
   @override
   Future<bool> routeAudioOutput(AudioOutputRoute route) async => true;
@@ -237,7 +609,7 @@ class NexoraSdkWeb extends NexoraSdkPlatform {
   }
 
   @override
-  Future<bool> startBluetoothScan({dynamic options}) async =>
+  Future<bool> startBluetoothScan() async =>
       throw HardwareException.unsupported('startBluetoothScan');
 
   @override
@@ -289,22 +661,57 @@ class NexoraSdkWeb extends NexoraSdkPlatform {
       throw HardwareException.unsupported('authenticateWithOptions');
 
   @override
-  Future<bool> canAuthenticate({dynamic options}) async =>
+  Future<bool> canAuthenticate() async =>
       throw HardwareException.unsupported('canAuthenticate');
+
+  void _vibrateWeb(dynamic pattern) {
+    try {
+      final nav = web.window.navigator;
+      if (nav.hasProperty('vibrate'.toJS).toDart) {
+        if (pattern is int) {
+          nav.callMethod('vibrate'.toJS, pattern.toJS);
+        } else if (pattern is List<int>) {
+          final jsArray = pattern.map((e) => e.toJS).toList().toJS;
+          nav.callMethod('vibrate'.toJS, jsArray);
+        }
+      }
+    } catch (_) {}
+  }
 
   @override
   Future<void> vibrate(int durationMs) async {
-    throw HardwareException.unsupported('vibrate');
+    _vibrateWeb(durationMs);
   }
 
   @override
   Future<void> hapticFeedback(String type) async {
-    throw HardwareException.unsupported('hapticFeedback');
+    switch (type.toLowerCase()) {
+      case 'success':
+        _vibrateWeb([10, 50, 10]);
+        break;
+      case 'warning':
+        _vibrateWeb([15, 100, 15]);
+        break;
+      case 'error':
+        _vibrateWeb([20, 120, 20, 100, 20]);
+        break;
+      case 'light':
+        _vibrateWeb(10);
+        break;
+      case 'medium':
+        _vibrateWeb(15);
+        break;
+      case 'heavy':
+        _vibrateWeb(20);
+        break;
+      default:
+        _vibrateWeb(10);
+    }
   }
 
   @override
   Future<void> performHapticWithOptions(HapticOptions options) async {
-    throw HardwareException.unsupported('performHapticWithOptions');
+    await hapticFeedback(options.type.name);
   }
 
   @override
@@ -344,7 +751,8 @@ class NexoraSdkWeb extends NexoraSdkPlatform {
       }
       final geolocation = nav.getProperty('geolocation'.toJS)! as JSObject;
 
-      // We'll broadcast the location
+      await stopLocation();
+
       final successCallback = ((JSObject position) {
         final coords = position.getProperty('coords'.toJS)! as JSObject;
         final lat =
@@ -387,11 +795,12 @@ class NexoraSdkWeb extends NexoraSdkPlatform {
         );
       }).toJS;
 
-      geolocation.callMethod(
-        'getCurrentPosition'.toJS,
+      final watchIdJS = geolocation.callMethod<JSNumber>(
+        'watchPosition'.toJS,
         successCallback,
         errorCallback,
       );
+      _watchId = watchIdJS.toDartInt;
       return true;
     } catch (_) {
       return false;
@@ -409,7 +818,6 @@ class NexoraSdkWeb extends NexoraSdkPlatform {
       try {
         final nav = web.window.navigator;
         final geolocation = nav.getProperty('geolocation'.toJS)! as JSObject;
-        // ignore: cascade_invocations
         geolocation.callMethod('clearWatch'.toJS, _watchId!.toJS);
         _watchId = null;
       } catch (_) {}
@@ -596,6 +1004,45 @@ class NexoraSdkWeb extends NexoraSdkPlatform {
   @override
   Future<bool> shareText(String text, {String? subject}) => copyText(text);
 
+  // ==================== WebUSB Support ====================
+
+  @override
+  Future<List<String>> getConnectedUsbDevices() async {
+    try {
+      final nav = web.window.navigator;
+      // Check if WebUSB API is available
+      if (!nav.hasProperty('usb'.toJS).toDart) {
+        throw HardwareException.unsupported('getConnectedUsbDevices: WebUSB not available');
+      }
+      final usb = nav.getProperty('usb'.toJS)! as JSObject;
+      final promise = usb.callMethod<JSPromise>('getDevices'.toJS);
+      final result = (await promise.toDart)! as JSArray;
+      final devices = result.toDart;
+      final List<String> deviceNames = [];
+      for (var i = 0; i < devices.length; i++) {
+        final device = devices[i] as JSObject;
+        final productName = (device.getProperty('productName'.toJS) as JSString?)?.toDart ?? '';
+        final vendorId = (device.getProperty('vendorId'.toJS) as JSNumber?)?.toDartInt ?? 0;
+        final productId = (device.getProperty('productId'.toJS) as JSNumber?)?.toDartInt ?? 0;
+        deviceNames.add('$productName (VID:0x${vendorId.toRadixString(16).padLeft(4, '0')} PID:0x${productId.toRadixString(16).padLeft(4, '0')})');
+      }
+      return deviceNames;
+    } catch (e) {
+      if (e is HardwareException) rethrow;
+      return [];
+    }
+  }
+
+  // ==================== BLE Peripheral (Unsupported on Web) ====================
+
+  @override
+  Future<bool> startBlePeripheral(String uuid) async =>
+      throw HardwareException.unsupported('startBlePeripheral');
+
+  @override
+  Future<void> stopBlePeripheral() async =>
+      throw HardwareException.unsupported('stopBlePeripheral');
+
   @override
   Future<bool> enableSmartSync({
     required String uploadEndpointUrl,
@@ -623,7 +1070,7 @@ class NexoraSdkWeb extends NexoraSdkPlatform {
   }
 
   @override
-  Future<bool> isEcoModeActive({dynamic options}) async =>
+  Future<bool> isEcoModeActive() async =>
       throw HardwareException.unsupported('isEcoModeActive');
 
   @override

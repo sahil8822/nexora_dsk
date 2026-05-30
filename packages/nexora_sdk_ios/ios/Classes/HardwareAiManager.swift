@@ -3,7 +3,7 @@ import Vision
 import Foundation
 
 class HardwareAiManager {
-    private var model: VNCoreMLModel?
+    var model: VNCoreMLModel?
     
     func loadCustomModel(modelPath: String) -> Bool {
         do {
