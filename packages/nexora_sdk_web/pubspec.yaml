@@ -1,5 +1,6 @@
 name: nexora_sdk_web
 description: The web implementation of nexora_sdk.
+publish_to: 'none'
 version: 3.4.0
 homepage: https://github.com/sahil8822/my_hardware_plugin
 repository: https://github.com/sahil8822/my_hardware_plugin/tree/master/packages/nexora_sdk_web
@@ -21,7 +22,8 @@ dependencies:
     sdk: flutter
   flutter_web_plugins:
     sdk: flutter
-  nexora_sdk_platform_interface: ^3.4.0
+  nexora_sdk_platform_interface:
+    path: ../nexora_sdk_platform_interface
   web: ^1.1.1
 
 dev_dependencies:

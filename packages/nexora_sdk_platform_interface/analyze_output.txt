@@ -1,0 +1,125 @@
+Analyzing nexora_sdk_platform_interface...
+
+   info - lib/core/concurrency.dart:7:81 - The line length exceeds the 80-character limit. Try breaking the line across multiple lines. - lines_longer_than_80_chars
+   info - lib/core/hardware_retry.dart:4:81 - The line length exceeds the 80-character limit. Try breaking the line across multiple lines. - lines_longer_than_80_chars
+   info - lib/core/stream_utils.dart:6:81 - The line length exceeds the 80-character limit. Try breaking the line across multiple lines. - lines_longer_than_80_chars
+   info - lib/models/device_models.dart:84:3 - The method '==' should not be overridden in classes not annotated with '@immutable'. Try removing the override or annotating the class with '@immutable'. - avoid_equals_and_hash_code_on_mutable_classes
+   info - lib/models/device_models.dart:101:3 - The method 'hashCode' should not be overridden in classes not annotated with '@immutable'. Try removing the override or annotating the class with '@immutable'. - avoid_equals_and_hash_code_on_mutable_classes
+   info - lib/models/device_models.dart:117:81 - The line length exceeds the 80-character limit. Try breaking the line across multiple lines. - lines_longer_than_80_chars
+   info - lib/models/device_models.dart:174:3 - The method '==' should not be overridden in classes not annotated with '@immutable'. Try removing the override or annotating the class with '@immutable'. - avoid_equals_and_hash_code_on_mutable_classes
+   info - lib/models/device_models.dart:186:3 - The method 'hashCode' should not be overridden in classes not annotated with '@immutable'. Try removing the override or annotating the class with '@immutable'. - avoid_equals_and_hash_code_on_mutable_classes
+   info - lib/models/device_models.dart:197:81 - The line length exceeds the 80-character limit. Try breaking the line across multiple lines. - lines_longer_than_80_chars
+   info - lib/models/hardware_capabilities.dart:449:81 - The line length exceeds the 80-character limit. Try breaking the line across multiple lines. - lines_longer_than_80_chars
+   info - lib/models/hardware_capabilities.dart:452:25 - The referenced name isn't visible in scope. Try adding an import for the referenced name. - comment_references
+   info - lib/models/hardware_exception.dart:78:53 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas
+   info - lib/models/hardware_exception.dart:81:53 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas
+   info - lib/models/hardware_exception.dart:84:53 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas
+   info - lib/models/hardware_exception.dart:88:65 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas
+   info - lib/models/hardware_exception.dart:89:7 - Invalid use of 'default' member in a switch. Try enumerating all the possible values of the switch expression. - no_default_cases
+   info - lib/models/hardware_exception.dart:91:65 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas
+   info - lib/models/hardware_exception.dart:121:81 - The line length exceeds the 80-character limit. Try breaking the line across multiple lines. - lines_longer_than_80_chars
+   info - lib/models/hardware_exception.dart:135:81 - The line length exceeds the 80-character limit. Try breaking the line across multiple lines. - lines_longer_than_80_chars
+   info - lib/models/permission_models.dart:100:81 - The line length exceeds the 80-character limit. Try breaking the line across multiple lines. - lines_longer_than_80_chars
+   info - lib/models/permission_models.dart:138:81 - The line length exceeds the 80-character limit. Try breaking the line across multiple lines. - lines_longer_than_80_chars
+   info - lib/models/permission_models.dart:184:81 - The line length exceeds the 80-character limit. Try breaking the line across multiple lines. - lines_longer_than_80_chars
+   info - lib/nexora_sdk_method_channel.dart:15:9 - Missing documentation for a public member. Try adding documentation for the member. - public_member_api_docs
+   info - lib/nexora_sdk_method_channel.dart:18:9 - Missing documentation for a public member. Try adding documentation for the member. - public_member_api_docs
+   info - lib/nexora_sdk_method_channel.dart:38:13 - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation. - prefer_const_constructors
+   info - lib/nexora_sdk_method_channel.dart:42:81 - The line length exceeds the 80-character limit. Try breaking the line across multiple lines. - lines_longer_than_80_chars
+   info - lib/nexora_sdk_method_channel.dart:50:81 - The line length exceeds the 80-character limit. Try breaking the line across multiple lines. - lines_longer_than_80_chars
+   info - lib/nexora_sdk_method_channel.dart:64:10 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas
+   info - lib/nexora_sdk_method_channel.dart:64:11 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas
+   info - lib/nexora_sdk_method_channel.dart:74:17 - Closure should be a tearoff. Try using a tearoff rather than a closure. - unnecessary_lambdas
+   info - lib/nexora_sdk_method_channel.dart:79:18 - Closure should be a tearoff. Try using a tearoff rather than a closure. - unnecessary_lambdas
+   info - lib/nexora_sdk_method_channel.dart:84:32 - Closure should be a tearoff. Try using a tearoff rather than a closure. - unnecessary_lambdas
+   info - lib/nexora_sdk_method_channel.dart:95:18 - Closure should be a tearoff. Try using a tearoff rather than a closure. - unnecessary_lambdas
+   info - lib/nexora_sdk_method_channel.dart:136:18 - Closure should be a tearoff. Try using a tearoff rather than a closure. - unnecessary_lambdas
+   info - lib/nexora_sdk_method_channel.dart:141:30 - Closure should be a tearoff. Try using a tearoff rather than a closure. - unnecessary_lambdas
+   info - lib/nexora_sdk_method_channel.dart:159:30 - Closure should be a tearoff. Try using a tearoff rather than a closure. - unnecessary_lambdas
+   info - lib/nexora_sdk_method_channel.dart:190:18 - Closure should be a tearoff. Try using a tearoff rather than a closure. - unnecessary_lambdas
+   info - lib/nexora_sdk_method_channel.dart:225:18 - Closure should be a tearoff. Try using a tearoff rather than a closure. - unnecessary_lambdas
+   info - lib/nexora_sdk_method_channel.dart:240:18 - Closure should be a tearoff. Try using a tearoff rather than a closure. - unnecessary_lambdas
+   info - lib/nexora_sdk_method_channel.dart:271:18 - Closure should be a tearoff. Try using a tearoff rather than a closure. - unnecessary_lambdas
+   info - lib/nexora_sdk_method_channel.dart:281:18 - Closure should be a tearoff. Try using a tearoff rather than a closure. - unnecessary_lambdas
+   info - lib/nexora_sdk_method_channel.dart:304:81 - The line length exceeds the 80-character limit. Try breaking the line across multiple lines. - lines_longer_than_80_chars
+   info - lib/nexora_sdk_method_channel.dart:324:81 - The line length exceeds the 80-character limit. Try breaking the line across multiple lines. - lines_longer_than_80_chars
+   info - lib/nexora_sdk_method_channel.dart:337:18 - Closure should be a tearoff. Try using a tearoff rather than a closure. - unnecessary_lambdas
+   info - lib/nexora_sdk_method_channel.dart:349:10 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas
+   info - lib/nexora_sdk_method_channel.dart:354:18 - Closure should be a tearoff. Try using a tearoff rather than a closure. - unnecessary_lambdas
+   info - lib/nexora_sdk_method_channel.dart:382:72 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas
+   info - lib/nexora_sdk_method_channel.dart:409:10 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas
+   info - lib/nexora_sdk_method_channel.dart:414:18 - Closure should be a tearoff. Try using a tearoff rather than a closure. - unnecessary_lambdas
+   info - lib/nexora_sdk_method_channel.dart:434:10 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas
+   info - lib/nexora_sdk_method_channel.dart:440:30 - Closure should be a tearoff. Try using a tearoff rather than a closure. - unnecessary_lambdas
+   info - lib/nexora_sdk_method_channel.dart:452:30 - Closure should be a tearoff. Try using a tearoff rather than a closure. - unnecessary_lambdas
+   info - lib/nexora_sdk_method_channel.dart:465:18 - Closure should be a tearoff. Try using a tearoff rather than a closure. - unnecessary_lambdas
+   info - lib/nexora_sdk_method_channel.dart:476:10 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas
+   info - lib/nexora_sdk_method_channel.dart:481:18 - Closure should be a tearoff. Try using a tearoff rather than a closure. - unnecessary_lambdas
+   info - lib/nexora_sdk_method_channel.dart:500:9 - Unnecessary 'break' statement. Try removing the 'break'. - unnecessary_breaks
+   info - lib/nexora_sdk_method_channel.dart:503:9 - Unnecessary 'break' statement. Try removing the 'break'. - unnecessary_breaks
+   info - lib/nexora_sdk_method_channel.dart:506:9 - Unnecessary 'break' statement. Try removing the 'break'. - unnecessary_breaks
+   info - lib/nexora_sdk_method_channel.dart:509:9 - Unnecessary 'break' statement. Try removing the 'break'. - unnecessary_breaks
+   info - lib/nexora_sdk_method_channel.dart:515:10 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas
+   info - lib/nexora_sdk_method_channel.dart:520:18 - Closure should be a tearoff. Try using a tearoff rather than a closure. - unnecessary_lambdas
+   info - lib/nexora_sdk_method_channel.dart:526:30 - Closure should be a tearoff. Try using a tearoff rather than a closure. - unnecessary_lambdas
+   info - lib/nexora_sdk_method_channel.dart:565:32 - Closure should be a tearoff. Try using a tearoff rather than a closure. - unnecessary_lambdas
+   info - lib/nexora_sdk_method_channel.dart:575:14 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas
+   info - lib/nexora_sdk_method_channel.dart:591:18 - Closure should be a tearoff. Try using a tearoff rather than a closure. - unnecessary_lambdas
+   info - lib/nexora_sdk_method_channel.dart:596:18 - Closure should be a tearoff. Try using a tearoff rather than a closure. - unnecessary_lambdas
+   info - lib/nexora_sdk_method_channel.dart:601:18 - Closure should be a tearoff. Try using a tearoff rather than a closure. - unnecessary_lambdas
+   info - lib/nexora_sdk_method_channel.dart:606:18 - Closure should be a tearoff. Try using a tearoff rather than a closure. - unnecessary_lambdas
+   info - lib/nexora_sdk_method_channel.dart:616:18 - Closure should be a tearoff. Try using a tearoff rather than a closure. - unnecessary_lambdas
+   info - lib/nexora_sdk_method_channel.dart:637:21 - Closure should be a tearoff. Try using a tearoff rather than a closure. - unnecessary_lambdas
+   info - lib/nexora_sdk_method_channel.dart:643:10 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas
+   info - lib/nexora_sdk_method_channel.dart:686:18 - Closure should be a tearoff. Try using a tearoff rather than a closure. - unnecessary_lambdas
+   info - lib/nexora_sdk_method_channel.dart:691:34 - Closure should be a tearoff. Try using a tearoff rather than a closure. - unnecessary_lambdas
+   info - lib/nexora_sdk_method_channel.dart:705:18 - Closure should be a tearoff. Try using a tearoff rather than a closure. - unnecessary_lambdas
+   info - lib/nexora_sdk_method_channel.dart:733:10 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas
+   info - lib/nexora_sdk_method_channel.dart:756:18 - Closure should be a tearoff. Try using a tearoff rather than a closure. - unnecessary_lambdas
+   info - lib/nexora_sdk_method_channel.dart:773:10 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas
+   info - lib/nexora_sdk_method_channel.dart:793:40 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas
+   info - lib/nexora_sdk_method_channel.dart:799:41 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas
+   info - lib/nexora_sdk_method_channel.dart:800:12 - Unnecessary 'await'. Try removing the 'await'. - unnecessary_await_in_return
+   info - lib/nexora_sdk_method_channel.dart:805:15 - Missing documentation for a public member. Try adding documentation for the member. - public_member_api_docs
+   info - lib/nexora_sdk_method_channel.dart:809:27 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas
+   info - lib/nexora_sdk_method_channel.dart:810:12 - Unnecessary 'await'. Try removing the 'await'. - unnecessary_await_in_return
+   info - lib/nexora_sdk_method_channel.dart:815:27 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas
+   info - lib/nexora_sdk_method_channel.dart:816:12 - Unnecessary 'await'. Try removing the 'await'. - unnecessary_await_in_return
+   info - lib/nexora_sdk_method_channel.dart:821:27 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas
+   info - lib/nexora_sdk_method_channel.dart:822:12 - Unnecessary 'await'. Try removing the 'await'. - unnecessary_await_in_return
+   info - lib/nexora_sdk_method_channel.dart:827:45 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas
+   info - lib/nexora_sdk_method_channel.dart:828:12 - Unnecessary 'await'. Try removing the 'await'. - unnecessary_await_in_return
+   info - lib/nexora_sdk_platform_interface.dart:11:1 - Specify exports in a separate section after all imports. Try sorting the directives. - directives_ordering
+   info - lib/nexora_sdk_platform_interface.dart:38:16 - Missing documentation for a public member. Try adding documentation for the member. - public_member_api_docs
+   info - lib/nexora_sdk_platform_interface.dart:42:16 - Missing documentation for a public member. Try adding documentation for the member. - public_member_api_docs
+   info - lib/nexora_sdk_platform_interface.dart:46:16 - Missing documentation for a public member. Try adding documentation for the member. - public_member_api_docs
+   info - lib/nexora_sdk_platform_interface.dart:48:60 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas
+   info - lib/nexora_sdk_platform_interface.dart:51:24 - Missing documentation for a public member. Try adding documentation for the member. - public_member_api_docs
+   info - lib/nexora_sdk_platform_interface.dart:53:61 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas
+   info - lib/nexora_sdk_platform_interface.dart:56:16 - Missing documentation for a public member. Try adding documentation for the member. - public_member_api_docs
+   info - lib/nexora_sdk_platform_interface.dart:58:62 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas
+   info - lib/nexora_sdk_platform_interface.dart:111:25 - 'bool' parameters should be named parameters. Try converting the parameter to a named parameter. - avoid_positional_boolean_parameters
+   info - lib/nexora_sdk_platform_interface.dart:238:45 - 'bool' parameters should be named parameters. Try converting the parameter to a named parameter. - avoid_positional_boolean_parameters
+   info - lib/nexora_sdk_platform_interface.dart:318:36 - 'bool' parameters should be named parameters. Try converting the parameter to a named parameter. - avoid_positional_boolean_parameters
+   info - lib/nexora_sdk_platform_interface.dart:321:34 - 'bool' parameters should be named parameters. Try converting the parameter to a named parameter. - avoid_positional_boolean_parameters
+   info - lib/nexora_sdk_platform_interface.dart:420:59 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas
+   info - lib/nexora_sdk_platform_interface.dart:433:81 - The line length exceeds the 80-character limit. Try breaking the line across multiple lines. - lines_longer_than_80_chars
+   info - lib/nexora_sdk_platform_interface.dart:436:59 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas
+   info - lib/nexora_sdk_platform_interface.dart:441:40 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas
+   info - lib/nexora_sdk_platform_interface.dart:443:62 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas
+   info - lib/nexora_sdk_platform_interface.dart:448:41 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas
+   info - lib/nexora_sdk_platform_interface.dart:450:62 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas
+   info - lib/nexora_sdk_platform_interface.dart:455:33 - Missing documentation for a public member. Try adding documentation for the member. - public_member_api_docs
+   info - lib/nexora_sdk_platform_interface.dart:456:27 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas
+   info - lib/nexora_sdk_platform_interface.dart:458:68 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas
+   info - lib/nexora_sdk_platform_interface.dart:461:33 - Missing documentation for a public member. Try adding documentation for the member. - public_member_api_docs
+   info - lib/nexora_sdk_platform_interface.dart:462:27 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas
+   info - lib/nexora_sdk_platform_interface.dart:464:70 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas
+   info - lib/nexora_sdk_platform_interface.dart:467:33 - Missing documentation for a public member. Try adding documentation for the member. - public_member_api_docs
+   info - lib/nexora_sdk_platform_interface.dart:468:27 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas
+   info - lib/nexora_sdk_platform_interface.dart:470:70 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas
+   info - lib/nexora_sdk_platform_interface.dart:473:34 - Missing documentation for a public member. Try adding documentation for the member. - public_member_api_docs
+   info - lib/nexora_sdk_platform_interface.dart:474:45 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas
+   info - lib/nexora_sdk_platform_interface.dart:476:62 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas
+
+121 issues found.

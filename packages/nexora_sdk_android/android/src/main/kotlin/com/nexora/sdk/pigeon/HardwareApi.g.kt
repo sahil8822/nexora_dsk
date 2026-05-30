@@ -1049,6 +1049,52 @@ data class NexoraCryptoKeyOptions (
     return result
   }
 }
+
+/** Generated class from Pigeon that represents data sent in messages. */
+data class NexoraAiResult (
+  val label: String? = null,
+  val confidence: Double? = null,
+  val boundingBox: Map<String?, Any?>? = null,
+  val recognizedText: String? = null
+)
+ {
+  companion object {
+    fun fromList(pigeonVar_list: List<Any?>): NexoraAiResult {
+      val label = pigeonVar_list[0] as String?
+      val confidence = pigeonVar_list[1] as Double?
+      val boundingBox = pigeonVar_list[2] as Map<String?, Any?>?
+      val recognizedText = pigeonVar_list[3] as String?
+      return NexoraAiResult(label, confidence, boundingBox, recognizedText)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf(
+      label,
+      confidence,
+      boundingBox,
+      recognizedText,
+    )
+  }
+  override fun equals(other: Any?): Boolean {
+    if (other == null || other.javaClass != javaClass) {
+      return false
+    }
+    if (this === other) {
+      return true
+    }
+    val other = other as NexoraAiResult
+    return HardwareApiPigeonUtils.deepEquals(this.label, other.label) && HardwareApiPigeonUtils.deepEquals(this.confidence, other.confidence) && HardwareApiPigeonUtils.deepEquals(this.boundingBox, other.boundingBox) && HardwareApiPigeonUtils.deepEquals(this.recognizedText, other.recognizedText)
+  }
+
+  override fun hashCode(): Int {
+    var result = javaClass.hashCode()
+    result = 31 * result + HardwareApiPigeonUtils.deepHash(this.label)
+    result = 31 * result + HardwareApiPigeonUtils.deepHash(this.confidence)
+    result = 31 * result + HardwareApiPigeonUtils.deepHash(this.boundingBox)
+    result = 31 * result + HardwareApiPigeonUtils.deepHash(this.recognizedText)
+    return result
+  }
+}
 private open class HardwareApiPigeonCodec : StandardMessageCodec() {
   override fun readValueOfType(type: Byte, buffer: ByteBuffer): Any? {
     return when (type) {
@@ -1147,6 +1193,11 @@ private open class HardwareApiPigeonCodec : StandardMessageCodec() {
           NexoraCryptoKeyOptions.fromList(it)
         }
       }
+      148.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          NexoraAiResult.fromList(it)
+        }
+      }
       else -> super.readValueOfType(type, buffer)
     }
   }
@@ -1226,6 +1277,10 @@ private open class HardwareApiPigeonCodec : StandardMessageCodec() {
       }
       is NexoraCryptoKeyOptions -> {
         stream.write(147)
+        writeValue(stream, value.toList())
+      }
+      is NexoraAiResult -> {
+        stream.write(148)
         writeValue(stream, value.toList())
       }
       else -> super.writeValue(stream, value)
@@ -2519,6 +2574,8 @@ interface SystemApi {
   fun setEcoModeEnabled(enabled: Boolean, callback: (Result<Unit>) -> Unit)
   fun isEcoModeActive(callback: (Result<Boolean>) -> Unit)
   fun getThermalState(callback: (Result<String>) -> Unit)
+  fun startBackgroundSync(intervalMinutes: Long, callback: (Result<Boolean>) -> Unit)
+  fun stopBackgroundSync(callback: (Result<Boolean>) -> Unit)
 
   companion object {
     /** The codec used by SystemApi. */
@@ -3027,6 +3084,44 @@ interface SystemApi {
           channel.setMessageHandler(null)
         }
       }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.startBackgroundSync$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val intervalMinutesArg = args[0] as Long
+            api.startBackgroundSync(intervalMinutesArg) { result: Result<Boolean> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.stopBackgroundSync$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            api.stopBackgroundSync{ result: Result<Boolean> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
     }
   }
 }
@@ -3158,6 +3253,106 @@ interface CryptoApi {
             val aliasArg = args[0] as String
             val ciphertextArg = args[1] as ByteArray
             api.decryptWithBiometricKey(aliasArg, ciphertextArg) { result: Result<ByteArray?> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+    }
+  }
+}
+/** Generated interface from Pigeon that represents a handler of messages from Flutter. */
+interface AiApi {
+  fun processImageWithFaceDetection(imageBytes: ByteArray, callback: (Result<List<NexoraAiResult?>>) -> Unit)
+  fun processImageWithBarcodeScanning(imageBytes: ByteArray, callback: (Result<List<NexoraAiResult?>>) -> Unit)
+  fun processImageWithTextRecognition(imageBytes: ByteArray, callback: (Result<List<NexoraAiResult?>>) -> Unit)
+  fun runCustomModelInference(modelPath: String, inputBytes: ByteArray, callback: (Result<Map<String?, Any?>?>) -> Unit)
+
+  companion object {
+    /** The codec used by AiApi. */
+    val codec: MessageCodec<Any?> by lazy {
+      HardwareApiPigeonCodec()
+    }
+    /** Sets up an instance of `AiApi` to handle messages through the `binaryMessenger`. */
+    @JvmOverloads
+    fun setUp(binaryMessenger: BinaryMessenger, api: AiApi?, messageChannelSuffix: String = "") {
+      val separatedMessageChannelSuffix = if (messageChannelSuffix.isNotEmpty()) ".$messageChannelSuffix" else ""
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.AiApi.processImageWithFaceDetection$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val imageBytesArg = args[0] as ByteArray
+            api.processImageWithFaceDetection(imageBytesArg) { result: Result<List<NexoraAiResult?>> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.AiApi.processImageWithBarcodeScanning$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val imageBytesArg = args[0] as ByteArray
+            api.processImageWithBarcodeScanning(imageBytesArg) { result: Result<List<NexoraAiResult?>> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.AiApi.processImageWithTextRecognition$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val imageBytesArg = args[0] as ByteArray
+            api.processImageWithTextRecognition(imageBytesArg) { result: Result<List<NexoraAiResult?>> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(HardwareApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(HardwareApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nexora_sdk_platform_interface.AiApi.runCustomModelInference$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val modelPathArg = args[0] as String
+            val inputBytesArg = args[1] as ByteArray
+            api.runCustomModelInference(modelPathArg, inputBytesArg) { result: Result<Map<String?, Any?>?> ->
               val error = result.exceptionOrNull()
               if (error != null) {
                 reply.reply(HardwareApiPigeonUtils.wrapError(error))

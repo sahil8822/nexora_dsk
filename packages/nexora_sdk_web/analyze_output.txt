@@ -1,0 +1,77 @@
+Analyzing nexora_sdk_web...
+
+  error - lib/nexora_sdk_web.dart:207:5 - The type 'HardwarePermission' isn't exhaustively matched by the switch cases since it doesn't match the pattern 'HardwarePermission.bluetooth'. Try adding a default case or cases that match 'HardwarePermission.bluetooth'. - non_exhaustive_switch_statement
+warning - lib/nexora_sdk_web.dart:730:13 - The value of the local variable 'jsObject' isn't used. Try removing the variable or using it. - unused_local_variable
+warning - lib/test_ai.dart:4:19 - The value of the local variable 'result' isn't used. Try removing the variable or using it. - unused_local_variable
+warning - pubspec.yaml:25:5 - Publishable packages can't have 'path' dependencies. Try adding a 'publish_to: none' entry to mark the package as not for publishing or remove the path dependency. - invalid_dependency
+   info - lib/nexora_sdk_web.dart:1:81 - The line length exceeds the 80-character limit. Try breaking the line across multiple lines. - lines_longer_than_80_chars
+   info - lib/nexora_sdk_web.dart:4:1 - Sort directive sections alphabetically. Try sorting the directives. - directives_ordering
+   info - lib/nexora_sdk_web.dart:24:16 - Missing documentation for a public member. Try adding documentation for the member. - public_member_api_docs
+   info - lib/nexora_sdk_web.dart:25:23 - Missing documentation for a public member. Try adding documentation for the member. - public_member_api_docs
+   info - lib/nexora_sdk_web.dart:26:23 - Missing documentation for a public member. Try adding documentation for the member. - public_member_api_docs
+   info - lib/nexora_sdk_web.dart:27:46 - Missing documentation for a public member. Try adding documentation for the member. - public_member_api_docs
+   info - lib/nexora_sdk_web.dart:30:16 - Missing documentation for a public member. Try adding documentation for the member. - public_member_api_docs
+   info - lib/nexora_sdk_web.dart:31:21 - Missing documentation for a public member. Try adding documentation for the member. - public_member_api_docs
+   info - lib/nexora_sdk_web.dart:32:52 - Missing documentation for a public member. Try adding documentation for the member. - public_member_api_docs
+   info - lib/nexora_sdk_web.dart:33:17 - Missing documentation for a public member. Try adding documentation for the member. - public_member_api_docs
+   info - lib/nexora_sdk_web.dart:34:53 - Missing documentation for a public member. Try adding documentation for the member. - public_member_api_docs
+   info - lib/nexora_sdk_web.dart:34:81 - The line length exceeds the 80-character limit. Try breaking the line across multiple lines. - lines_longer_than_80_chars
+   info - lib/nexora_sdk_web.dart:37:16 - Missing documentation for a public member. Try adding documentation for the member. - public_member_api_docs
+   info - lib/nexora_sdk_web.dart:38:60 - Missing documentation for a public member. Try adding documentation for the member. - public_member_api_docs
+   info - lib/nexora_sdk_web.dart:38:81 - The line length exceeds the 80-character limit. Try breaking the line across multiple lines. - lines_longer_than_80_chars
+   info - lib/nexora_sdk_web.dart:41:16 - Missing documentation for a public member. Try adding documentation for the member. - public_member_api_docs
+   info - lib/nexora_sdk_web.dart:41:81 - The line length exceeds the 80-character limit. Try breaking the line across multiple lines. - lines_longer_than_80_chars
+   info - lib/nexora_sdk_web.dart:42:29 - Missing documentation for a public member. Try adding documentation for the member. - public_member_api_docs
+   info - lib/nexora_sdk_web.dart:43:29 - Missing documentation for a public member. Try adding documentation for the member. - public_member_api_docs
+   info - lib/nexora_sdk_web.dart:77:81 - The line length exceeds the 80-character limit. Try breaking the line across multiple lines. - lines_longer_than_80_chars
+   info - lib/nexora_sdk_web.dart:83:9 - Unnecessary duplication of receiver. Try using a cascade to avoid the duplication. - cascade_invocations
+   info - lib/nexora_sdk_web.dart:96:81 - The line length exceeds the 80-character limit. Try breaking the line across multiple lines. - lines_longer_than_80_chars
+   info - lib/nexora_sdk_web.dart:102:9 - Unnecessary duplication of receiver. Try using a cascade to avoid the duplication. - cascade_invocations
+   info - lib/nexora_sdk_web.dart:177:7 - Unnecessary duplication of receiver. Try using a cascade to avoid the duplication. - cascade_invocations
+   info - lib/nexora_sdk_web.dart:179:81 - The line length exceeds the 80-character limit. Try breaking the line across multiple lines. - lines_longer_than_80_chars
+   info - lib/nexora_sdk_web.dart:305:7 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas
+   info - lib/nexora_sdk_web.dart:322:9 - Unnecessary duplication of receiver. Try using a cascade to avoid the duplication. - cascade_invocations
+   info - lib/nexora_sdk_web.dart:348:11 - Unnecessary duplication of receiver. Try using a cascade to avoid the duplication. - cascade_invocations
+   info - lib/nexora_sdk_web.dart:399:7 - Unnecessary duplication of receiver. Try using a cascade to avoid the duplication. - cascade_invocations
+   info - lib/nexora_sdk_web.dart:441:9 - Unnecessary duplication of receiver. Try using a cascade to avoid the duplication. - cascade_invocations
+   info - lib/nexora_sdk_web.dart:444:81 - The line length exceeds the 80-character limit. Try breaking the line across multiple lines. - lines_longer_than_80_chars
+   info - lib/nexora_sdk_web.dart:459:24 - The value of the argument is redundant because it matches the default value. Try removing the argument. - avoid_redundant_argument_values
+   info - lib/nexora_sdk_web.dart:482:81 - The line length exceeds the 80-character limit. Try breaking the line across multiple lines. - lines_longer_than_80_chars
+   info - lib/nexora_sdk_web.dart:520:7 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas
+   info - lib/nexora_sdk_web.dart:532:7 - Unnecessary duplication of receiver. Try using a cascade to avoid the duplication. - cascade_invocations
+   info - lib/nexora_sdk_web.dart:550:22 - The value of the argument is redundant because it matches the default value. Try removing the argument. - avoid_redundant_argument_values
+   info - lib/nexora_sdk_web.dart:580:11 - Unnecessary duplication of receiver. Try using a cascade to avoid the duplication. - cascade_invocations
+   info - lib/nexora_sdk_web.dart:643:81 - The line length exceeds the 80-character limit. Try breaking the line across multiple lines. - lines_longer_than_80_chars
+   info - lib/nexora_sdk_web.dart:674:81 - The line length exceeds the 80-character limit. Try breaking the line across multiple lines. - lines_longer_than_80_chars
+   info - lib/nexora_sdk_web.dart:704:81 - The line length exceeds the 80-character limit. Try breaking the line across multiple lines. - lines_longer_than_80_chars
+   info - lib/nexora_sdk_web.dart:705:81 - The line length exceeds the 80-character limit. Try breaking the line across multiple lines. - lines_longer_than_80_chars
+   info - lib/nexora_sdk_web.dart:725:81 - The line length exceeds the 80-character limit. Try breaking the line across multiple lines. - lines_longer_than_80_chars
+   info - lib/nexora_sdk_web.dart:726:81 - The line length exceeds the 80-character limit. Try breaking the line across multiple lines. - lines_longer_than_80_chars
+   info - lib/nexora_sdk_web.dart:732:81 - The line length exceeds the 80-character limit. Try breaking the line across multiple lines. - lines_longer_than_80_chars
+   info - lib/nexora_sdk_web.dart:750:81 - The line length exceeds the 80-character limit. Try breaking the line across multiple lines. - lines_longer_than_80_chars
+   info - lib/nexora_sdk_web.dart:756:81 - The line length exceeds the 80-character limit. Try breaking the line across multiple lines. - lines_longer_than_80_chars
+   info - lib/nexora_sdk_web.dart:757:81 - The line length exceeds the 80-character limit. Try breaking the line across multiple lines. - lines_longer_than_80_chars
+   info - lib/nexora_sdk_web.dart:762:81 - The line length exceeds the 80-character limit. Try breaking the line across multiple lines. - lines_longer_than_80_chars
+   info - lib/nexora_sdk_web.dart:767:81 - The line length exceeds the 80-character limit. Try breaking the line across multiple lines. - lines_longer_than_80_chars
+   info - lib/nexora_sdk_web.dart:771:81 - The line length exceeds the 80-character limit. Try breaking the line across multiple lines. - lines_longer_than_80_chars
+   info - lib/nexora_sdk_web.dart:772:7 - Unnecessary duplication of receiver. Try using a cascade to avoid the duplication. - cascade_invocations
+   info - lib/nexora_sdk_web.dart:781:5 - Missing a required trailing comma. Try adding a trailing comma. - require_trailing_commas
+   info - lib/nexora_sdk_web.dart:812:9 - Unnecessary 'break' statement. Try removing the 'break'. - unnecessary_breaks
+   info - lib/nexora_sdk_web.dart:815:9 - Unnecessary 'break' statement. Try removing the 'break'. - unnecessary_breaks
+   info - lib/nexora_sdk_web.dart:818:9 - Unnecessary 'break' statement. Try removing the 'break'. - unnecessary_breaks
+   info - lib/nexora_sdk_web.dart:821:9 - Unnecessary 'break' statement. Try removing the 'break'. - unnecessary_breaks
+   info - lib/nexora_sdk_web.dart:824:9 - Unnecessary 'break' statement. Try removing the 'break'. - unnecessary_breaks
+   info - lib/nexora_sdk_web.dart:827:9 - Unnecessary 'break' statement. Try removing the 'break'. - unnecessary_breaks
+   info - lib/nexora_sdk_web.dart:942:9 - Unnecessary duplication of receiver. Try using a cascade to avoid the duplication. - cascade_invocations
+   info - lib/nexora_sdk_web.dart:1136:81 - The line length exceeds the 80-character limit. Try breaking the line across multiple lines. - lines_longer_than_80_chars
+   info - lib/nexora_sdk_web.dart:1142:13 - Unnecessary type annotation on a local variable. Try removing the type annotation. - omit_local_variable_types
+   info - lib/nexora_sdk_web.dart:1144:24 - Don't cast a nullable value to a non-nullable type. Try adding a not-null assertion ('!') to make the type non-nullable. - cast_nullable_to_non_nullable
+   info - lib/nexora_sdk_web.dart:1145:81 - The line length exceeds the 80-character limit. Try breaking the line across multiple lines. - lines_longer_than_80_chars
+   info - lib/nexora_sdk_web.dart:1146:81 - The line length exceeds the 80-character limit. Try breaking the line across multiple lines. - lines_longer_than_80_chars
+   info - lib/nexora_sdk_web.dart:1147:81 - The line length exceeds the 80-character limit. Try breaking the line across multiple lines. - lines_longer_than_80_chars
+   info - lib/nexora_sdk_web.dart:1148:81 - The line length exceeds the 80-character limit. Try breaking the line across multiple lines. - lines_longer_than_80_chars
+   info - lib/nexora_sdk_web.dart:1157:81 - The line length exceeds the 80-character limit. Try breaking the line across multiple lines. - lines_longer_than_80_chars
+   info - lib/nexora_sdk_web.dart:1232:81 - The line length exceeds the 80-character limit. Try breaking the line across multiple lines. - lines_longer_than_80_chars
+   info - lib/nexora_sdk_web.dart:1236:81 - The line length exceeds the 80-character limit. Try breaking the line across multiple lines. - lines_longer_than_80_chars
+
+73 issues found.

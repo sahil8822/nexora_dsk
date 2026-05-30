@@ -13,11 +13,9 @@ flutter:
     implements: nexora_sdk
     platforms:
       macos:
-        dartPluginClass: NexoraSdkDesktop
-        fileName: nexora_sdk_desktop.dart
+        pluginClass: NexoraSdkPlugin
       windows:
-        dartPluginClass: NexoraSdkDesktop
-        fileName: nexora_sdk_desktop.dart
+        pluginClass: NexoraSdkDesktopPluginCApi
       linux:
         dartPluginClass: NexoraSdkDesktop
         fileName: nexora_sdk_desktop.dart

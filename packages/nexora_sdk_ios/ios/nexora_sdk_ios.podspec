@@ -16,6 +16,11 @@ A premium hardware engine for Flutter supporting Camera (Vision AI), Bluetooth L
   s.dependency 'Flutter'
   s.platform = :ios, '13.0'
 
+  # ML Kit
+  s.dependency 'GoogleMLKit/FaceDetection', '~> 6.0.0'
+  s.dependency 'GoogleMLKit/BarcodeScanning', '~> 6.0.0'
+  s.dependency 'GoogleMLKit/TextRecognition', '~> 6.0.0'
+
   # Read Podfile macros
   camera_enabled = defined?($NexoraEnableCamera) ? $NexoraEnableCamera : true
   bluetooth_enabled = defined?($NexoraEnableBluetooth) ? $NexoraEnableBluetooth : true

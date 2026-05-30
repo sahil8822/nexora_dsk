@@ -6,7 +6,12 @@ import 'package:nexora_sdk_platform_interface/models/hardware_models.dart';
 import 'package:nexora_sdk_platform_interface/models/permission_models.dart';
 import 'package:nexora_sdk_platform_interface/models/sensor_data.dart';
 import 'package:nexora_sdk_platform_interface/nexora_sdk_method_channel.dart';
+import 'package:nexora_sdk_platform_interface/src/pigeon/hardware_api.g.dart'
+    hide NexoraSdkConfig;
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
+
+export 'package:nexora_sdk_platform_interface/src/pigeon/hardware_api.g.dart'
+    hide NexoraSdkConfig;
 
 /// The interface that implementations of NexoraSdk must implement.
 abstract class NexoraSdkPlatform extends PlatformInterface {
@@ -31,6 +36,7 @@ abstract class NexoraSdkPlatform extends PlatformInterface {
   /// Applies global SDK configuration to Dart and native platform code.
   Future<bool> configure(NexoraSdkConfig config) async => true;
 
+  // ignore: public_member_api_docs
   Future<bool> startBlePeripheral(String uuid) {
     throw UnimplementedError('startBlePeripheral() has not been implemented.');
   }
@@ -322,6 +328,16 @@ abstract class NexoraSdkPlatform extends PlatformInterface {
   /// API Documentation for getThermalState.
   Future<DeviceThermalState> getThermalState();
 
+  /// Starts background telemetry sync.
+  Future<bool> startBackgroundSync(int intervalMinutes) {
+    throw UnimplementedError('startBackgroundSync() has not been implemented.');
+  }
+
+  /// Stops background telemetry sync.
+  Future<bool> stopBackgroundSync() {
+    throw UnimplementedError('stopBackgroundSync() has not been implemented.');
+  }
+
   // --- Unified Streams ---
   /// API Documentation for unifiedStream;.
   Stream<HardwareEvent> get unifiedStream;
@@ -392,5 +408,73 @@ abstract class NexoraSdkPlatform extends PlatformInterface {
     throw UnimplementedError(
       'stopForegroundService() has not been implemented.',
     );
+  }
+
+  // --- Biometric Cryptography & Secure Storage ---
+
+  /// Generates a biometric-locked cryptographic key pair and AES secret key.
+  Future<bool> generateBiometricKey({
+    required String alias,
+    bool requireBiometric = true,
+    bool useStrongBox = false,
+  }) {
+    throw UnimplementedError(
+        'generateBiometricKey() has not been implemented.');
+  }
+
+  /// Deletes a cryptographic key by its alias.
+  Future<bool> deleteKey(String alias) {
+    throw UnimplementedError('deleteKey() has not been implemented.');
+  }
+
+  /// Checks if a cryptographic key with the given alias exists.
+  Future<bool> keyExists(String alias) {
+    throw UnimplementedError('keyExists() has not been implemented.');
+  }
+
+  /// Signs data with a biometric-locked key. Triggers biometric prompt if required.
+  Future<Uint8List?> signWithBiometricKey(String alias, Uint8List data) {
+    throw UnimplementedError(
+        'signWithBiometricKey() has not been implemented.');
+  }
+
+  /// Encrypts data with a biometric-locked AES key. Returns IV || Ciphertext.
+  Future<Uint8List?> encryptWithBiometricKey(
+      String alias, Uint8List plaintext) {
+    throw UnimplementedError(
+        'encryptWithBiometricKey() has not been implemented.');
+  }
+
+  /// Decrypts data with a biometric-locked AES key. Expects IV || Ciphertext.
+  Future<Uint8List?> decryptWithBiometricKey(
+      String alias, Uint8List ciphertext) async {
+    throw UnimplementedError(
+        'decryptWithBiometricKey() has not been implemented.');
+  }
+
+  // ==================== AI / ML Kit Methods ====================
+
+  Future<List<NexoraAiResult?>> processImageWithFaceDetection(
+      Uint8List imageBytes) async {
+    throw UnimplementedError(
+        'processImageWithFaceDetection() has not been implemented.');
+  }
+
+  Future<List<NexoraAiResult?>> processImageWithBarcodeScanning(
+      Uint8List imageBytes) async {
+    throw UnimplementedError(
+        'processImageWithBarcodeScanning() has not been implemented.');
+  }
+
+  Future<List<NexoraAiResult?>> processImageWithTextRecognition(
+      Uint8List imageBytes) async {
+    throw UnimplementedError(
+        'processImageWithTextRecognition() has not been implemented.');
+  }
+
+  Future<Map<String?, Object?>?> runCustomModelInference(
+      String modelPath, Uint8List inputBytes) async {
+    throw UnimplementedError(
+        'runCustomModelInference() has not been implemented.');
   }
 }

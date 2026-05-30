@@ -14,7 +14,9 @@ public class NexoraSdk: NSObject, FlutterPlugin, CLLocationManagerDelegate,
     BiometricsApi,
     BluetoothApi,
     SecureStorageApi,
-    SystemApi {
+    SystemApi,
+    CryptoApi,
+    AiApi {
 
     private let camera = HardwareCameraManager()
     private let audio = HardwareAudioManager()
@@ -78,6 +80,8 @@ public class NexoraSdk: NSObject, FlutterPlugin, CLLocationManagerDelegate,
         BluetoothApiSetup.setUp(binaryMessenger: registrar.messenger(), api: instance)
         SecureStorageApiSetup.setUp(binaryMessenger: registrar.messenger(), api: instance)
         SystemApiSetup.setUp(binaryMessenger: registrar.messenger(), api: instance)
+        CryptoApiSetup.setUp(binaryMessenger: registrar.messenger(), api: instance)
+        AiApiSetup.setUp(binaryMessenger: registrar.messenger(), api: instance)
     }
 
     deinit {
@@ -1099,5 +1103,100 @@ public class NexoraSdk: NSObject, FlutterPlugin, CLLocationManagerDelegate,
         @unknown default:
             completion(.success("unknown"))
         }
+    }
+
+    public func startBackgroundSync(intervalMinutes: Int64, completion: @escaping (Result<Bool, Error>) -> Void) {
+        // Register background task using BGTaskScheduler in a real implementation
+        // For now, we stub this out as requested.
+        completion(.success(true))
+    }
+
+    public func stopBackgroundSync(completion: @escaping (Result<Bool, Error>) -> Void) {
+        completion(.success(true))
+    }
+
+    // --- CryptoApi ---
+
+    public func generateBiometricKey(options: NexoraCryptoKeyOptions, completion: @escaping (Result<Bool, Error>) -> Void) {
+        guard let alias = options.alias else {
+            completion(.failure(NSError(domain: "NexoraSdk", code: 400, userInfo: [NSLocalizedDescriptionKey: "Alias is required"])))
+            return
+        }
+        let requireBiometric = options.requireBiometric ?? false
+        let useStrongBox = options.useStrongBox ?? false
+        
+        let success = crypto.generateBiometricKey(alias: alias, requireBiometric: requireBiometric, useStrongBox: useStrongBox)
+        completion(.success(success))
+    }
+
+    public func deleteKey(alias: String, completion: @escaping (Result<Bool, Error>) -> Void) {
+        let success = crypto.deleteKey(alias: alias)
+        completion(.success(success))
+    }
+
+    public func keyExists(alias: String, completion: @escaping (Result<Bool, Error>) -> Void) {
+        let exists = crypto.keyExists(alias: alias)
+        completion(.success(exists))
+    }
+
+    public func signWithBiometricKey(alias: String, data: FlutterStandardTypedData, completion: @escaping (Result<FlutterStandardTypedData?, Error>) -> Void) {
+        crypto.signWithBiometricKey(alias: alias, data: data.data) { signature in
+            if let signature = signature {
+                completion(.success(FlutterStandardTypedData(bytes: signature)))
+            } else {
+                completion(.success(nil))
+            }
+        }
+    }
+
+    public func encryptWithBiometricKey(alias: String, plaintext: FlutterStandardTypedData, completion: @escaping (Result<FlutterStandardTypedData?, Error>) -> Void) {
+        crypto.encryptWithBiometricKey(alias: alias, plaintext: plaintext.data) { ciphertext in
+            if let ciphertext = ciphertext {
+                completion(.success(FlutterStandardTypedData(bytes: ciphertext)))
+            } else {
+                completion(.success(nil))
+            }
+        }
+    }
+
+    public func decryptWithBiometricKey(alias: String, ciphertext: FlutterStandardTypedData, completion: @escaping (Result<FlutterStandardTypedData?, Error>) -> Void) {
+        crypto.decryptWithBiometricKey(alias: alias, ciphertext: ciphertext.data) { plaintextData in
+            if let plaintextData = plaintextData {
+                completion(.success(FlutterStandardTypedData(bytes: plaintextData)))
+            } else {
+                let error = NSError(domain: "NexoraSDK", code: 4, userInfo: [NSLocalizedDescriptionKey: "Failed to decrypt data"])
+                completion(.failure(error))
+            }
+        }
+    }
+
+    // ==================== AI / ML Kit Methods ====================
+
+    public func processImageWithFaceDetection(imageBytes: FlutterStandardTypedData, completion: @escaping (Result<[NexoraAiResult?], Error>) -> Void) {
+        ai.processFaceDetection(imageBytes: imageBytes.data) { results in
+            completion(.success(results))
+        }
+    }
+
+    public func processImageWithBarcodeScanning(imageBytes: FlutterStandardTypedData, completion: @escaping (Result<[NexoraAiResult?], Error>) -> Void) {
+        ai.processBarcodeScanning(imageBytes: imageBytes.data) { results in
+            completion(.success(results))
+        }
+    }
+
+    public func processImageWithTextRecognition(imageBytes: FlutterStandardTypedData, completion: @escaping (Result<[NexoraAiResult?], Error>) -> Void) {
+        ai.processTextRecognition(imageBytes: imageBytes.data) { results in
+            completion(.success(results))
+        }
+    }
+
+    public func runCustomModelInference(modelPath: String, inputBytes: FlutterStandardTypedData, completion: @escaping (Result<[String? : Any?]?, Error>) -> Void) {
+        let loaded = ai.loadCustomModel(modelPath: modelPath)
+        if !loaded {
+            completion(.success(nil))
+            return
+        }
+        let result = ai.runInference(inputData: inputBytes.data)
+        completion(.success(result))
     }
 }

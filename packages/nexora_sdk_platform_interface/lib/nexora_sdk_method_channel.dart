@@ -25,6 +25,7 @@ class MethodChannelNexoraSdk extends NexoraSdkPlatform {
   final pigeon.BluetoothApi _bluetoothApi = pigeon.BluetoothApi();
   final pigeon.SecureStorageApi _secureStorageApi = pigeon.SecureStorageApi();
   final pigeon.SystemApi _systemApi = pigeon.SystemApi();
+  final pigeon.CryptoApi _cryptoApi = pigeon.CryptoApi();
 
   Stream<HardwareEvent>? _cachedUnifiedStream;
 
@@ -689,9 +690,19 @@ class MethodChannelNexoraSdk extends NexoraSdkPlatform {
   Future<DeviceThermalState> getThermalState() async {
     final stateStr = await _wrap(() => _systemApi.getThermalState());
     return DeviceThermalState.values.firstWhere(
-      (s) => s.name == stateStr,
+      (e) => e.toString().split('.').last == stateStr,
       orElse: () => DeviceThermalState.normal,
     );
+  }
+
+  @override
+  Future<bool> startBackgroundSync(int intervalMinutes) async {
+    return _wrap(() => _systemApi.startBackgroundSync(intervalMinutes));
+  }
+
+  @override
+  Future<bool> stopBackgroundSync() async {
+    return _wrap(() => _systemApi.stopBackgroundSync());
   }
 
   // --- Unified Stream ---
@@ -743,5 +754,77 @@ class MethodChannelNexoraSdk extends NexoraSdkPlatform {
   @override
   Future<bool> stopForegroundService() async {
     return _wrap(() => _systemApi.stopForegroundService());
+  }
+
+  // --- Biometric Cryptography & Secure Storage ---
+
+  @override
+  Future<bool> generateBiometricKey({
+    required String alias,
+    bool requireBiometric = true,
+    bool useStrongBox = false,
+  }) async {
+    return _wrap(() => _cryptoApi.generateBiometricKey(
+          pigeon.NexoraCryptoKeyOptions(
+            alias: alias,
+            requireBiometric: requireBiometric,
+            useStrongBox: useStrongBox,
+          ),
+        ));
+  }
+
+  @override
+  Future<bool> deleteKey(String alias) async {
+    return _wrap(() => _cryptoApi.deleteKey(alias));
+  }
+
+  @override
+  Future<bool> keyExists(String alias) async {
+    return _wrap(() => _cryptoApi.keyExists(alias));
+  }
+
+  @override
+  Future<Uint8List?> signWithBiometricKey(String alias, Uint8List data) async {
+    return _wrap(() => _cryptoApi.signWithBiometricKey(alias, data));
+  }
+
+  @override
+  Future<Uint8List?> encryptWithBiometricKey(
+      String alias, Uint8List plaintext) async {
+    return _wrap(() => _cryptoApi.encryptWithBiometricKey(alias, plaintext));
+  }
+
+  @override
+  Future<Uint8List?> decryptWithBiometricKey(
+      String alias, Uint8List ciphertext) async {
+    return await _cryptoApi.decryptWithBiometricKey(alias, ciphertext);
+  }
+
+  // ==================== AI / ML Kit Methods ====================
+
+  final AiApi aiApi = AiApi();
+
+  @override
+  Future<List<NexoraAiResult?>> processImageWithFaceDetection(
+      Uint8List imageBytes) async {
+    return await aiApi.processImageWithFaceDetection(imageBytes);
+  }
+
+  @override
+  Future<List<NexoraAiResult?>> processImageWithBarcodeScanning(
+      Uint8List imageBytes) async {
+    return await aiApi.processImageWithBarcodeScanning(imageBytes);
+  }
+
+  @override
+  Future<List<NexoraAiResult?>> processImageWithTextRecognition(
+      Uint8List imageBytes) async {
+    return await aiApi.processImageWithTextRecognition(imageBytes);
+  }
+
+  @override
+  Future<Map<String?, Object?>?> runCustomModelInference(
+      String modelPath, Uint8List inputBytes) async {
+    return await aiApi.runCustomModelInference(modelPath, inputBytes);
   }
 }

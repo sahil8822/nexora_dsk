@@ -43,7 +43,9 @@ class NexoraSdk: FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry
     BiometricsApi,
     BluetoothApi,
     SecureStorageApi,
-    SystemApi {
+    SystemApi,
+    CryptoApi,
+    AiApi {
     
     companion object {
         private const val PERMISSION_REQUEST_CODE = 7310
@@ -147,6 +149,8 @@ class NexoraSdk: FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry
         BluetoothApi.setUp(flutterPluginBinding.binaryMessenger, this)
         SecureStorageApi.setUp(flutterPluginBinding.binaryMessenger, this)
         SystemApi.setUp(flutterPluginBinding.binaryMessenger, this)
+        CryptoApi.setUp(flutterPluginBinding.binaryMessenger, this)
+        AiApi.setUp(flutterPluginBinding.binaryMessenger, this)
     }
 
     override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
@@ -1249,6 +1253,31 @@ class NexoraSdk: FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry
         }
     }
 
+    override fun startBackgroundSync(intervalMinutes: Long, callback: (kotlin.Result<Boolean>) -> Unit) {
+        try {
+            val workRequest = androidx.work.PeriodicWorkRequestBuilder<TelemetryWorker>(
+                intervalMinutes, java.util.concurrent.TimeUnit.MINUTES
+            ).build()
+            androidx.work.WorkManager.getInstance(context).enqueueUniquePeriodicWork(
+                "NexoraTelemetrySync",
+                androidx.work.ExistingPeriodicWorkPolicy.UPDATE,
+                workRequest
+            )
+            callback(kotlin.Result.success(true))
+        } catch (e: Exception) {
+            callback(kotlin.Result.success(false))
+        }
+    }
+
+    override fun stopBackgroundSync(callback: (kotlin.Result<Boolean>) -> Unit) {
+        try {
+            androidx.work.WorkManager.getInstance(context).cancelUniqueWork("NexoraTelemetrySync")
+            callback(kotlin.Result.success(true))
+        } catch (e: Exception) {
+            callback(kotlin.Result.success(false))
+        }
+    }
+
     override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
         releaseHardware()
         channel.setMethodCallHandler(null)
@@ -1586,6 +1615,7 @@ class NexoraSdk: FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry
     override fun onAttachedToActivity(binding: ActivityPluginBinding) {
         activity = binding.activity
         activityBinding = binding
+        crypto.setActivity(activity)
         binding.addRequestPermissionsResultListener(this)
         binding.addOnNewIntentListener(this)
     }
@@ -1595,11 +1625,13 @@ class NexoraSdk: FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry
         activityBinding?.removeOnNewIntentListener(this)
         activityBinding = null
         activity = null
+        crypto.setActivity(null)
     }
 
     override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
         activity = binding.activity
         activityBinding = binding
+        crypto.setActivity(activity)
         binding.addRequestPermissionsResultListener(this)
         binding.addOnNewIntentListener(this)
     }
@@ -1609,9 +1641,112 @@ class NexoraSdk: FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry
         activityBinding?.removeOnNewIntentListener(this)
         activityBinding = null
         activity = null
+        crypto.setActivity(null)
     }
 
     override fun onNewIntent(intent: Intent): Boolean {
         return nfc.handleIntent(intent)
+    }
+
+    // --- CryptoApi ---
+
+    override fun generateBiometricKey(options: NexoraCryptoKeyOptions, callback: (kotlin.Result<Boolean>) -> Unit) {
+        executor.execute {
+            try {
+                val alias = options.alias ?: return@execute mainHandler.post { callback(kotlin.Result.failure(Exception("Alias is required"))) }
+                val requireBiometric = options.requireBiometric ?: false
+                val useStrongBox = options.useStrongBox ?: false
+                
+                val success = crypto.generateBiometricKey(alias, requireBiometric, useStrongBox)
+                mainHandler.post { callback(kotlin.Result.success(success)) }
+            } catch (e: Exception) {
+                mainHandler.post { callback(kotlin.Result.failure(e)) }
+            }
+        }
+    }
+
+    override fun deleteKey(alias: String, callback: (kotlin.Result<Boolean>) -> Unit) {
+        executor.execute {
+            try {
+                val success = crypto.deleteKey(alias)
+                mainHandler.post { callback(kotlin.Result.success(success)) }
+            } catch (e: Exception) {
+                mainHandler.post { callback(kotlin.Result.failure(e)) }
+            }
+        }
+    }
+
+    override fun keyExists(alias: String, callback: (kotlin.Result<Boolean>) -> Unit) {
+        executor.execute {
+            try {
+                val exists = crypto.keyExists(alias)
+                mainHandler.post { callback(kotlin.Result.success(exists)) }
+            } catch (e: Exception) {
+                mainHandler.post { callback(kotlin.Result.failure(e)) }
+            }
+        }
+    }
+
+    override fun signWithBiometricKey(alias: String, data: ByteArray, callback: (kotlin.Result<ByteArray?>) -> Unit) {
+        mainHandler.post {
+            try {
+                crypto.signWithBiometricKey(alias, data) { signature ->
+                    callback(kotlin.Result.success(signature))
+                }
+            } catch (e: Exception) {
+                callback(kotlin.Result.failure(e))
+            }
+    override fun encryptWithBiometricKey(alias: String, plaintext: ByteArray, callback: (kotlin.Result<ByteArray?>) -> Unit) {
+        mainHandler.post {
+            try {
+                crypto.encryptWithBiometricKey(alias, plaintext) { ciphertext ->
+                    callback(kotlin.Result.success(ciphertext))
+                }
+            } catch (e: Exception) {
+                callback(kotlin.Result.failure(e))
+            }
+        }
+    }
+
+    override fun decryptWithBiometricKey(alias: String, ciphertext: ByteArray, callback: (kotlin.Result<ByteArray?>) -> Unit) {
+        mainHandler.post {
+            try {
+                crypto.decryptWithBiometricKey(alias, ciphertext) { plaintext ->
+                    callback(kotlin.Result.success(plaintext))
+                }
+            } catch (e: Exception) {
+                callback(kotlin.Result.failure(e))
+            }
+        }
+    }
+
+    // ==================== AI / ML Kit Methods ====================
+    override fun processImageWithFaceDetection(imageBytes: ByteArray, callback: (Result<List<NexoraAiResult?>>) -> Unit) {
+        ai.processFaceDetection(imageBytes) { results ->
+            callback(Result.success(results))
+        }
+    }
+
+    override fun processImageWithBarcodeScanning(imageBytes: ByteArray, callback: (Result<List<NexoraAiResult?>>) -> Unit) {
+        ai.processBarcodeScanning(imageBytes) { results ->
+            callback(Result.success(results))
+        }
+    }
+
+    override fun processImageWithTextRecognition(imageBytes: ByteArray, callback: (Result<List<NexoraAiResult?>>) -> Unit) {
+        ai.processTextRecognition(imageBytes) { results ->
+            callback(Result.success(results))
+        }
+    }
+
+    override fun runCustomModelInference(modelPath: String, inputBytes: ByteArray, callback: (Result<Map<String?, Any?>?>) -> Unit) {
+        val loaded = ai.loadCustomModel(modelPath)
+        if (!loaded) {
+            callback(Result.success(null))
+            return
+        }
+        val buffer = java.nio.ByteBuffer.wrap(inputBytes)
+        val result = ai.runInference(buffer)
+        callback(Result.success(result))
     }
 }

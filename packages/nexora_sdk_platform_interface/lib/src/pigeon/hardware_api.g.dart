@@ -1122,6 +1122,61 @@ class NexoraCryptoKeyOptions {
   int get hashCode => _deepHash(<Object?>[runtimeType, ..._toList()]);
 }
 
+class NexoraAiResult {
+  NexoraAiResult({
+    this.label,
+    this.confidence,
+    this.boundingBox,
+    this.recognizedText,
+  });
+
+  String? label;
+
+  double? confidence;
+
+  Map<String?, Object?>? boundingBox;
+
+  String? recognizedText;
+
+  List<Object?> _toList() {
+    return <Object?>[
+      label,
+      confidence,
+      boundingBox,
+      recognizedText,
+    ];
+  }
+
+  Object encode() {
+    return _toList();  }
+
+  static NexoraAiResult decode(Object result) {
+    result as List<Object?>;
+    return NexoraAiResult(
+      label: result[0] as String?,
+      confidence: result[1] as double?,
+      boundingBox: (result[2] as Map<Object?, Object?>?)?.cast<String?, Object?>(),
+      recognizedText: result[3] as String?,
+    );
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  bool operator ==(Object other) {
+    if (other is! NexoraAiResult || other.runtimeType != runtimeType) {
+      return false;
+    }
+    if (identical(this, other)) {
+      return true;
+    }
+    return _deepEquals(label, other.label) && _deepEquals(confidence, other.confidence) && _deepEquals(boundingBox, other.boundingBox) && _deepEquals(recognizedText, other.recognizedText);
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  int get hashCode => _deepHash(<Object?>[runtimeType, ..._toList()]);
+}
+
 
 class _PigeonCodec extends StandardMessageCodec {
   const _PigeonCodec();
@@ -1187,6 +1242,9 @@ class _PigeonCodec extends StandardMessageCodec {
     }    else if (value is NexoraCryptoKeyOptions) {
       buffer.putUint8(147);
       writeValue(buffer, value.encode());
+    }    else if (value is NexoraAiResult) {
+      buffer.putUint8(148);
+      writeValue(buffer, value.encode());
     } else {
       super.writeValue(buffer, value);
     }
@@ -1233,6 +1291,8 @@ class _PigeonCodec extends StandardMessageCodec {
         return NexoraPermissionStatus.decode(readValue(buffer)!);
       case 147:
         return NexoraCryptoKeyOptions.decode(readValue(buffer)!);
+      case 148:
+        return NexoraAiResult.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);
     }
@@ -2902,6 +2962,44 @@ class SystemApi {
     ;
     return pigeonVar_replyValue! as String;
   }
+
+  Future<bool> startBackgroundSync(int intervalMinutes) async {
+    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.startBackgroundSync$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[intervalMinutes]);
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+
+    final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
+        pigeonVar_replyList,
+        pigeonVar_channelName,
+        isNullValid: false,
+    )
+    ;
+    return pigeonVar_replyValue! as bool;
+  }
+
+  Future<bool> stopBackgroundSync() async {
+    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.stopBackgroundSync$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(null);
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+
+    final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
+        pigeonVar_replyList,
+        pigeonVar_channelName,
+        isNullValid: false,
+    )
+    ;
+    return pigeonVar_replyValue! as bool;
+  }
 }
 
 class CryptoApi {
@@ -3029,5 +3127,95 @@ class CryptoApi {
     )
     ;
     return pigeonVar_replyValue as Uint8List?;
+  }
+}
+
+class AiApi {
+  /// Constructor for [AiApi].  The [binaryMessenger] named argument is
+  /// available for dependency injection.  If it is left null, the default
+  /// BinaryMessenger will be used which routes to the host platform.
+  AiApi({BinaryMessenger? binaryMessenger, String messageChannelSuffix = ''})
+      : pigeonVar_binaryMessenger = binaryMessenger,
+        pigeonVar_messageChannelSuffix = messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
+  final BinaryMessenger? pigeonVar_binaryMessenger;
+
+  static const MessageCodec<Object?> pigeonChannelCodec = _PigeonCodec();
+
+  final String pigeonVar_messageChannelSuffix;
+
+  Future<List<NexoraAiResult?>> processImageWithFaceDetection(Uint8List imageBytes) async {
+    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.AiApi.processImageWithFaceDetection$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[imageBytes]);
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+
+    final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
+        pigeonVar_replyList,
+        pigeonVar_channelName,
+        isNullValid: false,
+    )
+    ;
+    return (pigeonVar_replyValue! as List<Object?>).cast<NexoraAiResult?>();
+  }
+
+  Future<List<NexoraAiResult?>> processImageWithBarcodeScanning(Uint8List imageBytes) async {
+    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.AiApi.processImageWithBarcodeScanning$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[imageBytes]);
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+
+    final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
+        pigeonVar_replyList,
+        pigeonVar_channelName,
+        isNullValid: false,
+    )
+    ;
+    return (pigeonVar_replyValue! as List<Object?>).cast<NexoraAiResult?>();
+  }
+
+  Future<List<NexoraAiResult?>> processImageWithTextRecognition(Uint8List imageBytes) async {
+    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.AiApi.processImageWithTextRecognition$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[imageBytes]);
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+
+    final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
+        pigeonVar_replyList,
+        pigeonVar_channelName,
+        isNullValid: false,
+    )
+    ;
+    return (pigeonVar_replyValue! as List<Object?>).cast<NexoraAiResult?>();
+  }
+
+  Future<Map<String?, Object?>?> runCustomModelInference(String modelPath, Uint8List inputBytes) async {
+    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.AiApi.runCustomModelInference$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[modelPath, inputBytes]);
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+
+    final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
+        pigeonVar_replyList,
+        pigeonVar_channelName,
+        isNullValid: true,
+    )
+    ;
+    return (pigeonVar_replyValue as Map<Object?, Object?>?)?.cast<String?, Object?>();
   }
 }

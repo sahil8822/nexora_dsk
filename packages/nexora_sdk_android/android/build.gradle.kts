@@ -91,10 +91,11 @@ dependencies {
         implementation("androidx.biometric:biometric:1.2.0-alpha05")
     }
     
-    // ML Kit (Vision) - Efficient & Lightweight - Optional
+    // ML Kit (Vision) - Efficient & Lightweight
     if (enableCamera) {
-        compileOnly("com.google.mlkit:barcode-scanning:17.3.0")
-        compileOnly("com.google.mlkit:face-detection:16.1.7")
+        implementation("com.google.android.gms:play-services-mlkit-barcode-scanning:18.3.0")
+        implementation("com.google.android.gms:play-services-mlkit-face-detection:17.1.0")
+        implementation("com.google.android.gms:play-services-mlkit-text-recognition:19.0.0")
     }
     
     // Audio Analysis (Native FFT Helper) - Hosted on JitPack

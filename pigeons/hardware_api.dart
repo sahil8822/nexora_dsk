@@ -7,6 +7,9 @@ import 'package:pigeon/pigeon.dart';
   kotlinOptions: KotlinOptions(package: 'com.nexora.sdk.pigeon'),
   swiftOut: 'packages/nexora_sdk_ios/ios/Classes/pigeon/HardwareApi.g.swift',
   swiftOptions: SwiftOptions(),
+  cppHeaderOut: 'packages/nexora_sdk_desktop/windows/pigeon/hardware_api.g.h',
+  cppSourceOut: 'packages/nexora_sdk_desktop/windows/pigeon/hardware_api.g.cpp',
+  cppOptions: CppOptions(namespace: 'nexora_sdk'),
 ))
 
 // --- Camera ---
@@ -416,6 +419,12 @@ abstract class SystemApi {
   
   @async
   String getThermalState();
+  
+  @async
+  bool startBackgroundSync(int intervalMinutes);
+  
+  @async
+  bool stopBackgroundSync();
 }
 
 // --- Biometric Cryptography & Secure Storage ---
@@ -445,4 +454,28 @@ abstract class CryptoApi {
   
   @async
   Uint8List? decryptWithBiometricKey(String alias, Uint8List ciphertext);
+}
+
+// --- Machine Learning & Edge AI ---
+
+class NexoraAiResult {
+  String? label;
+  double? confidence;
+  Map<String?, Object?>? boundingBox; // {top, left, width, height}
+  String? recognizedText;
+}
+
+@HostApi()
+abstract class AiApi {
+  @async
+  List<NexoraAiResult?> processImageWithFaceDetection(Uint8List imageBytes);
+  
+  @async
+  List<NexoraAiResult?> processImageWithBarcodeScanning(Uint8List imageBytes);
+  
+  @async
+  List<NexoraAiResult?> processImageWithTextRecognition(Uint8List imageBytes);
+  
+  @async
+  Map<String?, Object?>? runCustomModelInference(String modelPath, Uint8List inputBytes);
 }
