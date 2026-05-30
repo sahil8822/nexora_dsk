@@ -5,12 +5,13 @@ import 'dart:io';
 class NexoraArView extends StatelessWidget {
   final Map<String, dynamic> creationParams;
 
-  const NexoraArView({Key? key, this.creationParams = const {}}) : super(key: key);
+  const NexoraArView({Key? key, this.creationParams = const {}})
+    : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     const String viewType = 'nexora_ar_view';
-    
+
     if (Platform.isAndroid) {
       return AndroidView(
         viewType: viewType,
@@ -26,7 +27,7 @@ class NexoraArView extends StatelessWidget {
         creationParamsCodec: const StandardMessageCodec(),
       );
     }
-    
+
     return const Center(child: Text('AR View not supported on this platform'));
   }
 }

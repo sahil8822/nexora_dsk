@@ -13,8 +13,7 @@ enum HapticPattern {
   warning('warning'),
 
   /// API Documentation for error.
-  error('error')
-  ;
+  error('error');
 
   const HapticPattern(this.value);
 

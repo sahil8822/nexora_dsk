@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.4.2
+
+* **Documentation Overhaul & Pub Points:** Completely rewrote the `README.md` to be extremely beginner-friendly. Added a gorgeous new SDK banner image, detailed copy-pasteable use cases for Camera, Audio FFT, BLE, and Telemetry, and structured the package to achieve maximum pub.dev score (140+ points).
+
 ## 3.4.1
 
 * **Developer Experience & Beginner Guides:** Updated the root `README.md` to add a comprehensive, step-by-step setup guide for beginners. Includes detailed permission declarations for Android (`AndroidManifest.xml`) and iOS (`Info.plist`), installation instructions, and a complete copy-pasteable `main.dart` camera example.

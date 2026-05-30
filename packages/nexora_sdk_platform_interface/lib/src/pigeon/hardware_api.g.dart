@@ -10,9 +10,9 @@ import 'package:flutter/services.dart';
 import 'package:meta/meta.dart' show immutable, protected, visibleForTesting;
 
 Object? _extractReplyValueOrThrow(
-    List<Object?>? replyList,
-    String channelName, {
-    required bool isNullValid,
+  List<Object?>? replyList,
+  String channelName, {
+  required bool isNullValid,
 }) {
   if (replyList == null) {
     throw PlatformException(
@@ -96,7 +96,6 @@ int _deepHash(Object? value) {
   return value.hashCode;
 }
 
-
 class NexoraCameraOptions {
   NexoraCameraOptions({
     this.resolution,
@@ -127,7 +126,8 @@ class NexoraCameraOptions {
   }
 
   Object encode() {
-    return _toList();  }
+    return _toList();
+  }
 
   static NexoraCameraOptions decode(Object result) {
     result as List<Object?>;
@@ -149,7 +149,11 @@ class NexoraCameraOptions {
     if (identical(this, other)) {
       return true;
     }
-    return _deepEquals(resolution, other.resolution) && _deepEquals(focusMode, other.focusMode) && _deepEquals(exposureMode, other.exposureMode) && _deepEquals(exposureCompensation, other.exposureCompensation) && _deepEquals(mirrorFrontCamera, other.mirrorFrontCamera);
+    return _deepEquals(resolution, other.resolution) &&
+        _deepEquals(focusMode, other.focusMode) &&
+        _deepEquals(exposureMode, other.exposureMode) &&
+        _deepEquals(exposureCompensation, other.exposureCompensation) &&
+        _deepEquals(mirrorFrontCamera, other.mirrorFrontCamera);
   }
 
   @override
@@ -179,7 +183,8 @@ class CustomClassifierOptions {
   }
 
   Object encode() {
-    return _toList();  }
+    return _toList();
+  }
 
   static CustomClassifierOptions decode(Object result) {
     result as List<Object?>;
@@ -199,7 +204,9 @@ class CustomClassifierOptions {
     if (identical(this, other)) {
       return true;
     }
-    return _deepEquals(modelAssetPath, other.modelAssetPath) && _deepEquals(labels, other.labels) && _deepEquals(threshold, other.threshold);
+    return _deepEquals(modelAssetPath, other.modelAssetPath) &&
+        _deepEquals(labels, other.labels) &&
+        _deepEquals(threshold, other.threshold);
   }
 
   @override
@@ -225,7 +232,8 @@ class VisionModeOptions {
   }
 
   Object encode() {
-    return _toList();  }
+    return _toList();
+  }
 
   static VisionModeOptions decode(Object result) {
     result as List<Object?>;
@@ -274,7 +282,8 @@ class BasicAudioOptions {
   }
 
   Object encode() {
-    return _toList();  }
+    return _toList();
+  }
 
   static BasicAudioOptions decode(Object result) {
     result as List<Object?>;
@@ -294,7 +303,9 @@ class BasicAudioOptions {
     if (identical(this, other)) {
       return true;
     }
-    return _deepEquals(enableFFT, other.enableFFT) && _deepEquals(streamBytes, other.streamBytes) && _deepEquals(updateIntervalMs, other.updateIntervalMs);
+    return _deepEquals(enableFFT, other.enableFFT) &&
+        _deepEquals(streamBytes, other.streamBytes) &&
+        _deepEquals(updateIntervalMs, other.updateIntervalMs);
   }
 
   @override
@@ -328,7 +339,8 @@ class NexoraAudioOptions {
   }
 
   Object encode() {
-    return _toList();  }
+    return _toList();
+  }
 
   static NexoraAudioOptions decode(Object result) {
     result as List<Object?>;
@@ -349,7 +361,10 @@ class NexoraAudioOptions {
     if (identical(this, other)) {
       return true;
     }
-    return _deepEquals(sampleRate, other.sampleRate) && _deepEquals(channels, other.channels) && _deepEquals(enableEchoCancellation, other.enableEchoCancellation) && _deepEquals(enableNoiseSuppression, other.enableNoiseSuppression);
+    return _deepEquals(sampleRate, other.sampleRate) &&
+        _deepEquals(channels, other.channels) &&
+        _deepEquals(enableEchoCancellation, other.enableEchoCancellation) &&
+        _deepEquals(enableNoiseSuppression, other.enableNoiseSuppression);
   }
 
   @override
@@ -379,7 +394,8 @@ class NexoraLocationOptions {
   }
 
   Object encode() {
-    return _toList();  }
+    return _toList();
+  }
 
   static NexoraLocationOptions decode(Object result) {
     result as List<Object?>;
@@ -399,7 +415,9 @@ class NexoraLocationOptions {
     if (identical(this, other)) {
       return true;
     }
-    return _deepEquals(accuracy, other.accuracy) && _deepEquals(distanceFilter, other.distanceFilter) && _deepEquals(intervalMs, other.intervalMs);
+    return _deepEquals(accuracy, other.accuracy) &&
+        _deepEquals(distanceFilter, other.distanceFilter) &&
+        _deepEquals(intervalMs, other.intervalMs);
   }
 
   @override
@@ -421,7 +439,8 @@ class NexoraSensorOptions {
   }
 
   Object encode() {
-    return _toList();  }
+    return _toList();
+  }
 
   static NexoraSensorOptions decode(Object result) {
     result as List<Object?>;
@@ -473,7 +492,8 @@ class NexoraBiometricOptions {
   }
 
   Object encode() {
-    return _toList();  }
+    return _toList();
+  }
 
   static NexoraBiometricOptions decode(Object result) {
     result as List<Object?>;
@@ -494,7 +514,10 @@ class NexoraBiometricOptions {
     if (identical(this, other)) {
       return true;
     }
-    return _deepEquals(title, other.title) && _deepEquals(subtitle, other.subtitle) && _deepEquals(description, other.description) && _deepEquals(negativeButtonText, other.negativeButtonText);
+    return _deepEquals(title, other.title) &&
+        _deepEquals(subtitle, other.subtitle) &&
+        _deepEquals(description, other.description) &&
+        _deepEquals(negativeButtonText, other.negativeButtonText);
   }
 
   @override
@@ -520,7 +543,8 @@ class NexoraBluetoothScanOptions {
   }
 
   Object encode() {
-    return _toList();  }
+    return _toList();
+  }
 
   static NexoraBluetoothScanOptions decode(Object result) {
     result as List<Object?>;
@@ -533,13 +557,15 @@ class NexoraBluetoothScanOptions {
   @override
   // ignore: avoid_equals_and_hash_code_on_mutable_classes
   bool operator ==(Object other) {
-    if (other is! NexoraBluetoothScanOptions || other.runtimeType != runtimeType) {
+    if (other is! NexoraBluetoothScanOptions ||
+        other.runtimeType != runtimeType) {
       return false;
     }
     if (identical(this, other)) {
       return true;
     }
-    return _deepEquals(serviceUuids, other.serviceUuids) && _deepEquals(scanMode, other.scanMode);
+    return _deepEquals(serviceUuids, other.serviceUuids) &&
+        _deepEquals(scanMode, other.scanMode);
   }
 
   @override
@@ -581,7 +607,8 @@ class NexoraStorageInfo {
   }
 
   Object encode() {
-    return _toList();  }
+    return _toList();
+  }
 
   static NexoraStorageInfo decode(Object result) {
     result as List<Object?>;
@@ -604,7 +631,12 @@ class NexoraStorageInfo {
     if (identical(this, other)) {
       return true;
     }
-    return _deepEquals(internalTotal, other.internalTotal) && _deepEquals(internalFree, other.internalFree) && _deepEquals(externalTotal, other.externalTotal) && _deepEquals(externalFree, other.externalFree) && _deepEquals(appCacheSize, other.appCacheSize) && _deepEquals(appDataSize, other.appDataSize);
+    return _deepEquals(internalTotal, other.internalTotal) &&
+        _deepEquals(internalFree, other.internalFree) &&
+        _deepEquals(externalTotal, other.externalTotal) &&
+        _deepEquals(externalFree, other.externalFree) &&
+        _deepEquals(appCacheSize, other.appCacheSize) &&
+        _deepEquals(appDataSize, other.appDataSize);
   }
 
   @override
@@ -638,7 +670,8 @@ class NexoraFileInfo {
   }
 
   Object encode() {
-    return _toList();  }
+    return _toList();
+  }
 
   static NexoraFileInfo decode(Object result) {
     result as List<Object?>;
@@ -659,7 +692,10 @@ class NexoraFileInfo {
     if (identical(this, other)) {
       return true;
     }
-    return _deepEquals(name, other.name) && _deepEquals(size, other.size) && _deepEquals(isDirectory, other.isDirectory) && _deepEquals(lastModifiedMs, other.lastModifiedMs);
+    return _deepEquals(name, other.name) &&
+        _deepEquals(size, other.size) &&
+        _deepEquals(isDirectory, other.isDirectory) &&
+        _deepEquals(lastModifiedMs, other.lastModifiedMs);
   }
 
   @override
@@ -721,7 +757,8 @@ class NexoraDeviceInfo {
   }
 
   Object encode() {
-    return _toList();  }
+    return _toList();
+  }
 
   static NexoraDeviceInfo decode(Object result) {
     result as List<Object?>;
@@ -749,7 +786,17 @@ class NexoraDeviceInfo {
     if (identical(this, other)) {
       return true;
     }
-    return _deepEquals(platform, other.platform) && _deepEquals(manufacturer, other.manufacturer) && _deepEquals(model, other.model) && _deepEquals(osVersion, other.osVersion) && _deepEquals(sdkVersion, other.sdkVersion) && _deepEquals(isPhysicalDevice, other.isPhysicalDevice) && _deepEquals(totalRamBytes, other.totalRamBytes) && _deepEquals(availableRamBytes, other.availableRamBytes) && _deepEquals(cpuArchitecture, other.cpuArchitecture) && _deepEquals(screenRefreshRate, other.screenRefreshRate) && _deepEquals(thermalState, other.thermalState);
+    return _deepEquals(platform, other.platform) &&
+        _deepEquals(manufacturer, other.manufacturer) &&
+        _deepEquals(model, other.model) &&
+        _deepEquals(osVersion, other.osVersion) &&
+        _deepEquals(sdkVersion, other.sdkVersion) &&
+        _deepEquals(isPhysicalDevice, other.isPhysicalDevice) &&
+        _deepEquals(totalRamBytes, other.totalRamBytes) &&
+        _deepEquals(availableRamBytes, other.availableRamBytes) &&
+        _deepEquals(cpuArchitecture, other.cpuArchitecture) &&
+        _deepEquals(screenRefreshRate, other.screenRefreshRate) &&
+        _deepEquals(thermalState, other.thermalState);
   }
 
   @override
@@ -791,7 +838,8 @@ class NexoraConnectivityInfo {
   }
 
   Object encode() {
-    return _toList();  }
+    return _toList();
+  }
 
   static NexoraConnectivityInfo decode(Object result) {
     result as List<Object?>;
@@ -814,7 +862,12 @@ class NexoraConnectivityInfo {
     if (identical(this, other)) {
       return true;
     }
-    return _deepEquals(isConnected, other.isConnected) && _deepEquals(networkType, other.networkType) && _deepEquals(isMetered, other.isMetered) && _deepEquals(isVpn, other.isVpn) && _deepEquals(signalStrength, other.signalStrength) && _deepEquals(ipAddress, other.ipAddress);
+    return _deepEquals(isConnected, other.isConnected) &&
+        _deepEquals(networkType, other.networkType) &&
+        _deepEquals(isMetered, other.isMetered) &&
+        _deepEquals(isVpn, other.isVpn) &&
+        _deepEquals(signalStrength, other.signalStrength) &&
+        _deepEquals(ipAddress, other.ipAddress);
   }
 
   @override
@@ -848,7 +901,8 @@ class NexoraBatteryInfo {
   }
 
   Object encode() {
-    return _toList();  }
+    return _toList();
+  }
 
   static NexoraBatteryInfo decode(Object result) {
     result as List<Object?>;
@@ -869,7 +923,10 @@ class NexoraBatteryInfo {
     if (identical(this, other)) {
       return true;
     }
-    return _deepEquals(level, other.level) && _deepEquals(isCharging, other.isCharging) && _deepEquals(status, other.status) && _deepEquals(temperature, other.temperature);
+    return _deepEquals(level, other.level) &&
+        _deepEquals(isCharging, other.isCharging) &&
+        _deepEquals(status, other.status) &&
+        _deepEquals(temperature, other.temperature);
   }
 
   @override
@@ -907,7 +964,8 @@ class NexoraWifiInfo {
   }
 
   Object encode() {
-    return _toList();  }
+    return _toList();
+  }
 
   static NexoraWifiInfo decode(Object result) {
     result as List<Object?>;
@@ -929,7 +987,11 @@ class NexoraWifiInfo {
     if (identical(this, other)) {
       return true;
     }
-    return _deepEquals(ssid, other.ssid) && _deepEquals(bssid, other.bssid) && _deepEquals(signalStrength, other.signalStrength) && _deepEquals(frequency, other.frequency) && _deepEquals(linkSpeed, other.linkSpeed);
+    return _deepEquals(ssid, other.ssid) &&
+        _deepEquals(bssid, other.bssid) &&
+        _deepEquals(signalStrength, other.signalStrength) &&
+        _deepEquals(frequency, other.frequency) &&
+        _deepEquals(linkSpeed, other.linkSpeed);
   }
 
   @override
@@ -951,7 +1013,8 @@ class NexoraHapticOptions {
   }
 
   Object encode() {
-    return _toList();  }
+    return _toList();
+  }
 
   static NexoraHapticOptions decode(Object result) {
     result as List<Object?>;
@@ -995,7 +1058,8 @@ class NexoraSdkConfig {
   }
 
   Object encode() {
-    return _toList();  }
+    return _toList();
+  }
 
   static NexoraSdkConfig decode(Object result) {
     result as List<Object?>;
@@ -1014,7 +1078,8 @@ class NexoraSdkConfig {
     if (identical(this, other)) {
       return true;
     }
-    return _deepEquals(enableLogging, other.enableLogging) && _deepEquals(ecoMode, other.ecoMode);
+    return _deepEquals(enableLogging, other.enableLogging) &&
+        _deepEquals(ecoMode, other.ecoMode);
   }
 
   @override
@@ -1044,7 +1109,8 @@ class NexoraPermissionStatus {
   }
 
   Object encode() {
-    return _toList();  }
+    return _toList();
+  }
 
   static NexoraPermissionStatus decode(Object result) {
     result as List<Object?>;
@@ -1064,7 +1130,9 @@ class NexoraPermissionStatus {
     if (identical(this, other)) {
       return true;
     }
-    return _deepEquals(permission, other.permission) && _deepEquals(state, other.state) && _deepEquals(canRequest, other.canRequest);
+    return _deepEquals(permission, other.permission) &&
+        _deepEquals(state, other.state) &&
+        _deepEquals(canRequest, other.canRequest);
   }
 
   @override
@@ -1094,7 +1162,8 @@ class NexoraCryptoKeyOptions {
   }
 
   Object encode() {
-    return _toList();  }
+    return _toList();
+  }
 
   static NexoraCryptoKeyOptions decode(Object result) {
     result as List<Object?>;
@@ -1114,7 +1183,9 @@ class NexoraCryptoKeyOptions {
     if (identical(this, other)) {
       return true;
     }
-    return _deepEquals(alias, other.alias) && _deepEquals(requireBiometric, other.requireBiometric) && _deepEquals(useStrongBox, other.useStrongBox);
+    return _deepEquals(alias, other.alias) &&
+        _deepEquals(requireBiometric, other.requireBiometric) &&
+        _deepEquals(useStrongBox, other.useStrongBox);
   }
 
   @override
@@ -1148,14 +1219,16 @@ class NexoraAiResult {
   }
 
   Object encode() {
-    return _toList();  }
+    return _toList();
+  }
 
   static NexoraAiResult decode(Object result) {
     result as List<Object?>;
     return NexoraAiResult(
       label: result[0] as String?,
       confidence: result[1] as double?,
-      boundingBox: (result[2] as Map<Object?, Object?>?)?.cast<String?, Object?>(),
+      boundingBox:
+          (result[2] as Map<Object?, Object?>?)?.cast<String?, Object?>(),
       recognizedText: result[3] as String?,
     );
   }
@@ -1169,14 +1242,16 @@ class NexoraAiResult {
     if (identical(this, other)) {
       return true;
     }
-    return _deepEquals(label, other.label) && _deepEquals(confidence, other.confidence) && _deepEquals(boundingBox, other.boundingBox) && _deepEquals(recognizedText, other.recognizedText);
+    return _deepEquals(label, other.label) &&
+        _deepEquals(confidence, other.confidence) &&
+        _deepEquals(boundingBox, other.boundingBox) &&
+        _deepEquals(recognizedText, other.recognizedText);
   }
 
   @override
   // ignore: avoid_equals_and_hash_code_on_mutable_classes
   int get hashCode => _deepHash(<Object?>[runtimeType, ..._toList()]);
 }
-
 
 class _PigeonCodec extends StandardMessageCodec {
   const _PigeonCodec();
@@ -1185,64 +1260,64 @@ class _PigeonCodec extends StandardMessageCodec {
     if (value is int) {
       buffer.putUint8(4);
       buffer.putInt64(value);
-    }    else if (value is NexoraCameraOptions) {
+    } else if (value is NexoraCameraOptions) {
       buffer.putUint8(129);
       writeValue(buffer, value.encode());
-    }    else if (value is CustomClassifierOptions) {
+    } else if (value is CustomClassifierOptions) {
       buffer.putUint8(130);
       writeValue(buffer, value.encode());
-    }    else if (value is VisionModeOptions) {
+    } else if (value is VisionModeOptions) {
       buffer.putUint8(131);
       writeValue(buffer, value.encode());
-    }    else if (value is BasicAudioOptions) {
+    } else if (value is BasicAudioOptions) {
       buffer.putUint8(132);
       writeValue(buffer, value.encode());
-    }    else if (value is NexoraAudioOptions) {
+    } else if (value is NexoraAudioOptions) {
       buffer.putUint8(133);
       writeValue(buffer, value.encode());
-    }    else if (value is NexoraLocationOptions) {
+    } else if (value is NexoraLocationOptions) {
       buffer.putUint8(134);
       writeValue(buffer, value.encode());
-    }    else if (value is NexoraSensorOptions) {
+    } else if (value is NexoraSensorOptions) {
       buffer.putUint8(135);
       writeValue(buffer, value.encode());
-    }    else if (value is NexoraBiometricOptions) {
+    } else if (value is NexoraBiometricOptions) {
       buffer.putUint8(136);
       writeValue(buffer, value.encode());
-    }    else if (value is NexoraBluetoothScanOptions) {
+    } else if (value is NexoraBluetoothScanOptions) {
       buffer.putUint8(137);
       writeValue(buffer, value.encode());
-    }    else if (value is NexoraStorageInfo) {
+    } else if (value is NexoraStorageInfo) {
       buffer.putUint8(138);
       writeValue(buffer, value.encode());
-    }    else if (value is NexoraFileInfo) {
+    } else if (value is NexoraFileInfo) {
       buffer.putUint8(139);
       writeValue(buffer, value.encode());
-    }    else if (value is NexoraDeviceInfo) {
+    } else if (value is NexoraDeviceInfo) {
       buffer.putUint8(140);
       writeValue(buffer, value.encode());
-    }    else if (value is NexoraConnectivityInfo) {
+    } else if (value is NexoraConnectivityInfo) {
       buffer.putUint8(141);
       writeValue(buffer, value.encode());
-    }    else if (value is NexoraBatteryInfo) {
+    } else if (value is NexoraBatteryInfo) {
       buffer.putUint8(142);
       writeValue(buffer, value.encode());
-    }    else if (value is NexoraWifiInfo) {
+    } else if (value is NexoraWifiInfo) {
       buffer.putUint8(143);
       writeValue(buffer, value.encode());
-    }    else if (value is NexoraHapticOptions) {
+    } else if (value is NexoraHapticOptions) {
       buffer.putUint8(144);
       writeValue(buffer, value.encode());
-    }    else if (value is NexoraSdkConfig) {
+    } else if (value is NexoraSdkConfig) {
       buffer.putUint8(145);
       writeValue(buffer, value.encode());
-    }    else if (value is NexoraPermissionStatus) {
+    } else if (value is NexoraPermissionStatus) {
       buffer.putUint8(146);
       writeValue(buffer, value.encode());
-    }    else if (value is NexoraCryptoKeyOptions) {
+    } else if (value is NexoraCryptoKeyOptions) {
       buffer.putUint8(147);
       writeValue(buffer, value.encode());
-    }    else if (value is NexoraAiResult) {
+    } else if (value is NexoraAiResult) {
       buffer.putUint8(148);
       writeValue(buffer, value.encode());
     } else {
@@ -1303,9 +1378,11 @@ class HardwareApi {
   /// Constructor for [HardwareApi].  The [binaryMessenger] named argument is
   /// available for dependency injection.  If it is left null, the default
   /// BinaryMessenger will be used which routes to the host platform.
-  HardwareApi({BinaryMessenger? binaryMessenger, String messageChannelSuffix = ''})
+  HardwareApi(
+      {BinaryMessenger? binaryMessenger, String messageChannelSuffix = ''})
       : pigeonVar_binaryMessenger = binaryMessenger,
-        pigeonVar_messageChannelSuffix = messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
+        pigeonVar_messageChannelSuffix =
+            messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
   final BinaryMessenger? pigeonVar_binaryMessenger;
 
   static const MessageCodec<Object?> pigeonChannelCodec = _PigeonCodec();
@@ -1313,45 +1390,48 @@ class HardwareApi {
   final String pigeonVar_messageChannelSuffix;
 
   Future<int> startCamera(int width, int height) async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.HardwareApi.startCamera$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.HardwareApi.startCamera$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[width, height]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[width, height]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: false,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
     return pigeonVar_replyValue! as int;
   }
 
   Future<int> startCameraWithOptions(NexoraCameraOptions options) async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.HardwareApi.startCameraWithOptions$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.HardwareApi.startCameraWithOptions$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[options]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[options]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: false,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
     return pigeonVar_replyValue! as int;
   }
 
   Future<bool> stopCamera() async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.HardwareApi.stopCamera$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.HardwareApi.stopCamera$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
@@ -1361,92 +1441,96 @@ class HardwareApi {
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: false,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
     return pigeonVar_replyValue! as bool;
   }
 
   Future<bool> setVisionMode(VisionModeOptions options) async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.HardwareApi.setVisionMode$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.HardwareApi.setVisionMode$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[options]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[options]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: false,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
     return pigeonVar_replyValue! as bool;
   }
 
   Future<bool> registerCustomClassifier(CustomClassifierOptions options) async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.HardwareApi.registerCustomClassifier$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.HardwareApi.registerCustomClassifier$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[options]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[options]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: false,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
     return pigeonVar_replyValue! as bool;
   }
 
   Future<bool> setFlash(bool on) async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.HardwareApi.setFlash$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.HardwareApi.setFlash$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[on]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[on]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: false,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
     return pigeonVar_replyValue! as bool;
   }
 
   Future<bool> setZoom(double level) async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.HardwareApi.setZoom$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.HardwareApi.setZoom$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[level]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[level]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: false,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
     return pigeonVar_replyValue! as bool;
   }
 
   Future<bool> flipCamera() async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.HardwareApi.flipCamera$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.HardwareApi.flipCamera$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
@@ -1456,54 +1540,56 @@ class HardwareApi {
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: false,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
     return pigeonVar_replyValue! as bool;
   }
 
   Future<String?> takePhoto(String? fileName) async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.HardwareApi.takePhoto$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.HardwareApi.takePhoto$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[fileName]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[fileName]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: true,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: true,
+    );
     return pigeonVar_replyValue as String?;
   }
 
   Future<String?> startVideoRecording(String? fileName) async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.HardwareApi.startVideoRecording$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.HardwareApi.startVideoRecording$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[fileName]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[fileName]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: true,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: true,
+    );
     return pigeonVar_replyValue as String?;
   }
 
   Future<String?> stopVideoRecording() async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.HardwareApi.stopVideoRecording$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.HardwareApi.stopVideoRecording$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
@@ -1513,30 +1599,30 @@ class HardwareApi {
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: true,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: true,
+    );
     return pigeonVar_replyValue as String?;
   }
 
   Future<bool> applyCameraFilterShader(String shaderType) async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.HardwareApi.applyCameraFilterShader$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.HardwareApi.applyCameraFilterShader$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[shaderType]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[shaderType]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: false,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
     return pigeonVar_replyValue! as bool;
   }
 }
@@ -1547,7 +1633,8 @@ class AudioApi {
   /// BinaryMessenger will be used which routes to the host platform.
   AudioApi({BinaryMessenger? binaryMessenger, String messageChannelSuffix = ''})
       : pigeonVar_binaryMessenger = binaryMessenger,
-        pigeonVar_messageChannelSuffix = messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
+        pigeonVar_messageChannelSuffix =
+            messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
   final BinaryMessenger? pigeonVar_binaryMessenger;
 
   static const MessageCodec<Object?> pigeonChannelCodec = _PigeonCodec();
@@ -1555,45 +1642,48 @@ class AudioApi {
   final String pigeonVar_messageChannelSuffix;
 
   Future<bool> startAudio(BasicAudioOptions options) async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.AudioApi.startAudio$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.AudioApi.startAudio$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[options]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[options]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: false,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
     return pigeonVar_replyValue! as bool;
   }
 
   Future<bool> startAudioWithOptions(NexoraAudioOptions options) async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.AudioApi.startAudioWithOptions$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.AudioApi.startAudioWithOptions$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[options]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[options]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: false,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
     return pigeonVar_replyValue! as bool;
   }
 
   Future<bool> stopAudio() async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.AudioApi.stopAudio$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.AudioApi.stopAudio$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
@@ -1603,35 +1693,36 @@ class AudioApi {
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: false,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
     return pigeonVar_replyValue! as bool;
   }
 
   Future<bool> routeAudioOutput(String route) async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.AudioApi.routeAudioOutput$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.AudioApi.routeAudioOutput$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[route]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[route]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: false,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
     return pigeonVar_replyValue! as bool;
   }
 
   Future<double> getAudioVolume() async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.AudioApi.getAudioVolume$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.AudioApi.getAudioVolume$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
@@ -1641,68 +1732,70 @@ class AudioApi {
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: false,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
     return pigeonVar_replyValue! as double;
   }
 
   Future<bool> setAudioVolume(double level) async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.AudioApi.setAudioVolume$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.AudioApi.setAudioVolume$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[level]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[level]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: false,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
     return pigeonVar_replyValue! as bool;
   }
 
   Future<bool> selectAudioInput(String device) async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.AudioApi.selectAudioInput$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.AudioApi.selectAudioInput$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[device]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[device]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: false,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
     return pigeonVar_replyValue! as bool;
   }
 
   Future<bool> setAudioGain(double gain) async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.AudioApi.setAudioGain$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.AudioApi.setAudioGain$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[gain]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[gain]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: false,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
     return pigeonVar_replyValue! as bool;
   }
 }
@@ -1711,9 +1804,11 @@ class LocationApi {
   /// Constructor for [LocationApi].  The [binaryMessenger] named argument is
   /// available for dependency injection.  If it is left null, the default
   /// BinaryMessenger will be used which routes to the host platform.
-  LocationApi({BinaryMessenger? binaryMessenger, String messageChannelSuffix = ''})
+  LocationApi(
+      {BinaryMessenger? binaryMessenger, String messageChannelSuffix = ''})
       : pigeonVar_binaryMessenger = binaryMessenger,
-        pigeonVar_messageChannelSuffix = messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
+        pigeonVar_messageChannelSuffix =
+            messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
   final BinaryMessenger? pigeonVar_binaryMessenger;
 
   static const MessageCodec<Object?> pigeonChannelCodec = _PigeonCodec();
@@ -1721,7 +1816,8 @@ class LocationApi {
   final String pigeonVar_messageChannelSuffix;
 
   Future<bool> startLocation() async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.LocationApi.startLocation$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.LocationApi.startLocation$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
@@ -1731,35 +1827,36 @@ class LocationApi {
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: false,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
     return pigeonVar_replyValue! as bool;
   }
 
   Future<bool> startLocationWithOptions(NexoraLocationOptions options) async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.LocationApi.startLocationWithOptions$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.LocationApi.startLocationWithOptions$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[options]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[options]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: false,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
     return pigeonVar_replyValue! as bool;
   }
 
   Future<bool> stopLocation() async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.LocationApi.stopLocation$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.LocationApi.stopLocation$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
@@ -1769,30 +1866,30 @@ class LocationApi {
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: false,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
     return pigeonVar_replyValue! as bool;
   }
 
   Future<bool> setBackgroundLocationEnabled(bool enabled) async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.LocationApi.setBackgroundLocationEnabled$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.LocationApi.setBackgroundLocationEnabled$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[enabled]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[enabled]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: false,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
     return pigeonVar_replyValue! as bool;
   }
 }
@@ -1801,9 +1898,11 @@ class SensorApi {
   /// Constructor for [SensorApi].  The [binaryMessenger] named argument is
   /// available for dependency injection.  If it is left null, the default
   /// BinaryMessenger will be used which routes to the host platform.
-  SensorApi({BinaryMessenger? binaryMessenger, String messageChannelSuffix = ''})
+  SensorApi(
+      {BinaryMessenger? binaryMessenger, String messageChannelSuffix = ''})
       : pigeonVar_binaryMessenger = binaryMessenger,
-        pigeonVar_messageChannelSuffix = messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
+        pigeonVar_messageChannelSuffix =
+            messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
   final BinaryMessenger? pigeonVar_binaryMessenger;
 
   static const MessageCodec<Object?> pigeonChannelCodec = _PigeonCodec();
@@ -1811,45 +1910,48 @@ class SensorApi {
   final String pigeonVar_messageChannelSuffix;
 
   Future<bool> startSensor(int frequencyHz) async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.SensorApi.startSensor$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.SensorApi.startSensor$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[frequencyHz]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[frequencyHz]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: false,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
     return pigeonVar_replyValue! as bool;
   }
 
   Future<bool> startSensorWithOptions(NexoraSensorOptions options) async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.SensorApi.startSensorWithOptions$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.SensorApi.startSensorWithOptions$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[options]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[options]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: false,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
     return pigeonVar_replyValue! as bool;
   }
 
   Future<bool> stopSensor() async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.SensorApi.stopSensor$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.SensorApi.stopSensor$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
@@ -1859,30 +1961,30 @@ class SensorApi {
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: false,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
     return pigeonVar_replyValue! as bool;
   }
 
   Future<bool> enableDeadReckoning(bool enabled) async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.SensorApi.enableDeadReckoning$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.SensorApi.enableDeadReckoning$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[enabled]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[enabled]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: false,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
     return pigeonVar_replyValue! as bool;
   }
 }
@@ -1891,9 +1993,11 @@ class BiometricsApi {
   /// Constructor for [BiometricsApi].  The [binaryMessenger] named argument is
   /// available for dependency injection.  If it is left null, the default
   /// BinaryMessenger will be used which routes to the host platform.
-  BiometricsApi({BinaryMessenger? binaryMessenger, String messageChannelSuffix = ''})
+  BiometricsApi(
+      {BinaryMessenger? binaryMessenger, String messageChannelSuffix = ''})
       : pigeonVar_binaryMessenger = binaryMessenger,
-        pigeonVar_messageChannelSuffix = messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
+        pigeonVar_messageChannelSuffix =
+            messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
   final BinaryMessenger? pigeonVar_binaryMessenger;
 
   static const MessageCodec<Object?> pigeonChannelCodec = _PigeonCodec();
@@ -1901,45 +2005,48 @@ class BiometricsApi {
   final String pigeonVar_messageChannelSuffix;
 
   Future<bool> authenticate(String reason) async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.BiometricsApi.authenticate$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.BiometricsApi.authenticate$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[reason]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[reason]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: false,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
     return pigeonVar_replyValue! as bool;
   }
 
   Future<bool> authenticateWithOptions(NexoraBiometricOptions options) async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.BiometricsApi.authenticateWithOptions$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.BiometricsApi.authenticateWithOptions$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[options]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[options]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: false,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
     return pigeonVar_replyValue! as bool;
   }
 
   Future<bool> canAuthenticate() async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.BiometricsApi.canAuthenticate$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.BiometricsApi.canAuthenticate$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
@@ -1949,11 +2056,10 @@ class BiometricsApi {
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: false,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
     return pigeonVar_replyValue! as bool;
   }
 }
@@ -1962,9 +2068,11 @@ class BluetoothApi {
   /// Constructor for [BluetoothApi].  The [binaryMessenger] named argument is
   /// available for dependency injection.  If it is left null, the default
   /// BinaryMessenger will be used which routes to the host platform.
-  BluetoothApi({BinaryMessenger? binaryMessenger, String messageChannelSuffix = ''})
+  BluetoothApi(
+      {BinaryMessenger? binaryMessenger, String messageChannelSuffix = ''})
       : pigeonVar_binaryMessenger = binaryMessenger,
-        pigeonVar_messageChannelSuffix = messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
+        pigeonVar_messageChannelSuffix =
+            messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
   final BinaryMessenger? pigeonVar_binaryMessenger;
 
   static const MessageCodec<Object?> pigeonChannelCodec = _PigeonCodec();
@@ -1972,7 +2080,8 @@ class BluetoothApi {
   final String pigeonVar_messageChannelSuffix;
 
   Future<bool> startBluetoothScan() async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.BluetoothApi.startBluetoothScan$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.BluetoothApi.startBluetoothScan$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
@@ -1982,35 +2091,37 @@ class BluetoothApi {
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: false,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
     return pigeonVar_replyValue! as bool;
   }
 
-  Future<bool> startBluetoothScanWithOptions(NexoraBluetoothScanOptions options) async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.BluetoothApi.startBluetoothScanWithOptions$pigeonVar_messageChannelSuffix';
+  Future<bool> startBluetoothScanWithOptions(
+      NexoraBluetoothScanOptions options) async {
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.BluetoothApi.startBluetoothScanWithOptions$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[options]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[options]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: false,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
     return pigeonVar_replyValue! as bool;
   }
 
   Future<bool> stopBluetoothScan() async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.BluetoothApi.stopBluetoothScan$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.BluetoothApi.stopBluetoothScan$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
@@ -2020,168 +2131,179 @@ class BluetoothApi {
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: false,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
     return pigeonVar_replyValue! as bool;
   }
 
   Future<bool> connectDevice(String id) async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.BluetoothApi.connectDevice$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.BluetoothApi.connectDevice$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[id]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[id]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: false,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
     return pigeonVar_replyValue! as bool;
   }
 
   Future<bool> disconnectDevice(String id) async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.BluetoothApi.disconnectDevice$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.BluetoothApi.disconnectDevice$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[id]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[id]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: false,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
     return pigeonVar_replyValue! as bool;
   }
 
   Future<List<String?>> discoverServices(String deviceId) async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.BluetoothApi.discoverServices$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.BluetoothApi.discoverServices$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[deviceId]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[deviceId]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: false,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
     return (pigeonVar_replyValue! as List<Object?>).cast<String?>();
   }
 
-  Future<bool> sendData(String deviceId, String serviceId, String charId, List<int?> data) async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.BluetoothApi.sendData$pigeonVar_messageChannelSuffix';
+  Future<bool> sendData(
+      String deviceId, String serviceId, String charId, List<int?> data) async {
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.BluetoothApi.sendData$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[deviceId, serviceId, charId, data]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[deviceId, serviceId, charId, data]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: false,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
     return pigeonVar_replyValue! as bool;
   }
 
-  Future<Uint8List?> readData(String deviceId, String serviceId, String charId) async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.BluetoothApi.readData$pigeonVar_messageChannelSuffix';
+  Future<Uint8List?> readData(
+      String deviceId, String serviceId, String charId) async {
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.BluetoothApi.readData$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[deviceId, serviceId, charId]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[deviceId, serviceId, charId]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: true,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: true,
+    );
     return pigeonVar_replyValue as Uint8List?;
   }
 
-  Future<bool> subscribeToCharacteristic(String deviceId, String serviceId, String charId, bool enable) async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.BluetoothApi.subscribeToCharacteristic$pigeonVar_messageChannelSuffix';
+  Future<bool> subscribeToCharacteristic(
+      String deviceId, String serviceId, String charId, bool enable) async {
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.BluetoothApi.subscribeToCharacteristic$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[deviceId, serviceId, charId, enable]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[deviceId, serviceId, charId, enable]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: false,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
     return pigeonVar_replyValue! as bool;
   }
 
   Future<bool> requestMtu(String deviceId, int mtu) async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.BluetoothApi.requestMtu$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.BluetoothApi.requestMtu$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[deviceId, mtu]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[deviceId, mtu]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: false,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
     return pigeonVar_replyValue! as bool;
   }
 
   Future<bool> startBlePeripheral(String uuid) async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.BluetoothApi.startBlePeripheral$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.BluetoothApi.startBlePeripheral$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[uuid]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[uuid]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: false,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
     return pigeonVar_replyValue! as bool;
   }
 
   Future<void> stopBlePeripheral() async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.BluetoothApi.stopBlePeripheral$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.BluetoothApi.stopBlePeripheral$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
@@ -2191,11 +2313,10 @@ class BluetoothApi {
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: true,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: true,
+    );
   }
 }
 
@@ -2203,9 +2324,11 @@ class SecureStorageApi {
   /// Constructor for [SecureStorageApi].  The [binaryMessenger] named argument is
   /// available for dependency injection.  If it is left null, the default
   /// BinaryMessenger will be used which routes to the host platform.
-  SecureStorageApi({BinaryMessenger? binaryMessenger, String messageChannelSuffix = ''})
+  SecureStorageApi(
+      {BinaryMessenger? binaryMessenger, String messageChannelSuffix = ''})
       : pigeonVar_binaryMessenger = binaryMessenger,
-        pigeonVar_messageChannelSuffix = messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
+        pigeonVar_messageChannelSuffix =
+            messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
   final BinaryMessenger? pigeonVar_binaryMessenger;
 
   static const MessageCodec<Object?> pigeonChannelCodec = _PigeonCodec();
@@ -2213,7 +2336,8 @@ class SecureStorageApi {
   final String pigeonVar_messageChannelSuffix;
 
   Future<NexoraStorageInfo?> getStorageInfo() async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.SecureStorageApi.getStorageInfo$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.SecureStorageApi.getStorageInfo$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
@@ -2223,111 +2347,116 @@ class SecureStorageApi {
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: true,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: true,
+    );
     return pigeonVar_replyValue as NexoraStorageInfo?;
   }
 
   Future<String?> writeFile(String fileName, String content) async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.SecureStorageApi.writeFile$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.SecureStorageApi.writeFile$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[fileName, content]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[fileName, content]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: true,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: true,
+    );
     return pigeonVar_replyValue as String?;
   }
 
   Future<String?> appendFile(String fileName, String content) async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.SecureStorageApi.appendFile$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.SecureStorageApi.appendFile$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[fileName, content]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[fileName, content]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: true,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: true,
+    );
     return pigeonVar_replyValue as String?;
   }
 
   Future<String?> readFile(String fileName) async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.SecureStorageApi.readFile$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.SecureStorageApi.readFile$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[fileName]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[fileName]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: true,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: true,
+    );
     return pigeonVar_replyValue as String?;
   }
 
   Future<bool> deleteFile(String fileName) async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.SecureStorageApi.deleteFile$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.SecureStorageApi.deleteFile$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[fileName]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[fileName]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: false,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
     return pigeonVar_replyValue! as bool;
   }
 
   Future<bool> fileExists(String fileName) async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.SecureStorageApi.fileExists$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.SecureStorageApi.fileExists$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[fileName]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[fileName]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: false,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
     return pigeonVar_replyValue! as bool;
   }
 
   Future<List<NexoraFileInfo?>> listFiles() async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.SecureStorageApi.listFiles$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.SecureStorageApi.listFiles$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
@@ -2337,54 +2466,56 @@ class SecureStorageApi {
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: false,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
     return (pigeonVar_replyValue! as List<Object?>).cast<NexoraFileInfo?>();
   }
 
   Future<String?> writeBytes(String fileName, Uint8List bytes) async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.SecureStorageApi.writeBytes$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.SecureStorageApi.writeBytes$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[fileName, bytes]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[fileName, bytes]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: true,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: true,
+    );
     return pigeonVar_replyValue as String?;
   }
 
   Future<Uint8List?> readBytes(String fileName) async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.SecureStorageApi.readBytes$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.SecureStorageApi.readBytes$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[fileName]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[fileName]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: true,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: true,
+    );
     return pigeonVar_replyValue as Uint8List?;
   }
 
   Future<bool> clearCache() async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.SecureStorageApi.clearCache$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.SecureStorageApi.clearCache$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
@@ -2394,16 +2525,16 @@ class SecureStorageApi {
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: false,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
     return pigeonVar_replyValue! as bool;
   }
 
   Future<String?> getAppDirectory() async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.SecureStorageApi.getAppDirectory$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.SecureStorageApi.getAppDirectory$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
@@ -2413,16 +2544,16 @@ class SecureStorageApi {
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: true,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: true,
+    );
     return pigeonVar_replyValue as String?;
   }
 
   Future<String?> getCacheDirectory() async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.SecureStorageApi.getCacheDirectory$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.SecureStorageApi.getCacheDirectory$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
@@ -2432,16 +2563,16 @@ class SecureStorageApi {
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: true,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: true,
+    );
     return pigeonVar_replyValue as String?;
   }
 
   Future<String?> getExternalDirectory() async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.SecureStorageApi.getExternalDirectory$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.SecureStorageApi.getExternalDirectory$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
@@ -2451,11 +2582,10 @@ class SecureStorageApi {
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: true,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: true,
+    );
     return pigeonVar_replyValue as String?;
   }
 }
@@ -2464,9 +2594,11 @@ class SystemApi {
   /// Constructor for [SystemApi].  The [binaryMessenger] named argument is
   /// available for dependency injection.  If it is left null, the default
   /// BinaryMessenger will be used which routes to the host platform.
-  SystemApi({BinaryMessenger? binaryMessenger, String messageChannelSuffix = ''})
+  SystemApi(
+      {BinaryMessenger? binaryMessenger, String messageChannelSuffix = ''})
       : pigeonVar_binaryMessenger = binaryMessenger,
-        pigeonVar_messageChannelSuffix = messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
+        pigeonVar_messageChannelSuffix =
+            messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
   final BinaryMessenger? pigeonVar_binaryMessenger;
 
   static const MessageCodec<Object?> pigeonChannelCodec = _PigeonCodec();
@@ -2474,26 +2606,28 @@ class SystemApi {
   final String pigeonVar_messageChannelSuffix;
 
   Future<bool> configureSdk(NexoraSdkConfig config) async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.configureSdk$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.configureSdk$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[config]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[config]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: false,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
     return pigeonVar_replyValue! as bool;
   }
 
   Future<bool> requestPermissions() async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.requestPermissions$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.requestPermissions$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
@@ -2503,54 +2637,56 @@ class SystemApi {
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: false,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
     return pigeonVar_replyValue! as bool;
   }
 
   Future<bool> requestPermission(String type) async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.requestPermission$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.requestPermission$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[type]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[type]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: false,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
     return pigeonVar_replyValue! as bool;
   }
 
   Future<NexoraPermissionStatus> getPermissionStatus(String type) async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.getPermissionStatus$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.getPermissionStatus$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[type]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[type]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: false,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
     return pigeonVar_replyValue! as NexoraPermissionStatus;
   }
 
   Future<bool> openAppSettings() async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.openAppSettings$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.openAppSettings$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
@@ -2560,16 +2696,16 @@ class SystemApi {
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: false,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
     return pigeonVar_replyValue! as bool;
   }
 
   Future<NexoraDeviceInfo> getDeviceInfo() async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.getDeviceInfo$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.getDeviceInfo$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
@@ -2579,16 +2715,16 @@ class SystemApi {
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: false,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
     return pigeonVar_replyValue! as NexoraDeviceInfo;
   }
 
   Future<NexoraConnectivityInfo> getConnectivityInfo() async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.getConnectivityInfo$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.getConnectivityInfo$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
@@ -2598,16 +2734,16 @@ class SystemApi {
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: false,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
     return pigeonVar_replyValue! as NexoraConnectivityInfo;
   }
 
   Future<NexoraBatteryInfo?> getBatteryInfo() async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.getBatteryInfo$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.getBatteryInfo$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
@@ -2617,16 +2753,16 @@ class SystemApi {
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: true,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: true,
+    );
     return pigeonVar_replyValue as NexoraBatteryInfo?;
   }
 
   Future<NexoraWifiInfo?> getWifiInfo() async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.getWifiInfo$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.getWifiInfo$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
@@ -2636,89 +2772,93 @@ class SystemApi {
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: true,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: true,
+    );
     return pigeonVar_replyValue as NexoraWifiInfo?;
   }
 
   Future<void> vibrate(int durationMs) async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.vibrate$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.vibrate$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[durationMs]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[durationMs]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: true,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: true,
+    );
   }
 
   Future<void> hapticFeedback(String type) async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.hapticFeedback$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.hapticFeedback$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[type]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[type]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: true,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: true,
+    );
   }
 
   Future<void> performHapticWithOptions(NexoraHapticOptions options) async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.performHapticWithOptions$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.performHapticWithOptions$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[options]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[options]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: true,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: true,
+    );
   }
 
   Future<bool> copyText(String text) async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.copyText$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.copyText$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[text]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[text]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: false,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
     return pigeonVar_replyValue! as bool;
   }
 
   Future<String?> pasteText() async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.pasteText$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.pasteText$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
@@ -2728,73 +2868,76 @@ class SystemApi {
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: true,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: true,
+    );
     return pigeonVar_replyValue as String?;
   }
 
   Future<bool> openUrl(String url) async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.openUrl$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.openUrl$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[url]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[url]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: false,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
     return pigeonVar_replyValue! as bool;
   }
 
   Future<bool> shareText(String text, String? subject) async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.shareText$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.shareText$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[text, subject]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[text, subject]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: false,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
     return pigeonVar_replyValue! as bool;
   }
 
   Future<String?> saveToGallery(String filePath) async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.saveToGallery$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.saveToGallery$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[filePath]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[filePath]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: true,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: true,
+    );
     return pigeonVar_replyValue as String?;
   }
 
   Future<bool> enterPictureInPicture() async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.enterPictureInPicture$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.enterPictureInPicture$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
@@ -2804,16 +2947,16 @@ class SystemApi {
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: false,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
     return pigeonVar_replyValue! as bool;
   }
 
   Future<List<String?>> getConnectedUsbDevices() async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.getConnectedUsbDevices$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.getConnectedUsbDevices$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
@@ -2823,54 +2966,56 @@ class SystemApi {
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: false,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
     return (pigeonVar_replyValue! as List<Object?>).cast<String?>();
   }
 
   Future<bool> startForegroundService(String title, String content) async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.startForegroundService$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.startForegroundService$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[title, content]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[title, content]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: false,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
     return pigeonVar_replyValue! as bool;
   }
 
   Future<bool> updateForegroundService(String title, String text) async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.updateForegroundService$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.updateForegroundService$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[title, text]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[title, text]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: false,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
     return pigeonVar_replyValue! as bool;
   }
 
   Future<bool> stopForegroundService() async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.stopForegroundService$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.stopForegroundService$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
@@ -2880,53 +3025,59 @@ class SystemApi {
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: false,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
     return pigeonVar_replyValue! as bool;
   }
 
-  Future<bool> enableSmartSync(String uploadEndpointUrl, Map<String?, String?> headers, int rollLimitBytes, bool requireWifi) async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.enableSmartSync$pigeonVar_messageChannelSuffix';
+  Future<bool> enableSmartSync(
+      String uploadEndpointUrl,
+      Map<String?, String?> headers,
+      int rollLimitBytes,
+      bool requireWifi) async {
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.enableSmartSync$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[uploadEndpointUrl, headers, rollLimitBytes, requireWifi]);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(
+        <Object?>[uploadEndpointUrl, headers, rollLimitBytes, requireWifi]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: false,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
     return pigeonVar_replyValue! as bool;
   }
 
   Future<void> setEcoModeEnabled(bool enabled) async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.setEcoModeEnabled$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.setEcoModeEnabled$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[enabled]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[enabled]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: true,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: true,
+    );
   }
 
   Future<bool> isEcoModeActive() async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.isEcoModeActive$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.isEcoModeActive$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
@@ -2936,16 +3087,16 @@ class SystemApi {
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: false,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
     return pigeonVar_replyValue! as bool;
   }
 
   Future<String> getThermalState() async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.getThermalState$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.getThermalState$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
@@ -2955,35 +3106,36 @@ class SystemApi {
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: false,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
     return pigeonVar_replyValue! as String;
   }
 
   Future<bool> startBackgroundSync(int intervalMinutes) async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.startBackgroundSync$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.startBackgroundSync$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[intervalMinutes]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[intervalMinutes]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: false,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
     return pigeonVar_replyValue! as bool;
   }
 
   Future<bool> stopBackgroundSync() async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.stopBackgroundSync$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.SystemApi.stopBackgroundSync$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
@@ -2993,11 +3145,10 @@ class SystemApi {
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: false,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
     return pigeonVar_replyValue! as bool;
   }
 }
@@ -3006,9 +3157,11 @@ class CryptoApi {
   /// Constructor for [CryptoApi].  The [binaryMessenger] named argument is
   /// available for dependency injection.  If it is left null, the default
   /// BinaryMessenger will be used which routes to the host platform.
-  CryptoApi({BinaryMessenger? binaryMessenger, String messageChannelSuffix = ''})
+  CryptoApi(
+      {BinaryMessenger? binaryMessenger, String messageChannelSuffix = ''})
       : pigeonVar_binaryMessenger = binaryMessenger,
-        pigeonVar_messageChannelSuffix = messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
+        pigeonVar_messageChannelSuffix =
+            messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
   final BinaryMessenger? pigeonVar_binaryMessenger;
 
   static const MessageCodec<Object?> pigeonChannelCodec = _PigeonCodec();
@@ -3016,116 +3169,124 @@ class CryptoApi {
   final String pigeonVar_messageChannelSuffix;
 
   Future<bool> generateBiometricKey(NexoraCryptoKeyOptions options) async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.CryptoApi.generateBiometricKey$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.CryptoApi.generateBiometricKey$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[options]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[options]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: false,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
     return pigeonVar_replyValue! as bool;
   }
 
   Future<bool> deleteKey(String alias) async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.CryptoApi.deleteKey$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.CryptoApi.deleteKey$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[alias]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[alias]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: false,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
     return pigeonVar_replyValue! as bool;
   }
 
   Future<bool> keyExists(String alias) async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.CryptoApi.keyExists$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.CryptoApi.keyExists$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[alias]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[alias]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: false,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
     return pigeonVar_replyValue! as bool;
   }
 
   Future<Uint8List?> signWithBiometricKey(String alias, Uint8List data) async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.CryptoApi.signWithBiometricKey$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.CryptoApi.signWithBiometricKey$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[alias, data]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[alias, data]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: true,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: true,
+    );
     return pigeonVar_replyValue as Uint8List?;
   }
 
-  Future<Uint8List?> encryptWithBiometricKey(String alias, Uint8List plaintext) async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.CryptoApi.encryptWithBiometricKey$pigeonVar_messageChannelSuffix';
+  Future<Uint8List?> encryptWithBiometricKey(
+      String alias, Uint8List plaintext) async {
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.CryptoApi.encryptWithBiometricKey$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[alias, plaintext]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[alias, plaintext]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: true,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: true,
+    );
     return pigeonVar_replyValue as Uint8List?;
   }
 
-  Future<Uint8List?> decryptWithBiometricKey(String alias, Uint8List ciphertext) async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.CryptoApi.decryptWithBiometricKey$pigeonVar_messageChannelSuffix';
+  Future<Uint8List?> decryptWithBiometricKey(
+      String alias, Uint8List ciphertext) async {
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.CryptoApi.decryptWithBiometricKey$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[alias, ciphertext]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[alias, ciphertext]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: true,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: true,
+    );
     return pigeonVar_replyValue as Uint8List?;
   }
 }
@@ -3136,86 +3297,96 @@ class AiApi {
   /// BinaryMessenger will be used which routes to the host platform.
   AiApi({BinaryMessenger? binaryMessenger, String messageChannelSuffix = ''})
       : pigeonVar_binaryMessenger = binaryMessenger,
-        pigeonVar_messageChannelSuffix = messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
+        pigeonVar_messageChannelSuffix =
+            messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
   final BinaryMessenger? pigeonVar_binaryMessenger;
 
   static const MessageCodec<Object?> pigeonChannelCodec = _PigeonCodec();
 
   final String pigeonVar_messageChannelSuffix;
 
-  Future<List<NexoraAiResult?>> processImageWithFaceDetection(Uint8List imageBytes) async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.AiApi.processImageWithFaceDetection$pigeonVar_messageChannelSuffix';
+  Future<List<NexoraAiResult?>> processImageWithFaceDetection(
+      Uint8List imageBytes) async {
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.AiApi.processImageWithFaceDetection$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[imageBytes]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[imageBytes]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: false,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
     return (pigeonVar_replyValue! as List<Object?>).cast<NexoraAiResult?>();
   }
 
-  Future<List<NexoraAiResult?>> processImageWithBarcodeScanning(Uint8List imageBytes) async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.AiApi.processImageWithBarcodeScanning$pigeonVar_messageChannelSuffix';
+  Future<List<NexoraAiResult?>> processImageWithBarcodeScanning(
+      Uint8List imageBytes) async {
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.AiApi.processImageWithBarcodeScanning$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[imageBytes]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[imageBytes]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: false,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
     return (pigeonVar_replyValue! as List<Object?>).cast<NexoraAiResult?>();
   }
 
-  Future<List<NexoraAiResult?>> processImageWithTextRecognition(Uint8List imageBytes) async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.AiApi.processImageWithTextRecognition$pigeonVar_messageChannelSuffix';
+  Future<List<NexoraAiResult?>> processImageWithTextRecognition(
+      Uint8List imageBytes) async {
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.AiApi.processImageWithTextRecognition$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[imageBytes]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[imageBytes]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: false,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
     return (pigeonVar_replyValue! as List<Object?>).cast<NexoraAiResult?>();
   }
 
-  Future<Map<String?, Object?>?> runCustomModelInference(String modelPath, Uint8List inputBytes) async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.nexora_sdk_platform_interface.AiApi.runCustomModelInference$pigeonVar_messageChannelSuffix';
+  Future<Map<String?, Object?>?> runCustomModelInference(
+      String modelPath, Uint8List inputBytes) async {
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.nexora_sdk_platform_interface.AiApi.runCustomModelInference$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[modelPath, inputBytes]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[modelPath, inputBytes]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: true,
-    )
-    ;
-    return (pigeonVar_replyValue as Map<Object?, Object?>?)?.cast<String?, Object?>();
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: true,
+    );
+    return (pigeonVar_replyValue as Map<Object?, Object?>?)
+        ?.cast<String?, Object?>();
   }
 }

@@ -7,16 +7,26 @@ typedef InitializeSensorCoreDart = void Function();
 typedef GetLiveSensorDataC = Pointer<Double> Function();
 typedef GetLiveSensorDataDart = Pointer<Double> Function();
 
-typedef UpdateImuFilterC = Void Function(
-  Double ax, Double ay, Double az,
-  Double gx, Double gy, Double gz,
-  Double dt,
-);
-typedef UpdateImuFilterDart = void Function(
-  double ax, double ay, double az,
-  double gx, double gy, double gz,
-  double dt,
-);
+typedef UpdateImuFilterC =
+    Void Function(
+      Double ax,
+      Double ay,
+      Double az,
+      Double gx,
+      Double gy,
+      Double gz,
+      Double dt,
+    );
+typedef UpdateImuFilterDart =
+    void Function(
+      double ax,
+      double ay,
+      double az,
+      double gx,
+      double gy,
+      double gz,
+      double dt,
+    );
 
 typedef GetFusedOrientationC = Pointer<Double> Function();
 typedef GetFusedOrientationDart = Pointer<Double> Function();
@@ -52,7 +62,7 @@ class NexoraFfi {
     _getFusedOrientation = _lib
         .lookup<NativeFunction<GetFusedOrientationC>>('get_fused_orientation')
         .asFunction();
-        
+
     _initializeSensorCore();
   }
 
@@ -78,4 +88,3 @@ class NexoraFfi {
     return [ptr[0], ptr[1], ptr[2]];
   }
 }
-

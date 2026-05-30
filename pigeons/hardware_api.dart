@@ -1,19 +1,22 @@
 import 'package:pigeon/pigeon.dart';
 
-@ConfigurePigeon(PigeonOptions(
-  dartOut: 'packages/nexora_sdk_platform_interface/lib/src/pigeon/hardware_api.g.dart',
-  dartOptions: DartOptions(),
-  kotlinOut: 'packages/nexora_sdk_android/android/src/main/kotlin/com/nexora/sdk/pigeon/HardwareApi.g.kt',
-  kotlinOptions: KotlinOptions(package: 'com.nexora.sdk.pigeon'),
-  swiftOut: 'packages/nexora_sdk_ios/ios/Classes/pigeon/HardwareApi.g.swift',
-  swiftOptions: SwiftOptions(),
-  cppHeaderOut: 'packages/nexora_sdk_desktop/windows/pigeon/hardware_api.g.h',
-  cppSourceOut: 'packages/nexora_sdk_desktop/windows/pigeon/hardware_api.g.cpp',
-  cppOptions: CppOptions(namespace: 'nexora_sdk'),
-))
-
+@ConfigurePigeon(
+  PigeonOptions(
+    dartOut:
+        'packages/nexora_sdk_platform_interface/lib/src/pigeon/hardware_api.g.dart',
+    dartOptions: DartOptions(),
+    kotlinOut:
+        'packages/nexora_sdk_android/android/src/main/kotlin/com/nexora/sdk/pigeon/HardwareApi.g.kt',
+    kotlinOptions: KotlinOptions(package: 'com.nexora.sdk.pigeon'),
+    swiftOut: 'packages/nexora_sdk_ios/ios/Classes/pigeon/HardwareApi.g.swift',
+    swiftOptions: SwiftOptions(),
+    cppHeaderOut: 'packages/nexora_sdk_desktop/windows/pigeon/hardware_api.g.h',
+    cppSourceOut:
+        'packages/nexora_sdk_desktop/windows/pigeon/hardware_api.g.cpp',
+    cppOptions: CppOptions(namespace: 'nexora_sdk'),
+  ),
+)
 // --- Camera ---
-
 class NexoraCameraOptions {
   String? resolution;
   String? focusMode;
@@ -37,37 +40,37 @@ class VisionModeOptions {
 abstract class HardwareApi {
   @async
   int startCamera(int width, int height);
-  
+
   @async
   int startCameraWithOptions(NexoraCameraOptions options);
-  
+
   @async
   bool stopCamera();
-  
+
   @async
   bool setVisionMode(VisionModeOptions options);
-  
+
   @async
   bool registerCustomClassifier(CustomClassifierOptions options);
-  
+
   @async
   bool setFlash(bool on);
-  
+
   @async
   bool setZoom(double level);
-  
+
   @async
   bool flipCamera();
-  
+
   @async
   String? takePhoto(String? fileName);
-  
+
   @async
   String? startVideoRecording(String? fileName);
-  
+
   @async
   String? stopVideoRecording();
-  
+
   @async
   bool applyCameraFilterShader(String shaderType);
 }
@@ -91,25 +94,25 @@ class NexoraAudioOptions {
 abstract class AudioApi {
   @async
   bool startAudio(BasicAudioOptions options);
-  
+
   @async
   bool startAudioWithOptions(NexoraAudioOptions options);
-  
+
   @async
   bool stopAudio();
-  
+
   @async
   bool routeAudioOutput(String route);
-  
+
   @async
   double getAudioVolume();
-  
+
   @async
   bool setAudioVolume(double level);
-  
+
   @async
   bool selectAudioInput(String device);
-  
+
   @async
   bool setAudioGain(double gain);
 }
@@ -126,13 +129,13 @@ class NexoraLocationOptions {
 abstract class LocationApi {
   @async
   bool startLocation();
-  
+
   @async
   bool startLocationWithOptions(NexoraLocationOptions options);
-  
+
   @async
   bool stopLocation();
-  
+
   @async
   bool setBackgroundLocationEnabled(bool enabled);
 }
@@ -147,13 +150,13 @@ class NexoraSensorOptions {
 abstract class SensorApi {
   @async
   bool startSensor(int frequencyHz);
-  
+
   @async
   bool startSensorWithOptions(NexoraSensorOptions options);
-  
+
   @async
   bool stopSensor();
-  
+
   @async
   bool enableDeadReckoning(bool enabled);
 }
@@ -171,10 +174,10 @@ class NexoraBiometricOptions {
 abstract class BiometricsApi {
   @async
   bool authenticate(String reason);
-  
+
   @async
   bool authenticateWithOptions(NexoraBiometricOptions options);
-  
+
   @async
   bool canAuthenticate();
 }
@@ -190,37 +193,47 @@ class NexoraBluetoothScanOptions {
 abstract class BluetoothApi {
   @async
   bool startBluetoothScan();
-  
+
   @async
   bool startBluetoothScanWithOptions(NexoraBluetoothScanOptions options);
-  
+
   @async
   bool stopBluetoothScan();
-  
+
   @async
   bool connectDevice(String id);
-  
+
   @async
   bool disconnectDevice(String id);
-  
+
   @async
   List<String?> discoverServices(String deviceId);
-  
+
   @async
-  bool sendData(String deviceId, String serviceId, String charId, List<int?> data);
-  
+  bool sendData(
+    String deviceId,
+    String serviceId,
+    String charId,
+    List<int?> data,
+  );
+
   @async
   Uint8List? readData(String deviceId, String serviceId, String charId);
-  
+
   @async
-  bool subscribeToCharacteristic(String deviceId, String serviceId, String charId, bool enable);
-  
+  bool subscribeToCharacteristic(
+    String deviceId,
+    String serviceId,
+    String charId,
+    bool enable,
+  );
+
   @async
   bool requestMtu(String deviceId, int mtu);
-  
+
   @async
   bool startBlePeripheral(String uuid);
-  
+
   @async
   void stopBlePeripheral();
 }
@@ -247,40 +260,40 @@ class NexoraFileInfo {
 abstract class SecureStorageApi {
   @async
   NexoraStorageInfo? getStorageInfo();
-  
+
   @async
   String? writeFile(String fileName, String content);
-  
+
   @async
   String? appendFile(String fileName, String content);
-  
+
   @async
   String? readFile(String fileName);
-  
+
   @async
   bool deleteFile(String fileName);
-  
+
   @async
   bool fileExists(String fileName);
-  
+
   @async
   List<NexoraFileInfo?> listFiles();
-  
+
   @async
   String? writeBytes(String fileName, Uint8List bytes);
-  
+
   @async
   Uint8List? readBytes(String fileName);
-  
+
   @async
   bool clearCache();
-  
+
   @async
   String? getAppDirectory();
-  
+
   @async
   String? getCacheDirectory();
-  
+
   @async
   String? getExternalDirectory();
 }
@@ -344,85 +357,90 @@ class NexoraPermissionStatus {
 abstract class SystemApi {
   @async
   bool configureSdk(NexoraSdkConfig config);
-  
+
   @async
   bool requestPermissions();
-  
+
   @async
   bool requestPermission(String type);
-  
+
   @async
   NexoraPermissionStatus getPermissionStatus(String type);
-  
+
   @async
   bool openAppSettings();
-  
+
   @async
   NexoraDeviceInfo getDeviceInfo();
-  
+
   @async
   NexoraConnectivityInfo getConnectivityInfo();
-  
+
   @async
   NexoraBatteryInfo? getBatteryInfo();
-  
+
   @async
   NexoraWifiInfo? getWifiInfo();
-  
+
   @async
   void vibrate(int durationMs);
-  
+
   @async
   void hapticFeedback(String type);
-  
+
   @async
   void performHapticWithOptions(NexoraHapticOptions options);
-  
+
   @async
   bool copyText(String text);
-  
+
   @async
   String? pasteText();
-  
+
   @async
   bool openUrl(String url);
-  
+
   @async
   bool shareText(String text, String? subject);
-  
+
   @async
   String? saveToGallery(String filePath);
-  
+
   @async
   bool enterPictureInPicture();
-  
+
   @async
   List<String?> getConnectedUsbDevices();
-  
+
   @async
   bool startForegroundService(String title, String content);
-  
+
   @async
   bool updateForegroundService(String title, String text);
-  
+
   @async
   bool stopForegroundService();
-  
+
   @async
-  bool enableSmartSync(String uploadEndpointUrl, Map<String?, String?> headers, int rollLimitBytes, bool requireWifi);
-  
+  bool enableSmartSync(
+    String uploadEndpointUrl,
+    Map<String?, String?> headers,
+    int rollLimitBytes,
+    bool requireWifi,
+  );
+
   @async
   void setEcoModeEnabled(bool enabled);
-  
+
   @async
   bool isEcoModeActive();
-  
+
   @async
   String getThermalState();
-  
+
   @async
   bool startBackgroundSync(int intervalMinutes);
-  
+
   @async
   bool stopBackgroundSync();
 }
@@ -439,19 +457,19 @@ class NexoraCryptoKeyOptions {
 abstract class CryptoApi {
   @async
   bool generateBiometricKey(NexoraCryptoKeyOptions options);
-  
+
   @async
   bool deleteKey(String alias);
-  
+
   @async
   bool keyExists(String alias);
-  
+
   @async
   Uint8List? signWithBiometricKey(String alias, Uint8List data);
-  
+
   @async
   Uint8List? encryptWithBiometricKey(String alias, Uint8List plaintext);
-  
+
   @async
   Uint8List? decryptWithBiometricKey(String alias, Uint8List ciphertext);
 }
@@ -469,13 +487,16 @@ class NexoraAiResult {
 abstract class AiApi {
   @async
   List<NexoraAiResult?> processImageWithFaceDetection(Uint8List imageBytes);
-  
+
   @async
   List<NexoraAiResult?> processImageWithBarcodeScanning(Uint8List imageBytes);
-  
+
   @async
   List<NexoraAiResult?> processImageWithTextRecognition(Uint8List imageBytes);
-  
+
   @async
-  Map<String?, Object?>? runCustomModelInference(String modelPath, Uint8List inputBytes);
+  Map<String?, Object?>? runCustomModelInference(
+    String modelPath,
+    Uint8List inputBytes,
+  );
 }

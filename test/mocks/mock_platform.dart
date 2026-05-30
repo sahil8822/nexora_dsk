@@ -69,8 +69,7 @@ class MockNexoraSdkPlatform extends NexoraSdkPlatform
   Future<int?> startCamera({int width = 1280, int height = 720}) =>
       Future.value(1);
   @override
-  Future<int?> startCameraWithOptions(CameraOptions options) =>
-      Future.value(1);
+  Future<int?> startCameraWithOptions(CameraOptions options) => Future.value(1);
   @override
   Future<bool> stopCamera() => Future.value(true);
   @override
